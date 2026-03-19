@@ -1,0 +1,18 @@
+{
+  "version": "1.2.0",
+  "date": "2026-03-20",
+  "description": "Smart fee reminders and status improvements",
+  "url": "https://YOUR-NETLIFY-SITE.netlify.app/index.html",
+  "changes": [
+    "🔵 New Admission status for freshly joined students",
+    "🟡 Due Soon badge — appears 3 days before monthly fee date",
+    "🔔 Smart notifications — only when fee is actually due",
+    "✕ Per-student dismiss button in notifications",
+    "✅ Fixed ₹0 balance showing in due list",
+    "✅ Fixed new students showing as Due incorrectly",
+    "🟡 Pulsing Due Soon animation in status column",
+    "📊 Notification bell only counts real urgent students"
+  ],
+  "mandatory": false,
+  "min_supported": "1.0.0"
+}

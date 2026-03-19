@@ -1,0 +1,3201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mahatab Tuition">
+<meta name="application-name" content="Mahatab Tuition">
+<meta name="theme-color" content="#1B4332">
+<meta name="description" content="Mahatab Tuition Centre — Student Fee Management System">
+<link rel="manifest" id="pwaManifest">
+<link rel="apple-touch-icon" id="appleTouchIcon">
+<meta name="app-version" content="1.0.0">
+<title>Mahatab Tuition Centre</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* LOGIN SCREEN */
+  .login-screen {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 60%, #1B4332 100%);
+    align-items: center; justify-content: center; flex-direction: column;
+    padding: 1rem;
+  }
+  .login-screen.active { display: flex; }
+  .login-card {
+    background: white; border-radius: 24px; padding: 2.5rem 2rem;
+    width: 340px; max-width: 92vw; text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    animation: loginPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes loginPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+  .login-logo { font-size: 56px; margin-bottom: 10px; }
+  .login-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: #1B4332; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: #6B6560; margin-bottom: 28px; line-height: 1.5; }
+  .login-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .login-divider::before, .login-divider::after { content:''; flex:1; height:1px; background:#E2DDD5; }
+  .login-divider span { font-size: 12px; color: #9E9892; }
+  .google-btn {
+    width: 100%; padding: 13px 20px; border: 1.5px solid #E2DDD5;
+    border-radius: 12px; background: white; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+    color: #1A1714; transition: all 0.18s; margin-bottom: 12px;
+  }
+  .google-btn:hover { border-color: #4285F4; box-shadow: 0 4px 16px rgba(66,133,244,0.15); transform: translateY(-1px); }
+  .google-btn svg { flex-shrink: 0; }
+  .skip-btn {
+    width: 100%; padding: 11px; border: none; background: none;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: #9E9892;
+    cursor: pointer; border-radius: 8px; transition: background 0.15s;
+  }
+  .skip-btn:hover { background: #F7F5F0; }
+  .login-features {
+    background: #F7F5F0; border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 20px; text-align: left;
+  }
+  .login-features div { font-size: 12px; color: #6B6560; padding: 4px 0; display: flex; gap: 8px; }
+  /* USER AVATAR in header */
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4);
+    cursor: pointer; object-fit: cover; flex-shrink: 0;
+  }
+  .user-avatar-placeholder {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white; cursor: pointer; flex-shrink: 0;
+  }
+  /* USER DROPDOWN */
+  .user-dropdown {
+    display: none; position: absolute; top: 80px; right: 16px;
+    background: white; border-radius: 16px; padding: 0;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18); z-index: 500;
+    min-width: 240px; overflow: hidden; border: 1px solid #E2DDD5;
+    animation: dropDown 0.18s ease;
+  }
+  @keyframes dropDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .user-dropdown.open { display: block; }
+  .user-dropdown-head { padding: 16px; background: linear-gradient(135deg,#1B4332,#2D6A4F); color: white; }
+  .user-dropdown-head img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); margin-bottom: 8px; }
+  .user-dropdown-head .ud-name { font-weight: 700; font-size: 15px; }
+  .user-dropdown-head .ud-email { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .user-dropdown-item { padding: 13px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #1A1714; cursor: pointer; transition: background 0.15s; border-top: 1px solid #F0EDE6; }
+  .user-dropdown-item:hover { background: #F7F5F0; }
+  .user-dropdown-item.danger { color: #C0392B; }
+  .user-dropdown-item.danger:hover { background: #FDECEA; }
+
+  /* ── MAIN APP STYLES ── */
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE6;
+    --border: #E2DDD5;
+    --text: #1A1714;
+    --text2: #6B6560;
+    --text3: #9E9892;
+    --accent: #2D6A4F;
+    --accent-light: #D8EFE5;
+    --accent-mid: #52B788;
+    --danger: #C0392B;
+    --danger-light: #FDECEA;
+    --warn: #B7791F;
+    --warn-light: #FEF3CD;
+    --info: #1A5276;
+    --info-light: #D6EAF8;
+    --paid: #1E8449;
+    --paid-light: #D4EFDF;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1B4332 100%);
+    color: white;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 76px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30%;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+  }
+  .header-brand {
+    display: flex; align-items: center; gap: 14px; position: relative; z-index: 1;
+  }
+  .header-icon {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    letter-spacing: 0.4px;
+    line-height: 1.2;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .header-sub {
+    font-size: 11px;
+    opacity: 0.65;
+    margin-top: 3px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 12px; position: relative; z-index: 1;
+  }
+  .header-date {
+    font-size: 12px;
+    opacity: 0.75;
+    letter-spacing: 0.3px;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .header-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    letter-spacing: 0.2px;
+    transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .header-btn:hover {
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.4);
+    transform: translateY(-1px);
+  }
+  .header-divider {
+    width: 1px; height: 28px;
+    background: rgba(255,255,255,0.18);
+  }
+  @media (max-width: 600px) {
+    .header { padding: 0 1rem; height: auto; min-height: 70px; flex-wrap: wrap; gap: 6px; padding-top: 10px; padding-bottom: 10px; }
+    .header-title { font-size: 17px; }
+    .header-date { display: none; }
+    .header-divider { display: none; }
+  }
+
+  /* LAYOUT */
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* STATS BAR */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 1.1rem 1.25rem; border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .stat-label { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 600; }
+  .stat-value.green { color: var(--paid); }
+  .stat-value.red { color: var(--danger); }
+  .stat-value.amber { color: var(--warn); }
+  .stat-card { transition: box-shadow 0.18s, transform 0.15s; }
+  .stat-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .stat-card.active-filter { border: 2px solid var(--accent); }
+  .stat-value.blue { color: var(--info); }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    margin-bottom: 1.5rem; overflow: hidden;
+  }
+  .panel-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface);
+  }
+  .panel-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-icon { font-size: 18px; }
+  .panel-body { padding: 1.5rem; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .form-group input, .form-group select {
+    padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; background: var(--bg); color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--accent-mid); box-shadow: 0 0 0 3px rgba(82,183,136,0.15);
+  }
+  .form-full { grid-column: 1 / -1; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 20px; border-radius: var(--radius-sm); border: none;
+    font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all 0.18s; display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #245C42; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,106,79,0.3); }
+  .btn-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #F5C6C2; }
+  .btn-danger:hover { background: var(--danger); color: white; }
+  .btn-success { background: var(--paid-light); color: var(--paid); border: 1px solid #A9DFBF; }
+  .btn-success:hover { background: var(--paid); color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-paid { background: var(--paid-light); color: var(--paid); }
+  .badge-due { background: var(--danger-light); color: var(--danger); }
+  .badge-partial { background: var(--warn-light); color: var(--warn); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* STUDENT AVATAR */
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center; font-size: 13px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .student-cell { display: flex; align-items: center; gap: 10px; }
+  .student-name { font-weight: 500; }
+  .student-sub { font-size: 12px; color: var(--text3); }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .filter-bar input, .filter-bar select {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 13px; background: var(--bg); color: var(--text);
+    outline: none;
+  }
+  .filter-bar input { flex: 1; min-width: 160px; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 2rem; width: 460px; max-width: 94vw;
+    box-shadow: var(--shadow-lg); animation: slideIn 0.22s ease;
+  }
+  @keyframes slideIn { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 1.25rem; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--text);
+    color: white; padding: 12px 20px; border-radius: var(--radius-sm);
+    font-size: 14px; box-shadow: var(--shadow-lg);
+    display: none; z-index: 300; animation: fadeUp 0.2s ease;
+  }
+  @keyframes fadeUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+
+  /* ── UPDATE BANNER ── */
+  .update-banner {
+    display:none;position:fixed;bottom:0;left:0;right:0;z-index:8000;
+    background:linear-gradient(135deg,#1B4332,#2D6A4F);color:white;
+    padding:14px 20px;box-shadow:0 -4px 24px rgba(0,0,0,0.25);
+    font-family:'DM Sans',sans-serif;animation:slideUpBanner 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .update-banner.show{display:block;}
+  @keyframes slideUpBanner{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .update-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .update-icon{font-size:26px;flex-shrink:0;}
+  .update-text{flex:1;min-width:150px;}
+  .update-text b{font-size:14px;display:block;}
+  .update-text span{font-size:12px;opacity:0.8;}
+  .update-actions{display:flex;gap:8px;flex-shrink:0;}
+  .upd-now{padding:9px 18px;background:white;color:#1B4332;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}
+  .upd-later{padding:9px 14px;background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;}
+  /* ── CHANGELOG MODAL ── */
+  .clog-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;padding:1rem;}
+  .clog-overlay.open{display:flex;}
+  .clog-box{background:white;border-radius:20px;padding:2rem;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:loginPop 0.3s ease;max-height:90vh;overflow-y:auto;}
+  .clog-badge{display:inline-block;background:#2D6A4F;color:white;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:10px;}
+  .clog-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:6px;color:#1A1714;}
+  .clog-sub{font-size:13px;color:#6B6560;margin-bottom:14px;}
+  .clog-list{list-style:none;padding:0;margin:0 0 18px;}
+  .clog-list li{font-size:13px;padding:7px 0;border-bottom:1px solid #F0EDE6;display:flex;gap:8px;color:#1A1714;}
+  .clog-progress{background:#F7F5F0;border-radius:10px;padding:12px 14px;margin-bottom:14px;display:none;}
+  .clog-pbar{height:6px;background:#E2DDD5;border-radius:4px;overflow:hidden;margin-top:8px;}
+  .clog-pfill{height:100%;background:#2D6A4F;border-radius:4px;width:0%;transition:width 0.3s;}
+
+  /* CONFIRM DIALOG */
+  .confirm-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 400; align-items: center; justify-content: center;
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: var(--surface); border-radius: var(--radius); padding: 1.75rem;
+    width: 360px; max-width: 92vw; box-shadow: var(--shadow-lg);
+    animation: slideIn 0.2s ease; text-align: center;
+  }
+  .confirm-icon { font-size: 36px; margin-bottom: 10px; }
+  .confirm-msg { font-size: 15px; color: var(--text); margin-bottom: 6px; font-weight: 500; }
+  .confirm-sub { font-size: 13px; color: var(--text3); margin-bottom: 1.5rem; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* COLORS for avatars */
+  .av1 { background: #D8EFE5; color: #2D6A4F; }
+  .av2 { background: #D6EAF8; color: #1A5276; }
+  .av3 { background: #FDECEA; color: #A93226; }
+  .av4 { background: #FEF3CD; color: #9A7D0A; }
+  .av5 { background: #F3E5F5; color: #7D3C98; }
+  .av6 { background: #FBE9E7; color: #BF360C; }
+
+  .empty-state {
+    text-align: center; padding: 3rem 2rem; color: var(--text3);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; }
+
+  .amount { font-family: 'DM Mono', monospace; font-weight: 500; }
+
+  .tab-row { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; }
+  .tab {
+    padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer;
+    border-bottom: 2px solid transparent; color: var(--text2); transition: all 0.18s;
+    background: none; border-top: none; border-left: none; border-right: none;
+    font-family: inherit;
+  }
+  .tab.active { border-bottom-color: var(--accent); color: var(--accent); }
+
+  .progress-bar {
+    height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 4px;
+  }
+  .progress-fill { height: 100%; border-radius: 4px; background: var(--accent-mid); transition: width 0.4s; }
+
+  @media (max-width: 700px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .container { padding: 1rem; }
+    .header { padding: 0 1rem; }
+    .header-sub { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="login-screen active" id="loginScreen">
+  <div class="login-card" style="max-height:95vh;overflow-y:auto">
+
+    <div class="login-logo">🎓</div>
+    <div class="login-title">Mahatab Tuition Centre</div>
+    <div class="login-sub" id="authSubtitle">Welcome back! Sign in to continue.</div>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;background:#F7F5F0;border-radius:12px;padding:4px;margin-bottom:20px;gap:4px">
+      <button id="tabLoginBtn" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;background:#2D6A4F;color:white;transition:all 0.2s">Sign In</button>
+      <button id="tabSignupBtn" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;background:transparent;color:#6B6560;transition:all 0.2s">Sign Up</button>
+    </div>
+
+    <!-- Google Sign In -->
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="login-divider"><span>or use username & password</span></div>
+
+    <!-- SIGN UP FORM -->
+    <div id="signupForm" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">FULL NAME *</label>
+          <input id="suName" type="text" placeholder="Your full name" style="width:100%;padding:11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">USERNAME *</label>
+          <input id="suUsername" type="text" placeholder="Choose a username" style="width:100%;padding:11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">EMAIL (optional)</label>
+          <input id="suEmail" type="email" placeholder="your@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">PASSWORD *</label>
+          <div style="position:relative">
+            <input id="suPassword" type="password" placeholder="Min 6 characters" style="width:100%;padding:11px 44px 11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'" oninput="checkPasswordStrength(this.value)"/>
+            <button type="button" onclick="togglePwd('suPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#9E9892">👁</button>
+          </div>
+          <div id="pwdStrength" style="height:4px;border-radius:4px;margin-top:6px;background:#E2DDD5;overflow:hidden"><div id="pwdStrengthBar" style="height:100%;width:0;border-radius:4px;transition:all 0.3s"></div></div>
+          <div id="pwdStrengthText" style="font-size:11px;color:#9E9892;margin-top:3px"></div>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">CONFIRM PASSWORD *</label>
+          <input id="suConfirm" type="password" placeholder="Re-enter password" style="width:100%;padding:11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'"/>
+        </div>
+      </div>
+      <div id="authError" style="display:none;background:#FDECEA;color:#C0392B;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px"></div>
+      <button onclick="doSignUp()" style="width:100%;margin-top:16px;padding:13px;background:#2D6A4F;color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.18s" onmouseover="this.style.background='#1B4332'" onmouseout="this.style.background='#2D6A4F'">
+        Create Account →
+      </button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm" style="display:block">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">USERNAME OR EMAIL *</label>
+          <input id="liUsername" type="text" placeholder="Enter your username or email" style="width:100%;padding:11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'" onkeydown="if(event.key==='Enter')document.getElementById('liPassword').focus()"/>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#6B6560;display:block;margin-bottom:5px">PASSWORD *</label>
+          <div style="position:relative">
+            <input id="liPassword" type="password" placeholder="Enter your password" style="width:100%;padding:11px 44px 11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#2D6A4F'" onblur="this.style.borderColor='#E2DDD5'" onkeydown="if(event.key==='Enter')doLogin()"/>
+            <button type="button" onclick="togglePwd('liPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#9E9892">👁</button>
+          </div>
+        </div>
+      </div>
+      <div id="loginError" style="display:none;background:#FDECEA;color:#C0392B;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px"></div>
+      <button onclick="doLogin()" style="width:100%;margin-top:16px;padding:13px;background:#2D6A4F;color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.18s" onmouseover="this.style.background='#1B4332'" onmouseout="this.style.background='#2D6A4F'">
+        Sign In →
+      </button>
+      <button onclick="showForgotPassword()" style="width:100%;margin-top:8px;padding:10px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:#9E9892;cursor:pointer">
+        Forgot password?
+      </button>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div id="forgotForm" style="display:none">
+      <p style="font-size:13px;color:#6B6560;margin-bottom:14px;line-height:1.5">Enter your username to recover your account. Your data will remain safe.</p>
+      <input id="forgotUsername" type="text" placeholder="Enter your username" style="width:100%;padding:11px 14px;border:1.5px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:12px"/>
+      <div id="forgotResult" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px"></div>
+      <button onclick="doForgotPassword()" style="width:100%;padding:13px;background:#2D6A4F;color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer">
+        Show My Password Hint
+      </button>
+      <button onclick="switchAuthTab('login')" style="width:100%;margin-top:8px;padding:10px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:#9E9892;cursor:pointer">← Back to Sign In</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- USER DROPDOWN -->
+<div class="user-dropdown" id="userDropdown">
+  <div class="user-dropdown-head">
+    <img id="udAvatar" src="" alt="" style="display:none"/>
+    <div id="udAvatarText" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;margin-bottom:8px"></div>
+    <div class="ud-name" id="udName">Guest</div>
+    <div class="ud-email" id="udEmail">No account</div>
+  </div>
+  <div class="user-dropdown-item" onclick="openBackupModal();closeUserDropdown()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Backup & Restore
+  </div>
+  <div class="user-dropdown-item" onclick="closeUserDropdown();exportExcel()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D6F42" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+    Export Excel
+  </div>
+  <div class="user-dropdown-item" onclick="closeUserDropdown();exportPDF()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Export PDF
+  </div>
+  <div class="user-dropdown-item danger" onclick="signOut()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign Out
+  </div>
+</div>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="header-icon">🎓</div>
+    <div>
+      <div class="header-title">Mahatab Tuition Centre</div>
+      <div class="header-sub">Fee Management System</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="text-align:right">
+      <div class="header-date" id="headerDate"></div>
+      <div id="autoBackupStatus" style="margin-top:2px"></div>
+    </div>
+    <div class="header-divider"></div>
+    <button class="header-btn" id="notifBellBtn" onclick="toggleNotifPanel()" style="position:relative">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#C0392B;color:white;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1">0</span>
+    </button>
+    <button class="header-btn" onclick="openBackupModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Backup
+    </button>
+    <div id="userAvatarBtn" onclick="toggleUserDropdown()" style="cursor:pointer">
+      <img id="headerAvatar" src="" alt="" class="user-avatar" style="display:none"/>
+      <div id="headerAvatarText" class="user-avatar-placeholder">👤</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card" onclick="setQuickFilter('')" style="cursor:pointer" id="statCardAll">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value blue" id="statStudents">0</div>
+    </div>
+    <div class="stat-card" onclick="setQuickFilter('paid')" style="cursor:pointer" id="statCardPaid">
+      <div class="stat-label">✅ Paid</div>
+      <div class="stat-value green" id="statPaidCount">0</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statCollected">₹0 collected</div>
+    </div>
+    <div class="stat-card" onclick="setQuickFilter('due')" style="cursor:pointer" id="statCardDue">
+      <div class="stat-label">🔴 Due</div>
+      <div class="stat-value red" id="statDueCount">0</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statDue">₹0 outstanding</div>
+    </div>
+    <div class="stat-card" onclick="setQuickFilter('partial')" style="cursor:pointer" id="statCardPartial">
+      <div class="stat-label">🟡 Partial</div>
+      <div class="stat-value amber" id="statPartialCount">0</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statTotal">₹0 total</div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div id="notifPanel" class="panel" style="display:none;margin-bottom:1.25rem;border-left:4px solid var(--warn)">
+    <div class="panel-header" style="background:var(--warn-light)">
+      <span class="panel-title" style="color:var(--warn)"><span class="panel-icon">🔔</span> Fee Due Notifications</span>
+      <button class="btn btn-sm" style="border:1px solid var(--warn);color:var(--warn)" onclick="dismissNotif()">Dismiss</button>
+    </div>
+    <div id="notifBody" class="panel-body" style="padding:0.75rem 1.5rem"></div>
+  </div>
+
+  <!-- BATCH TABS -->
+  <div class="panel" style="margin-bottom:1.25rem">
+    <div style="padding:0.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div id="batchTabs" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
+      <button class="btn btn-sm btn-primary" onclick="openBatchModal()">＋ New Batch</button>
+    </div>
+  </div>
+
+  <!-- ADD STUDENT PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title"><span class="panel-icon">➕</span> Add New Student</span>
+    </div>
+    <div class="panel-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Student Name *</label>
+          <input id="inName" type="text" placeholder="e.g. Priya Sharma" />
+        </div>
+        <div class="form-group">
+          <label>Joining Date *</label>
+          <input id="inJoin" type="date" oninput="updateStatusPreview()" />
+        </div>
+        <div class="form-group">
+          <label>Monthly Fees (₹) *</label>
+          <input id="inFee" type="number" placeholder="e.g. 1500" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Contact / Phone</label>
+          <input id="inPhone" type="text" placeholder="e.g. 9876543210" />
+        </div>
+        <div class="form-group">
+          <label>Batch *</label>
+          <select id="inBatch"></select>
+        </div>
+        <div class="form-group">
+          <label>Payment Status <span style="font-size:11px;color:var(--text3);font-weight:400">(auto-detected)</span></label>
+          <div id="statusPreview" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);min-height:42px">
+            <span id="statusBadgePreview" class="badge badge-due"><span class="badge-dot"></span>Due</span>
+            <span id="statusHint" style="font-size:12px;color:var(--text3)">Select joining date to auto-detect</span>
+          </div>
+        </div>
+        <div class="form-full">
+          <button class="btn btn-primary" onclick="addStudent()">🎓 Add Student</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENTS TABLE -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title"><span class="panel-icon">📋</span> Student Records</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" id="trashToggleBtn" style="border:1px solid var(--border)" onclick="toggleTrash()">🗑️ Deleted <span id="trashBadge" style="display:none;background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;margin-left:4px">0</span></button>
+        <button class="btn btn-sm" style="background:#1D6F42;color:white;border:none;display:flex;align-items:center;gap:5px" onclick="exportExcel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Excel
+        </button>
+        <button class="btn btn-sm" style="background:#C0392B;color:white;border:none" onclick="exportPDF()">⬇ PDF</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="filter-bar">
+        <input id="searchInput" type="text" placeholder="🔍  Search by name…" oninput="renderTable()" />
+        <select id="filterStatus" onchange="activeQuickFilter=this.value; setQuickFilter(this.value)">
+          <option value="">All Status</option>
+          <option value="paid">✅ Paid</option>
+          <option value="due">🔴 Due</option>
+          <option value="partial">🟡 Partial</option>
+        </select>
+        <button id="clearFilterBtn" onclick="setQuickFilter('')" style="display:none;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--danger-light);color:var(--danger);font-family:inherit;font-size:12px;cursor:pointer">✕ Clear Filter</button>
+      </div>
+      <div class="table-wrap">
+        <table id="studentTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Batch</th>
+              <th>Joining Date</th>
+              <th>Monthly Fee</th>
+              <th>Months</th>
+              <th>Total Due</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Last Payment</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display:none">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">No students found. Add a student above to get started.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOVERY PANEL -->
+  <div class="panel" id="recoveryPanel" style="display:none">
+    <div class="panel-header">
+      <span class="panel-title"><span class="panel-icon">♻️</span> Deleted Students &nbsp;<span id="trashCount" style="background:var(--danger-light);color:var(--danger);font-size:12px;padding:2px 9px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:500">0</span></span>
+      <button class="btn btn-sm btn-danger" onclick="emptyTrash()">🗑 Empty Trash</button>
+    </div>
+    <div class="panel-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Student</th><th>Phone</th><th>Joining Date</th><th>Monthly Fee</th><th>Paid</th><th>Deleted On</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="trashBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- EDIT STUDENT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">✏️ Edit Student Details</div>
+    <div class="form-grid">
+      <div class="form-group form-full">
+        <label>Student Name *</label>
+        <input id="editName" type="text" placeholder="Student name" />
+      </div>
+      <div class="form-group">
+        <label>Joining Date *</label>
+        <input id="editJoin" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Monthly Fees (₹) *</label>
+        <input id="editFee" type="number" min="0" placeholder="e.g. 1500" />
+      </div>
+      <div class="form-group">
+        <label>Contact / Phone</label>
+        <input id="editPhone" type="text" placeholder="e.g. 9876543210" />
+      </div>
+      <div class="form-group">
+        <label>Batch *</label>
+        <select id="editBatch"></select>
+      </div>
+    </div>
+    <div style="margin-top:1rem;padding:10px 14px;background:var(--warn-light);border:1px solid #E8C76A;border-radius:var(--radius-sm);font-size:12px;color:var(--warn)">
+      ⚠️ Editing the monthly fee or joining date will recalculate the total due amount.
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- BATCH MODAL -->
+<div class="modal-overlay" id="batchModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">📚 Manage Batches</div>
+    <div class="form-grid" style="margin-bottom:1rem">
+      <div class="form-group form-full">
+        <label>New Batch Name *</label>
+        <input id="inBatchName" type="text" placeholder="e.g. Batch 3, Morning Batch" />
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:1.25rem" onclick="createBatch()">＋ Create Batch</button>
+    <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Existing Batches</div>
+    <div id="batchList" style="max-height:240px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeBatchModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">💳 Record Payment</div>
+
+    <!-- Student & Fee Summary -->
+    <div id="payStudentInfo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1rem;border:1px solid var(--border)">
+      <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
+      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--text3)">Monthly Fee: <b id="payFeeAmt" style="color:var(--text)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Completed Months: <b id="payMonths" style="color:var(--info)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Already Paid: <b id="payAlreadyPaid" style="color:var(--paid)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Current Balance: <b id="payCurrentBal" style="color:var(--danger)"></b></div>
+      </div>
+    </div>
+
+    <!-- Payment Type Toggle -->
+    <div style="display:flex;gap:6px;margin-bottom:1rem">
+      <button id="payTypeDue" onclick="setPayType('due')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--accent);color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        📋 Pay Due Amount
+      </button>
+      <button id="payTypeAdv" onclick="setPayType('advance')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        ⏩ Pay in Advance
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <!-- Advance months selector (hidden by default) -->
+      <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
+        <label>Pay for how many months ahead?</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="changeAdvMonths(-1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">−</button>
+          <div style="flex:1;text-align:center">
+            <span id="advMonthsNum" style="font-size:22px;font-weight:700;color:var(--accent)">1</span>
+            <span style="font-size:13px;color:var(--text3);margin-left:4px">month(s) in advance</span>
+          </div>
+          <button onclick="changeAdvMonths(1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">+</button>
+        </div>
+        <div id="advMonthsCovered" style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Amount Paid (₹) *</label>
+        <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
+      </div>
+      <div class="form-group">
+        <label>Payment Date *</label>
+        <input id="payDate" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="payMode">
+          <option>Cash</option>
+          <option>UPI</option>
+          <option>Bank Transfer</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input id="payNote" type="text" placeholder="e.g. Advance for April" />
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div id="payPreview" style="display:none;margin-top:0.75rem;padding:10px 14px;border-radius:var(--radius-sm);background:var(--accent-light);border:1px solid var(--accent-mid);font-size:13px;color:var(--accent)"></div>
+
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPayment()">✅ Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="histModal">
+  <div class="modal" style="width:520px">
+    <div class="modal-title">📜 Payment History — <span id="histName"></span></div>
+    <div id="histBody" style="max-height:340px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeHist()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal-overlay" id="backupModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">☁️ Cloud Backup &amp; Restore</div>
+    <p id="lastBackupTime" style="font-size:12px;color:var(--accent);margin-bottom:0.5rem;font-weight:500"></p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Data auto-backs up to cloud every time you make changes. Save your Backup ID to restore on any device.</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Save your data to cloud instantly — no login needed. Save your Backup ID to restore anytime on any device.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem">
+      <button onclick="cloudBackup()" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid #4285F4;border-radius:var(--radius-sm);background:#EBF3FE;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:26px">☁️</span>
+        <div><div style="font-weight:600;font-size:14px;color:#1A5276">Save to Cloud</div><div style="font-size:12px;color:#2E86C1;margin-top:2px">Upload instantly — no login, no download</div></div>
+      </button>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.6px">Restore from Cloud</div>
+        <div style="display:flex;gap:8px">
+          <input id="cloudRestoreId" type="text" placeholder="Paste your Backup ID here…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);outline:none"/>
+          <button onclick="cloudRestore()" class="btn btn-primary" style="white-space:nowrap;padding:10px 16px">♻️ Restore</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:11px;color:var(--text3)">OR LOCAL</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
+      <button onclick="backupDownload()" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:22px">📥</span>
+        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Download Backup File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Save .json file to phone</div></div>
+      </button>
+      <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:22px">♻️</span>
+        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Restore from File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Select a .json backup file</div></div>
+        <input type="file" accept=".json" onchange="restoreData(event)" style="display:none" id="restoreInput"/>
+      </label>
+    </div>
+    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.6"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeBackupModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT STUDENT MODAL -->
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-msg" id="confirmMsg">Are you sure?</div>
+    <div class="confirm-sub" id="confirmSub">This will permanently remove the student and all payment records.</div>
+    <div class="confirm-actions">
+      <button class="btn" style="border:1px solid var(--border);min-width:100px" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" style="min-width:100px" id="confirmOkBtn">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Permanent Storage: IndexedDB (primary) + localStorage (fallback) ──
+// IndexedDB never clears in WebView, Median, or mobile browsers
+window.storage = (function() {
+  const DB_NAME = 'MahatbTuitionDB';
+  const DB_VER  = 1;
+  const STORE   = 'kvstore';
+  let db = null;
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      if (db) { resolve(db); return; }
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = e => {
+        e.target.result.createObjectStore(STORE, { keyPath: 'k' });
+      };
+      req.onsuccess = e => { db = e.target.result; resolve(db); };
+      req.onerror   = () => reject(req.error);
+    });
+  }
+
+  async function idbGet(key) {
+    const d = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = d.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(key);
+      req.onsuccess = () => resolve(req.result ? req.result.v : null);
+      req.onerror   = () => reject(req.error);
+    });
+  }
+
+  async function idbSet(key, value) {
+    const d = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = d.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put({ k: key, v: value });
+      tx.oncomplete = () => resolve(true);
+      tx.onerror    = () => reject(tx.error);
+    });
+  }
+
+  async function storageGet(key, shared) {
+    const k = shared ? 'sh_' + key : 'lc_' + key;
+    // Try IndexedDB first
+    try {
+      const val = await idbGet(k);
+      if (val !== null) return { key, value: val, shared: !!shared };
+    } catch(e) {}
+    // Fallback to localStorage
+    try {
+      const val = localStorage.getItem(k);
+      if (val !== null) return { key, value: val, shared: !!shared };
+    } catch(e) {}
+    throw new Error('Key not found: ' + key);
+  }
+
+  async function storageSet(key, value, shared) {
+    const k = shared ? 'sh_' + key : 'lc_' + key;
+    // Write to both IndexedDB AND localStorage for maximum persistence
+    try { await idbSet(k, value); } catch(e) {}
+    try { localStorage.setItem(k, value); } catch(e) {}
+    return { key, value, shared: !!shared };
+  }
+
+  return { get: storageGet, set: storageSet };
+})();
+</script>
+<script>
+let students = [];
+let trash = [];
+let batches = [];
+let activeBatch = 'all';
+let activePayId = null;
+let pendingDeleteId = null;
+let trashVisible = false;
+
+const avatarColors = ['av1','av2','av3','av4','av5','av6'];
+const getInitials = n => n.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
+const today = () => new Date().toISOString().split('T')[0];
+
+// ── Per-user storage key prefix ──
+function userKey(key) {
+  const uid = currentUser ? currentUser.id : 'guest';
+  return uid + '_' + key;
+}
+
+async function save(skipBackup = false) {
+  try {
+    await window.storage.set(userKey('tfm_students'), JSON.stringify(students));
+    await window.storage.set(userKey('tfm_trash'), JSON.stringify(trash));
+    await window.storage.set(userKey('tfm_batches'), JSON.stringify(batches));
+  } catch(e) {}
+  if (!skipBackup) scheduleAutoBackup();
+}
+
+// ── Auto Cloud Backup ──
+let autoBackupTimer = null;
+
+function genBackupId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = 'MTC-';
+  for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+
+function scheduleAutoBackup() {
+  clearTimeout(autoBackupTimer);
+  setAutoBackupStatus('syncing');
+  autoBackupTimer = setTimeout(() => doAutoBackup(), 2500);
+}
+
+async function doAutoBackup() {
+  try {
+    // Only backup if there are students (don't overwrite good backup with empty/deleted state)
+    if (!students.length && !trash.length) {
+      setAutoBackupStatus('saved');
+      return;
+    }
+
+    const payload = JSON.stringify({
+      students, trash, batches,
+      exportedAt: new Date().toISOString(),
+      app: 'Mahatab Tuition Centre'
+    });
+
+    let backupId = null;
+    try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
+    if (!backupId) backupId = genBackupId();
+
+    await window.storage.set('backup_' + backupId, payload, true);
+    await window.storage.set(userKey('tfm_cloud_id'), backupId);
+    await window.storage.set(userKey('tfm_last_backup'), new Date().toISOString());
+
+    setAutoBackupStatus('saved', backupId);
+  } catch(e) {
+    setAutoBackupStatus('error');
+  }
+}
+
+function setAutoBackupStatus(state, id) {
+  const el = document.getElementById('autoBackupStatus');
+  if (!el) return;
+  if (state === 'syncing') {
+    el.innerHTML = `<span style="color:rgba(255,255,255,0.6);font-size:10.5px;display:flex;align-items:center;gap:4px;letter-spacing:0.2px">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Saving...
+    </span>`;
+  } else if (state === 'saved') {
+    const t = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+    el.innerHTML = `<span style="color:rgba(255,255,255,0.7);font-size:10.5px;display:flex;align-items:center;gap:4px;letter-spacing:0.2px">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#52B788" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>Backed up ${t}</span>
+    </span>`;
+  } else {
+    el.innerHTML = `<span style="color:rgba(255,100,100,0.9);font-size:10.5px;display:flex;align-items:center;gap:4px">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Backup failed
+    </span>`;
+  }
+}
+
+// ── Storage Permission System ──
+let storageGranted = false;
+
+async function requestStoragePermission() {
+  // localStorage always works — just check if user has seen the dialog
+  try {
+    const prev = localStorage.getItem('mtc_storage_granted');
+    if (prev === 'yes') { storageGranted = true; return true; }
+  } catch(e) {}
+
+  // First time: show dialog
+  return new Promise((resolve) => {
+    showStorageDialog(resolve);
+  });
+}
+
+function showStorageDialog(resolve) {
+  // Remove any existing dialog
+  const existing = document.getElementById('storagePermOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'storagePermOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px 24px;max-width:340px;width:100%;font-family:'DM Sans',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+      <div style="text-align:center;font-size:52px;margin-bottom:12px">🔒</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:21px;font-weight:700;text-align:center;color:#1A1714;margin-bottom:10px">Allow Data Storage</div>
+      <p style="font-size:13px;color:#6B6560;line-height:1.7;text-align:center;margin-bottom:16px">
+        <b style="color:#1A1714">Mahatab Tuition Centre</b> needs permission to save your student data on this device so it is not lost when you close the app.
+      </p>
+      <div style="background:#F7F5F0;border-radius:10px;padding:12px 14px;margin-bottom:18px">
+        <div style="font-size:13px;color:#444;display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Save student records locally</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Keep data after closing browser</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Auto backup to cloud</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#C0392B;font-size:15px">❌</span> No access to other apps or files</div>
+        </div>
+      </div>
+      <button id="storageAllowBtn" style="width:100%;padding:14px;background:#2D6A4F;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        🔓 Allow & Save Data
+      </button>
+      <button id="storageSkipBtn" style="width:100%;padding:10px;background:none;border:1px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#6B6560;cursor:pointer">
+        Continue without saving
+      </button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('storageAllowBtn').onclick = async () => {
+    storageGranted = true;
+    try { localStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
+    // Request persistent storage silently
+    try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e) {}
+    overlay.remove();
+    showToast('✅ Data storage enabled! Your data is safe.');
+    if (resolve) resolve(true);
+  };
+
+  document.getElementById('storageSkipBtn').onclick = () => {
+    storageGranted = true; // still use localStorage, just don't show again
+    try { localStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
+    overlay.remove();
+    if (resolve) resolve(true);
+  };
+}
+
+function grantStoragePermission() {} // kept for compatibility
+function denyStoragePermission() {}  // kept for compatibility
+
+
+async function loadData() {
+  // Request storage permission on first launch
+  await requestStoragePermission();
+
+  try { const r = await window.storage.get(userKey('tfm_students')); if (r && r.value) students = JSON.parse(r.value); } catch(e) { students = []; }
+  try { const r = await window.storage.get(userKey('tfm_trash')); if (r && r.value) trash = JSON.parse(r.value); } catch(e) { trash = []; }
+  try { const r = await window.storage.get(userKey('tfm_batches')); if (r && r.value) batches = JSON.parse(r.value); } catch(e) { batches = []; }
+  if (!batches.length) { batches = [{id:'b1', name:'Batch 1'}, {id:'b2', name:'Batch 2'}]; }
+  renderAll();
+  document.getElementById('inJoin').value = today();
+  updateStatusPreview();
+  // Request notification permission and check dues
+  setTimeout(() => {
+    requestNotifPermission();
+    setTimeout(() => checkMonthlyFeeNotifications(), 2000);
+  }, 1500);
+}
+
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#2D6A4F' : '#C0392B';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2800);
+}
+
+function addStudent() {
+  const name = document.getElementById('inName').value.trim();
+  const join = document.getElementById('inJoin').value;
+  const fee  = parseFloat(document.getElementById('inFee').value);
+  const batchId = document.getElementById('inBatch').value;
+  if (!name || !join || isNaN(fee) || fee <= 0) { showToast('Please fill Name, Joining Date and Fee.', false); return; }
+  if (!batchId) { showToast('Please select a batch.', false); return; }
+
+  const s = {
+    id: Date.now(),
+    name,
+    join,
+    batchId,
+    subject: '—',
+    phone: document.getElementById('inPhone').value.trim() || '—',
+    fee,
+    paidTotal: 0,
+    status: 'due',
+    payments: [],
+    color: avatarColors[students.length % 6]
+  };
+  // Auto status: due by default, calcStatus() will handle dynamically
+  students.unshift(s);
+  save(); renderAll();
+  ['inName','inJoin','inFee','inPhone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inJoin').value = today();
+  updateStatusPreview();
+  showToast(`Student "${name}" added successfully!`);
+}
+
+function updateStatusPreview() {
+  const join = document.getElementById('inJoin').value;
+  const badge = document.getElementById('statusBadgePreview');
+  const hint  = document.getElementById('statusHint');
+  if (!badge || !hint) return;
+
+  if (!join) {
+    badge.className = 'badge badge-due';
+    badge.innerHTML = '<span class="badge-dot"></span>Due';
+    hint.textContent = 'Select joining date to auto-detect';
+    return;
+  }
+
+  const months = monthsActive(join);
+  const joinDate = new Date(join + 'T00:00:00');
+  const now = new Date();
+  const isFuture = joinDate > now;
+  const isToday = join === today();
+
+  if (isFuture) {
+    badge.className = 'badge badge-partial';
+    badge.innerHTML = '<span class="badge-dot"></span>Upcoming';
+    hint.textContent = 'Joining in the future — no fees yet';
+  } else if (isToday || months === 0) {
+    badge.className = 'badge badge-partial';
+    badge.innerHTML = '<span class="badge-dot"></span>New Join';
+    hint.textContent = 'Joined today — first fee due on ' + formatDate(nextDueDate(join));
+  } else {
+    badge.className = 'badge badge-due';
+    badge.innerHTML = '<span class="badge-dot"></span>Due';
+    hint.textContent = months + ' month' + (months > 1 ? 's' : '') + ' pending — next due ' + formatDate(nextDueDate(join));
+  }
+}
+
+function nextDueDate(join) {
+  const j = new Date(join + 'T00:00:00');
+  const now = new Date();
+  let next = new Date(j);
+  while (next <= now) {
+    next.setMonth(next.getMonth() + 1);
+  }
+  return next.toISOString().split('T')[0];
+}
+
+function deleteStudent(id) {
+  const s = students.find(s => s.id === id);
+  if (!s) return;
+  pendingDeleteId = id;
+  document.getElementById('confirmSub').textContent = `"${s.name}" will be moved to Deleted Students. You can restore them later.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+  document.getElementById('confirmOkBtn').onclick = async () => {
+    // Save a protected snapshot BEFORE deleting so restore can recover it
+    try {
+      let backupId = null;
+      try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
+      if (!backupId) backupId = genBackupId();
+      const snapshot = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
+      await window.storage.set('backup_' + backupId, snapshot, true);
+      await window.storage.set(userKey('tfm_cloud_id'), backupId);
+    } catch(e) {}
+
+    const idx = students.findIndex(s => s.id === pendingDeleteId);
+    if (idx !== -1) {
+      const deleted = { ...students[idx], deletedOn: today() };
+      trash.unshift(deleted);
+      students.splice(idx, 1);
+    }
+    // Save locally but skip auto-backup (so backup still has pre-delete state)
+    save(true); renderAll();
+    closeConfirm();
+    showToast('Student moved to trash. Tap Restore to recover.');
+  };
+}
+
+function restoreStudent(id) {
+  const idx = trash.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  students.unshift(trash[idx]);
+  trash.splice(idx, 1);
+  save(); renderAll();
+  showToast('Student restored successfully!');
+}
+
+function permanentDelete(id) {
+  const s = trash.find(s => s.id === id);
+  if (!s) return;
+  pendingDeleteId = id;
+  document.getElementById('confirmSub').textContent = `"${s.name}" will be permanently deleted. This cannot be undone.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+  document.getElementById('confirmOkBtn').onclick = () => {
+    trash = trash.filter(s => s.id !== pendingDeleteId);
+    save(); renderAll();
+    closeConfirm();
+    showToast('Permanently deleted.', false);
+  };
+}
+
+function emptyTrash() {
+  if (!trash.length) { showToast('Trash is already empty.', false); return; }
+  document.getElementById('confirmSub').textContent = `All ${trash.length} deleted student(s) will be permanently removed. This cannot be undone.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+  document.getElementById('confirmOkBtn').onclick = () => {
+    trash = [];
+    save(); renderAll();
+    closeConfirm();
+    showToast('Trash emptied.', false);
+  };
+}
+
+function toggleTrash() {
+  trashVisible = !trashVisible;
+  document.getElementById('recoveryPanel').style.display = trashVisible ? 'block' : 'none';
+  document.getElementById('trashToggleBtn').style.background = trashVisible ? 'var(--danger-light)' : '';
+  document.getElementById('trashToggleBtn').style.color = trashVisible ? 'var(--danger)' : '';
+}
+
+function renderTrash() {
+  const count = trash.length;
+  document.getElementById('trashCount').textContent = count;
+  const badge = document.getElementById('trashBadge');
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'inline' : 'none';
+
+  const tbody = document.getElementById('trashBody');
+  if (!count) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🗑️</div><div class="empty-text">Trash is empty.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = trash.map((s, i) => `
+    <tr style="opacity:0.8">
+      <td style="color:var(--text3);font-size:13px">${i+1}</td>
+      <td>
+        <div class="student-cell">
+          <div class="avatar ${s.color}" style="opacity:0.7">${getInitials(s.name)}</div>
+          <div>
+            <div class="student-name" style="text-decoration:line-through;color:var(--text2)">${s.name}</div>
+          </div>
+        </div>
+      </td>
+      <td style="color:var(--text3)">${s.phone}</td>
+      <td style="color:var(--text3);font-size:13px">${formatDate(s.join)}</td>
+      <td><span class="amount" style="color:var(--text2)">${fmt(s.fee)}</span></td>
+      <td><span class="amount" style="color:var(--paid)">${fmt(s.paidTotal||0)}</span></td>
+      <td style="font-size:13px;color:var(--danger)">${formatDate(s.deletedOn)}</td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-sm btn-success" onclick="restoreStudent(${s.id})">♻️ Restore</button>
+          <button class="btn btn-sm btn-danger" onclick="permanentDelete(${s.id})">🗑 Delete</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+let activeEditId = null;
+
+function openEditModal(id) {
+  const s = students.find(s => s.id === id);
+  if (!s) return;
+  activeEditId = id;
+
+  document.getElementById('editName').value = s.name;
+  document.getElementById('editJoin').value = s.join;
+  document.getElementById('editFee').value = s.fee;
+  document.getElementById('editPhone').value = s.phone === '—' ? '' : s.phone;
+
+  // Populate batch dropdown
+  const sel = document.getElementById('editBatch');
+  sel.innerHTML = batches.map(b => `<option value="${b.id}" ${b.id === s.batchId ? 'selected' : ''}>${b.name}</option>`).join('');
+
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('open');
+  activeEditId = null;
+}
+
+function saveEdit() {
+  const name = document.getElementById('editName').value.trim();
+  const join = document.getElementById('editJoin').value;
+  const fee  = parseFloat(document.getElementById('editFee').value);
+  const phone = document.getElementById('editPhone').value.trim();
+  const batchId = document.getElementById('editBatch').value;
+
+  if (!name) { showToast('Student name is required.', false); return; }
+  if (!join) { showToast('Joining date is required.', false); return; }
+  if (isNaN(fee) || fee <= 0) { showToast('Enter a valid monthly fee.', false); return; }
+
+  const s = students.find(s => s.id === activeEditId);
+  if (!s) return;
+
+  s.name = name;
+  s.join = join;
+  s.fee = fee;
+  s.phone = phone || '—';
+  s.batchId = batchId;
+  s.status = calcStatus(s);
+
+  save(); renderAll(); closeEditModal();
+  showToast(`✅ "${name}" updated successfully!`);
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  pendingDeleteId = null;
+}
+
+let payType = 'due'; // 'due' or 'advance'
+let advMonths = 1;
+
+function openPayModal(id) {
+  activePayId = id;
+  payType = 'due';
+  advMonths = 1;
+  const s = students.find(s => s.id === id);
+  const months = monthsActive(s.join);
+  const due = totalDue(s);
+  const bal = calcBalance(s);
+
+  document.getElementById('payStudentName2').textContent = s.name;
+  document.getElementById('payFeeAmt').textContent = fmt(s.fee);
+  document.getElementById('payMonths').textContent = months + ' mo';
+  document.getElementById('payAlreadyPaid').textContent = fmt(s.paidTotal || 0);
+  document.getElementById('payCurrentBal').textContent = fmt(bal);
+  document.getElementById('payAmount').value = bal > 0 ? bal : s.fee;
+  document.getElementById('payDate').value = today();
+  document.getElementById('payNote').value = '';
+  document.getElementById('payMode').value = 'Cash';
+  document.getElementById('advMonthsNum').textContent = '1';
+  document.getElementById('advanceMonthsRow').style.display = 'none';
+  document.getElementById('payPreview').style.display = 'none';
+
+  setPayType('due');
+  updatePayPreview();
+  document.getElementById('payModal').classList.add('open');
+}
+
+function setPayType(type) {
+  payType = type;
+  const s = students.find(s => s.id === activePayId);
+  const bal = calcBalance(s);
+
+  const dueBtn = document.getElementById('payTypeDue');
+  const advBtn = document.getElementById('payTypeAdv');
+  const advRow = document.getElementById('advanceMonthsRow');
+
+  if (type === 'due') {
+    dueBtn.style.background = 'var(--accent)';
+    dueBtn.style.color = 'white';
+    dueBtn.style.borderColor = 'var(--accent)';
+    advBtn.style.background = 'var(--bg)';
+    advBtn.style.color = 'var(--text2)';
+    advBtn.style.borderColor = 'var(--border)';
+    advRow.style.display = 'none';
+    document.getElementById('payAmount').value = bal > 0 ? bal : s.fee;
+    document.getElementById('payNote').value = '';
+  } else {
+    advBtn.style.background = 'var(--info)';
+    advBtn.style.color = 'white';
+    advBtn.style.borderColor = 'var(--info)';
+    dueBtn.style.background = 'var(--bg)';
+    dueBtn.style.color = 'var(--text2)';
+    dueBtn.style.borderColor = 'var(--border)';
+    advRow.style.display = 'block';
+    advMonths = 1;
+    updateAdvanceInfo();
+  }
+  updatePayPreview();
+}
+
+function changeAdvMonths(delta) {
+  advMonths = Math.max(1, Math.min(12, advMonths + delta));
+  document.getElementById('advMonthsNum').textContent = advMonths;
+  updateAdvanceInfo();
+  updatePayPreview();
+}
+
+function updateAdvanceInfo() {
+  const s = students.find(s => s.id === activePayId);
+  if (!s) return;
+
+  // Calculate which months are being paid in advance
+  const now = new Date();
+  const joinDate = new Date(s.join + 'T00:00:00');
+  let nextMonth = new Date(joinDate);
+
+  // Move nextMonth to first unpaid future month
+  while (nextMonth <= now) {
+    nextMonth = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, nextMonth.getDate());
+  }
+
+  const monthNames = [];
+  for (let i = 0; i < advMonths; i++) {
+    const m = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + i, 1);
+    monthNames.push(m.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }));
+  }
+
+  document.getElementById('advMonthsCovered').textContent = 'Covers: ' + monthNames.join(', ');
+  document.getElementById('payAmount').value = s.fee * advMonths;
+  document.getElementById('payNote').value = 'Advance — ' + monthNames.join(', ');
+}
+
+function updatePayPreview() {
+  const s = students.find(s => s.id === activePayId);
+  if (!s) return;
+  const amt = parseFloat(document.getElementById('payAmount').value) || 0;
+  const preview = document.getElementById('payPreview');
+  if (!amt) { preview.style.display = 'none'; return; }
+
+  const newPaid = (s.paidTotal || 0) + amt;
+  const due = payType === 'advance' ? totalDue(s) + (s.fee * advMonths) : totalDue(s);
+  const newBal = due - newPaid;
+
+  preview.style.display = 'block';
+  if (payType === 'advance') {
+    preview.innerHTML = `⏩ <b>Advance payment</b> of ${fmt(amt)} for ${advMonths} month(s) ahead. Total paid will be ${fmt(newPaid)}.`;
+  } else if (newBal <= 0) {
+    preview.innerHTML = `✅ This payment clears all dues. Balance: <b>${fmt(0)}</b>`;
+    preview.style.background = 'var(--paid-light)';
+    preview.style.borderColor = 'var(--accent-mid)';
+    preview.style.color = 'var(--paid)';
+  } else {
+    preview.innerHTML = `After payment: Paid <b>${fmt(newPaid)}</b> — Remaining balance <b>${fmt(newBal)}</b>`;
+    preview.style.background = 'var(--accent-light)';
+    preview.style.borderColor = 'var(--accent-mid)';
+    preview.style.color = 'var(--accent)';
+  }
+}
+
+function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+
+function submitPayment() {
+  const amt = parseFloat(document.getElementById('payAmount').value);
+  const dt  = document.getElementById('payDate').value;
+  if (!amt || amt <= 0 || !dt) { showToast('Enter valid amount and date.', false); return; }
+
+  const s = students.find(s => s.id === activePayId);
+  const note = document.getElementById('payNote').value;
+
+  s.paidTotal = (s.paidTotal || 0) + amt;
+
+  // Store advance months on student for calcStatus awareness
+  if (payType === 'advance') {
+    s.advancePaid = (s.advancePaid || 0) + advMonths;
+  }
+
+  s.payments.push({
+    date: dt,
+    amount: amt,
+    mode: document.getElementById('payMode').value,
+    type: payType,
+    advanceMonths: payType === 'advance' ? advMonths : 0,
+    note: note
+  });
+
+  s.status = calcStatus(s);
+  save(); renderAll(); closeModal();
+
+  // Notify if fees are now fully paid for this month
+  if (calcStatus(s) === 'paid') {
+    checkPaymentCompletedNotif(s.name, fmt(amt));
+    showToast(`✅ ${fmt(amt)} recorded — ${s.name}'s fees are cleared! 🎉`);
+  } else {
+    showToast(`${fmt(amt)} recorded for ${s.name}${payType === 'advance' ? ' (Advance ×' + advMonths + ')' : ''}`);
+  }
+}
+
+function openHist(id) {
+  const s = students.find(s => s.id === id);
+  document.getElementById('histName').textContent = s.name;
+  const bod = document.getElementById('histBody');
+  if (!s.payments.length) { bod.innerHTML = '<p style="color:var(--text3);text-align:center;padding:1.5rem">No payments recorded yet.</p>'; }
+  else {
+    const rows = [...s.payments].reverse().map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;font-weight:500;font-size:14px">
+            ${formatDate(p.date)}
+            ${p.type === 'advance' ? `<span style="background:var(--info-light);color:var(--info);font-size:11px;padding:2px 7px;border-radius:10px;font-weight:600">⏩ Advance ×${p.advanceMonths}</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:var(--text3)">${p.mode}${p.note ? ' · ' + p.note : ''}</div>
+        </div>
+        <div style="font-weight:600;color:var(--paid);font-size:15px">${fmt(p.amount)}</div>
+      </div>`).join('');
+    const total = s.payments.reduce((a,p)=>a+p.amount, 0);
+    bod.innerHTML = rows + `<div style="text-align:right;padding:10px 0;font-weight:600;color:var(--accent)">Total Paid: ${fmt(total)}</div>`;
+  }
+  document.getElementById('histModal').classList.add('open');
+}
+
+function closeHist() { document.getElementById('histModal').classList.remove('open'); }
+
+function formatDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function getBatchName(id) {
+  const b = batches.find(b => b.id === id);
+  return b ? b.name : '—';
+}
+
+function openBatchModal() {
+  renderBatchList();
+  document.getElementById('batchModal').classList.add('open');
+}
+function closeBatchModal() {
+  document.getElementById('batchModal').classList.remove('open');
+  document.getElementById('inBatchName').value = '';
+}
+
+function createBatch() {
+  const name = document.getElementById('inBatchName').value.trim();
+  if (!name) { showToast('Enter a batch name.', false); return; }
+  if (batches.find(b => b.name.toLowerCase() === name.toLowerCase())) { showToast('Batch already exists.', false); return; }
+  batches.push({ id: 'b' + Date.now(), name });
+  document.getElementById('inBatchName').value = '';
+  save(); renderAll(); renderBatchList();
+  showToast(`"${name}" created!`);
+}
+
+function renameBatch(id) {
+  const b = batches.find(b => b.id === id);
+  const newName = document.getElementById('rename_' + id).value.trim();
+  if (!newName) return;
+  b.name = newName;
+  save(); renderAll(); renderBatchList();
+  showToast('Batch renamed!');
+}
+
+function deleteBatch(id) {
+  const b = batches.find(b => b.id === id);
+  const count = students.filter(s => s.batchId === id).length;
+  if (count > 0) { showToast(`Cannot delete — ${count} student(s) in this batch.`, false); return; }
+  batches = batches.filter(b => b.id !== id);
+  if (activeBatch === id) activeBatch = 'all';
+  save(); renderAll(); renderBatchList();
+  showToast('Batch deleted.');
+}
+
+function renderBatchList() {
+  const el = document.getElementById('batchList');
+  if (!batches.length) { el.innerHTML = '<p style="color:var(--text3);font-size:13px;text-align:center;padding:1rem">No batches yet.</p>'; return; }
+  el.innerHTML = batches.map(b => {
+    const count = students.filter(s => s.batchId === b.id).length;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <input id="rename_${b.id}" type="text" value="${b.name}" style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);outline:none" />
+      <span style="font-size:12px;color:var(--text3);white-space:nowrap">${count} student${count!==1?'s':''}</span>
+      <button class="btn btn-sm btn-success" onclick="renameBatch('${b.id}')">Save</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteBatch('${b.id}')">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function renderBatchTabs() {
+  const batchSelect = document.getElementById('inBatch');
+  batchSelect.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+
+  const tabs = document.getElementById('batchTabs');
+  const allCount = students.length;
+  let html = `<button class="tab ${activeBatch==='all'?'active':''}" onclick="setActiveBatch('all')">All Students <span style="background:var(--info-light);color:var(--info);font-size:11px;padding:1px 7px;border-radius:10px;margin-left:4px">${allCount}</span></button>`;
+  batches.forEach(b => {
+    const cnt = students.filter(s => s.batchId === b.id).length;
+    html += `<button class="tab ${activeBatch===b.id?'active':''}" onclick="setActiveBatch('${b.id}')">${b.name} <span style="background:var(--accent-light);color:var(--accent);font-size:11px;padding:1px 7px;border-radius:10px;margin-left:4px">${cnt}</span></button>`;
+  });
+  tabs.innerHTML = html;
+}
+
+function setActiveBatch(id) {
+  activeBatch = id;
+  renderBatchTabs();
+  renderTable();
+  renderStats();
+}
+
+function monthsActive(joinDate) {
+  const j = new Date(joinDate + 'T00:00:00');
+  const now = new Date();
+  let months = (now.getFullYear() - j.getFullYear()) * 12 + (now.getMonth() - j.getMonth());
+  // If today's date hasn't reached the joining day yet this month, subtract 1
+  if (now.getDate() < j.getDate()) months--;
+  return Math.max(0, months);
+}
+
+function totalDue(s) {
+  // Only count completed months — advance paid months don't add to due
+  return s.fee * monthsActive(s.join);
+}
+
+function calcBalance(s) {
+  // Balance = totalDue - paidTotal (advance payments reduce balance)
+  return Math.max(0, totalDue(s) - (s.paidTotal || 0));
+}
+
+function renderTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  // Use activeQuickFilter OR dropdown — whichever is set
+  const dropFilt = document.getElementById('filterStatus').value;
+  const filt = activeQuickFilter || dropFilt;
+
+  let filtered = students.filter(s => {
+    const match = s.name.toLowerCase().includes(search);
+    const dynamicStatus = calcStatus(s);
+    // 'new' and 'dueSoon' appear under 'due' filter or all
+    const sm = !filt ||
+               dynamicStatus === filt ||
+               (filt === 'due' && (dynamicStatus === 'new' || dynamicStatus === 'dueSoon'));
+    const bm = activeBatch === 'all' || s.batchId === activeBatch;
+    return match && sm && bm;
+  });
+
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((s, i) => {
+    const months = monthsActive(s.join);
+    const due = totalDue(s);
+    const paid = s.paidTotal || 0;
+    const bal = calcBalance(s);
+    const pct = Math.min(100, Math.round((paid / due) * 100));
+    const status = calcStatus(s);
+    const lastPay = s.payments.length ? formatDate(s.payments[s.payments.length-1].date) : '—';
+    const bName = getBatchName(s.batchId);
+    return `<tr>
+      <td style="color:var(--text3);font-size:13px">${i+1}</td>
+      <td>
+        <div class="student-cell">
+          <div class="avatar ${s.color}">${getInitials(s.name)}</div>
+          <div>
+            <div class="student-name">${s.name}</div>
+            <div class="student-sub">${s.phone}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="display:inline-block;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px">${bName}</span></td>
+      <td style="color:var(--text2);font-size:13px">${formatDate(s.join)}</td>
+      <td><span class="amount">${fmt(s.fee)}</span></td>
+      <td style="text-align:center">
+        <span style="display:inline-block;background:var(--info-light);color:var(--info);font-weight:600;font-size:13px;padding:3px 10px;border-radius:12px">${months} mo</span>
+      </td>
+      <td><span class="amount" style="color:var(--danger)">${fmt(due)}</span><div style="font-size:11px;color:var(--text3);margin-top:2px">${fmt(s.fee)} × ${months}</div></td>
+      <td>
+        <span class="amount" style="color:var(--paid)">${fmt(paid)}</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${pct}%</div>
+      </td>
+      <td><span class="amount" style="color:${bal > 0 ? 'var(--danger)':'var(--paid)'}">${fmt(bal)}</span></td>
+      <td>${statusBadge(status)}</td>
+      <td style="font-size:13px;color:var(--text3)">${lastPay}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-success" onclick="openPayModal(${s.id})">💳 Pay</button>
+          <button class="btn btn-sm" style="background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="openEditModal(${s.id})">✏️ Edit</button>
+          <button class="btn btn-sm" style="border:1px solid var(--border)" onclick="openHist(${s.id})">📜</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteStudent(${s.id})">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+let activeQuickFilter = '';
+
+function setQuickFilter(status) {
+  activeQuickFilter = status;
+
+  // Sync the dropdown
+  const sel = document.getElementById('filterStatus');
+  if (sel) sel.value = status;
+
+  // Highlight active stat card
+  ['statCardAll','statCardPaid','statCardDue','statCardPartial'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active-filter');
+  });
+  const map = { '': 'statCardAll', 'paid': 'statCardPaid', 'due': 'statCardDue', 'partial': 'statCardPartial' };
+  if (map[status]) {
+    const el = document.getElementById(map[status]);
+    if (el) el.classList.add('active-filter');
+  }
+
+  // Show/hide clear button
+  const clearBtn = document.getElementById('clearFilterBtn');
+  if (clearBtn) clearBtn.style.display = status ? 'inline-block' : 'none';
+
+  renderTable();
+  renderStats();
+}
+
+function renderStats() {
+  const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
+  const paidStudents    = scope.filter(s => calcStatus(s) === 'paid');
+  const dueStudents     = scope.filter(s => calcStatus(s) === 'due');
+  const partialStudents = scope.filter(s => calcStatus(s) === 'partial');
+  const newStudents     = scope.filter(s => calcStatus(s) === 'new');
+  const totalFees    = scope.reduce((a,s) => a + totalDue(s), 0);
+  const collected    = scope.reduce((a,s) => a + (s.paidTotal||0), 0);
+  const outstanding  = scope.reduce((a,s) => a + calcBalance(s), 0);
+
+  document.getElementById('statStudents').textContent    = scope.length;
+  document.getElementById('statPaidCount').textContent   = paidStudents.length;
+  document.getElementById('statDueCount').textContent    = dueStudents.length;
+  document.getElementById('statPartialCount').textContent= partialStudents.length;
+  document.getElementById('statCollected').textContent   = fmt(collected) + ' collected';
+  document.getElementById('statDue').textContent         = fmt(outstanding) + ' outstanding';
+  document.getElementById('statTotal').textContent       = fmt(totalFees) + ' total';
+
+  // Notification badge — students with dueSoon OR real overdue balance
+  const now2 = new Date();
+  const urgentCount = scope.filter(s => {
+    const st = calcStatus(s);
+    return st === 'dueSoon' || st === 'due' || st === 'partial';
+  }).filter(s => !dismissedStudentIds.has(s.id)).length;
+
+  const badge = document.getElementById('notifBadge');
+  if (urgentCount > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = urgentCount;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  renderNotifications(scope);
+}
+
+// ── Notification System ──
+let notifDismissed = false;
+let dismissedStudentIds = new Set();
+
+function renderNotifications(scope) {
+  const now = new Date();
+
+  // Show students who are:
+  // 1. dueSoon — monthly completion within 3 days (remind before payment due)
+  // 2. due — has real overdue balance
+  // 3. partial — partially paid but balance remaining
+  // Exclude: new admissions (no months), zero balance, already dismissed
+  const notifStudents = scope.filter(s => {
+    const st = calcStatus(s);
+    if (dismissedStudentIds.has(s.id)) return false;
+    if (st === 'dueSoon') return true; // always show due-soon
+    if (st === 'due' || st === 'partial') {
+      return calcBalance(s) > 0; // only show if real balance
+    }
+    return false;
+  });
+
+  const panel = document.getElementById('notifPanel');
+  const body  = document.getElementById('notifBody');
+
+  if (!notifStudents.length || notifDismissed) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+
+  body.innerHTML = notifStudents.map(s => {
+    const st = calcStatus(s);
+    const bal = calcBalance(s);
+    const months = monthsActive(s.join);
+    const nextDue = getNextDueDate(s.join);
+    const days = daysUntilCompletion(s.join);
+    const isDueSoon = st === 'dueSoon';
+
+    let urgencyColor, urgencyLabel, amountLabel;
+    if (isDueSoon) {
+      urgencyColor = days === 0 ? '#E67E22' : 'var(--warn)';
+      urgencyLabel = days === 0
+        ? '⏰ Monthly fee completes TODAY — pay now!'
+        : `⏰ Monthly fee completes in ${days} day(s) — on ${formatDate(nextDue)}`;
+      amountLabel = `Next fee: ${fmt(s.fee)}`;
+    } else {
+      urgencyColor = 'var(--danger)';
+      urgencyLabel = `🔴 ${months} month(s) overdue`;
+      amountLabel = `Balance: ${fmt(bal)}`;
+    }
+
+    return `
+    <div id="notif_${s.id}" style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div class="avatar ${s.color}" style="width:36px;height:36px;font-size:13px;flex-shrink:0">${getInitials(s.name)}</div>
+        <div>
+          <div style="font-weight:700;font-size:14px">${s.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:1px">${getBatchName(s.batchId)} · Joined ${formatDate(s.join)}</div>
+          <div style="font-size:12px;color:${urgencyColor};font-weight:600;margin-top:4px">${urgencyLabel}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <div style="text-align:right">
+          <div style="font-weight:700;color:${isDueSoon ? 'var(--warn)' : 'var(--danger)'};font-size:15px">${isDueSoon ? fmt(s.fee) : fmt(bal)}</div>
+          <div style="font-size:11px;color:var(--text3)">${isDueSoon ? 'upcoming fee' : 'outstanding'}</div>
+        </div>
+        <button class="btn btn-sm btn-success" onclick="openPayModal(${s.id})" style="white-space:nowrap">💳 Pay</button>
+        <button onclick="dismissStudentNotif(${s.id})" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:14px;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Dismiss">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function dismissStudentNotif(id) {
+  dismissedStudentIds.add(id);
+  const el = document.getElementById('notif_' + id);
+  if (el) el.remove();
+  // Hide panel if no more notifications
+  const body = document.getElementById('notifBody');
+  if (body && !body.children.length) {
+    document.getElementById('notifPanel').style.display = 'none';
+  }
+}
+
+// Returns the next monthly completion date for a student
+// e.g. joined 23 Feb → completes month on 23 Mar, then 23 Apr, etc.
+function getNextDueDate(join) {
+  const j = new Date(join + 'T00:00:00');
+  const now = new Date();
+  // Start from joining date, keep adding 1 month until we get a future date
+  let next = new Date(j.getFullYear(), j.getMonth(), j.getDate());
+  while (next <= now) {
+    next = new Date(next.getFullYear(), next.getMonth() + 1, next.getDate());
+  }
+  return next.toISOString().split('T')[0];
+}
+
+// Days until the next monthly fee completion date
+function daysUntilCompletion(join) {
+  const nextDue = getNextDueDate(join);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const due = new Date(nextDue + 'T00:00:00');
+  return Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+}
+
+function calcStatus(s) {
+  const months = monthsActive(s.join);
+  const due = totalDue(s);
+  const paid = s.paidTotal || 0;
+  const advance = s.advancePaid || 0;
+  const days = daysUntilCompletion(s.join);
+
+  // New admission — no completed months yet, more than 3 days away
+  if (months === 0 && paid <= 0 && days > 3) return 'new';
+
+  // Due soon — completing within 3 days, not yet paid for next month
+  if (days <= 3 && days >= 0) {
+    // Check if they've already paid for this upcoming month
+    if (paid < due + s.fee) return 'dueSoon';
+  }
+
+  // Advance payments cover everything
+  if (advance > 0 && paid >= due) return 'paid';
+  if (paid <= 0 && due > 0) return 'due';
+  if (paid >= due) return 'paid';
+  return 'partial';
+}
+
+function statusBadge(st) {
+  if (st === 'paid')     return `<span class="badge badge-paid"><span class="badge-dot"></span>Paid</span>`;
+  if (st === 'due')      return `<span class="badge badge-due"><span class="badge-dot"></span>Due</span>`;
+  if (st === 'new')      return `<span class="badge" style="background:#EBF3FE;color:#1A5276"><span class="badge-dot" style="background:#1A5276"></span>New Admission</span>`;
+  if (st === 'dueSoon')  return `<span class="badge" style="background:#FEF3CD;color:#B7791F;animation:pulse 1.5s infinite"><span class="badge-dot" style="background:#B7791F"></span>Due Soon</span>`;
+  return `<span class="badge badge-partial"><span class="badge-dot"></span>Partial</span>`;
+}
+
+function toggleNotifPanel() {
+  notifDismissed = false;
+  const panel = document.getElementById('notifPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function dismissNotif() {
+  notifDismissed = true;
+  document.getElementById('notifPanel').style.display = 'none';
+}
+
+// ── Push Notifications ──
+let notifPermission = 'default';
+let lastNotifiedMonth = '';
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  notifPermission = await Notification.requestPermission();
+}
+
+function sendPushNotif(title, body, icon) {
+  if (notifPermission !== 'granted') return;
+  try {
+    new Notification(title, {
+      body,
+      icon: icon || '',
+      badge: icon || '',
+      tag: 'mtc-fee-alert',
+      renotify: true
+    });
+  } catch(e) {}
+}
+
+function checkMonthlyFeeNotifications() {
+  const now = new Date();
+  const currentMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  if (lastNotifiedMonth === currentMonth) return;
+
+  const dueStudents = students.filter(s => {
+    const st = calcStatus(s);
+    return st === 'due' || st === 'partial';
+  });
+
+  if (dueStudents.length > 0) {
+    lastNotifiedMonth = currentMonth;
+    const names = dueStudents.slice(0,3).map(s => s.name).join(', ');
+    const more = dueStudents.length > 3 ? ` +${dueStudents.length - 3} more` : '';
+    sendPushNotif(
+      `🔔 ${dueStudents.length} Student(s) Fee Due`,
+      `${names}${more} have pending fees this month.`
+    );
+  }
+}
+
+function checkPaymentCompletedNotif(studentName, amount) {
+  sendPushNotif(
+    `✅ Payment Received!`,
+    `${studentName} paid ${amount} — fees cleared for this month.`
+  );
+}
+
+function getBackupJson() {
+  return JSON.stringify({
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    appName: 'Mahatab Tuition Centre',
+    students, trash, batches
+  }, null, 2);
+}
+
+function getBackupFilename() {
+  return 'mahatab-tuition-backup-' + today() + '.json';
+}
+
+function closeBackupModal() {
+  document.getElementById('backupModal').classList.remove('open');
+}
+
+function backupDownload() {
+  const blob = new Blob([getBackupJson()], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = getBackupFilename();
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  setCloudStatus('✅ Backup downloaded to your device!', 'success');
+  showToast('✅ Backup downloaded!');
+}
+
+function backupWhatsApp() {
+  // Download first, then open WhatsApp
+  backupDownload();
+  setTimeout(() => {
+    const msg = encodeURIComponent('Mahatab Tuition Centre backup - ' + today() + '\nPlease save the downloaded .json file.');
+    window.open('https://wa.me/?text=' + msg, '_blank');
+  }, 800);
+}
+
+
+// ── Cloud Backup using window.storage shared space ──
+// Stores backup in shared storage with a unique key — user copies the key to restore on any device
+
+function setCloudStatus(msg, type) {
+  const ds = document.getElementById('driveStatus');
+  ds.style.display = 'block';
+  const s = { loading:'background:#FEF3CD;color:#856404;border:1px solid #FFEAA7', success:'background:#D4EFDF;color:#1E8449;border:1px solid #A9DFBF', error:'background:#FDECEA;color:#C0392B;border:1px solid #F5C6C2' };
+  ds.style.cssText = `display:block;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;${s[type]||s.loading}`;
+  ds.innerHTML = msg;
+}
+
+async function cloudBackup() {
+  setCloudStatus('⏳ Saving to cloud...', 'loading');
+  try {
+    const payload = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
+
+    // Reuse existing ID or generate new
+    let backupId = null;
+    try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
+    if (!backupId) backupId = genBackupId();
+
+    // Save to shared storage (accessible by anyone with the key)
+    await window.storage.set('backup_' + backupId, payload, true);
+    await window.storage.set(userKey('tfm_cloud_id'), backupId);
+
+    setCloudStatus(`
+      <div style="font-weight:700;font-size:15px;margin-bottom:8px">✅ Saved to Cloud!</div>
+      <div style="font-size:12px;margin-bottom:10px">Your <b>Backup ID</b> — save this to restore on any device:</div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+        <code style="flex:1;padding:10px;background:rgba(0,0,0,0.08);border-radius:8px;font-size:14px;font-weight:700;letter-spacing:2px;text-align:center;user-select:all">${backupId}</code>
+        <button onclick="copyBid('${backupId}')" style="flex-shrink:0;padding:10px 12px;background:#1E8449;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">📋 Copy</button>
+      </div>
+      <div style="font-size:11px;opacity:0.8">📌 Write this down or screenshot it — needed to restore your data on any device</div>`, 'success');
+    showToast('✅ Backup saved to cloud!');
+  } catch(e) {
+    setCloudStatus('❌ Cloud save failed: ' + (e.message || 'Unknown error'), 'error');
+  }
+}
+
+function copyBid(id) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(id)
+      .then(() => showToast('✅ Backup ID copied!'))
+      .catch(() => showToast('Long-press the ID to copy manually'));
+  } else {
+    showToast('Long-press the ID to copy manually');
+  }
+}
+
+async function cloudRestore() {
+  const id = document.getElementById('cloudRestoreId').value.trim().toUpperCase();
+  if (!id) { setCloudStatus('❌ Please enter your Backup ID first.', 'error'); return; }
+  setCloudStatus('⏳ Fetching backup from cloud...', 'loading');
+  try {
+    const r = await window.storage.get('backup_' + id, true);
+    if (!r || !r.value) throw new Error('Backup ID not found. Check the ID and try again.');
+    const backup = JSON.parse(r.value);
+    if (!backup || !backup.students) throw new Error('Invalid backup data');
+
+    students = backup.students || [];
+    trash    = backup.trash    || [];
+    batches  = backup.batches  || [];
+    if (!batches.length) batches = [{id:'b1',name:'Batch 1'},{id:'b2',name:'Batch 2'}];
+
+    // Save locally but skip auto-backup so we don't overwrite the cloud backup
+    await save(true);
+    await window.storage.set(userKey('tfm_cloud_id'), id);
+    renderAll();
+
+    const backupTime = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString('en-IN') : 'unknown time';
+    setCloudStatus(`
+      <div style="font-weight:700;font-size:14px;margin-bottom:6px">✅ Restored Successfully!</div>
+      <div style="font-size:12px;color:inherit;opacity:0.85">
+        <b>${students.length}</b> student(s) restored<br>
+        Backup was from: ${backupTime}
+      </div>`, 'success');
+    showToast(`✅ ${students.length} student(s) restored!`);
+  } catch(e) {
+    setCloudStatus('❌ ' + (e.message || 'Restore failed. Check your Backup ID.'), 'error');
+  }
+}
+
+async function openBackupModal() {
+  document.getElementById('driveStatus').style.display = 'none';
+  try { document.getElementById('driveStatus').style.display = 'none'; } catch(e){}
+  try {
+    const r = await window.storage.get(userKey('tfm_cloud_id'));
+    if (r && r.value) document.getElementById('cloudRestoreId').value = r.value;
+  } catch(e) {}
+  // Show last auto backup time
+  try {
+    const r2 = await window.storage.get(userKey('tfm_last_backup'));
+    if (r2 && r2.value) {
+      const d = new Date(r2.value);
+      const lbt = document.getElementById('lastBackupTime');
+      if (lbt) lbt.textContent = 'Last auto-backup: ' + d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    }
+  } catch(e) {}
+  document.getElementById('backupModal').classList.add('open');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.students || !backup.batches) {
+        showToast('❌ Invalid backup file.', false); return;
+      }
+      students = backup.students || [];
+      trash = backup.trash || [];
+      batches = backup.batches || [];
+      await save(true);
+      renderAll();
+      showToast(`✅ Restored ${students.length} student(s) successfully!`);
+    } catch(err) {
+      showToast('❌ Failed to read backup file.', false);
+    }
+    document.getElementById('restoreInput').value = '';
+  };
+  reader.readAsText(file);
+}
+
+function renderAll() { renderBatchTabs(); renderStats(); renderTable(); renderTrash(); }
+// ══════════════ AUTH SYSTEM ══════════════
+let currentUser = null;
+const GOOGLE_CLIENT_ID = '577695236166-placeholder.apps.googleusercontent.com';
+
+function hashPassword(pwd) {
+  let hash = 0;
+  const salted = 'MTC_SALT_2024_' + pwd;
+  for (let i = 0; i < salted.length; i++) { hash = ((hash << 5) - hash) + salted.charCodeAt(i); hash |= 0; }
+  return Math.abs(hash).toString(36) + btoa(pwd.slice(0,3)+'xx').replace(/=/g,'');
+}
+function getUsers() { try { return JSON.parse(localStorage.getItem('mtc_users')||'[]'); } catch(e) { return []; } }
+function saveUsers(u) { try { localStorage.setItem('mtc_users', JSON.stringify(u)); } catch(e) {} }
+function saveUserSession(u) { try { localStorage.setItem('mtc_user', JSON.stringify(u)); } catch(e) {} }
+function loadUserSession() { try { const u=localStorage.getItem('mtc_user'); return u?JSON.parse(u):null; } catch(e) { return null; } }
+
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  if (inp.type==='password') { inp.type='text'; btn.textContent='🙈'; } else { inp.type='password'; btn.textContent='👁'; }
+}
+
+function checkPasswordStrength(pwd) {
+  const bar = document.getElementById('pwdStrengthBar');
+  const txt = document.getElementById('pwdStrengthText');
+  if (!bar) return;
+  let score=0;
+  if(pwd.length>=6)score++; if(pwd.length>=10)score++; if(/[A-Z]/.test(pwd))score++; if(/[0-9]/.test(pwd))score++; if(/[^A-Za-z0-9]/.test(pwd))score++;
+  const lv=[{pct:'20%',color:'#C0392B',label:'Very Weak'},{pct:'40%',color:'#E67E22',label:'Weak'},{pct:'60%',color:'#F1C40F',label:'Fair'},{pct:'80%',color:'#27AE60',label:'Strong'},{pct:'100%',color:'#1E8449',label:'Very Strong'}][Math.min(score,4)];
+  bar.style.width=lv.pct; bar.style.background=lv.color;
+  txt.textContent=pwd.length?lv.label:''; txt.style.color=lv.color;
+}
+
+function showAuthError(form, msg) {
+  const el=document.getElementById(form==='signup'?'authError':'loginError');
+  if(el){el.textContent=msg;el.style.display='block';}
+}
+function hideAuthError() { ['authError','loginError'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); }
+
+function switchAuthTab(tab) {
+  const isLogin=tab==='login';
+  document.getElementById('loginForm').style.display=isLogin?'block':'none';
+  document.getElementById('signupForm').style.display=isLogin?'none':'block';
+  document.getElementById('forgotForm').style.display='none';
+  document.getElementById('tabLoginBtn').style.background=isLogin?'#2D6A4F':'transparent';
+  document.getElementById('tabLoginBtn').style.color=isLogin?'white':'#6B6560';
+  document.getElementById('tabSignupBtn').style.background=isLogin?'transparent':'#2D6A4F';
+  document.getElementById('tabSignupBtn').style.color=isLogin?'#6B6560':'white';
+  document.getElementById('authSubtitle').textContent=isLogin?'Welcome back! Sign in to continue.':'Create your account to get started.';
+  hideAuthError();
+}
+
+function showForgotPassword() {
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('forgotForm').style.display='block';
+  document.getElementById('authSubtitle').textContent='Recover your account';
+}
+
+function doSignUp() {
+  hideAuthError();
+  const name=document.getElementById('suName').value.trim();
+  const username=document.getElementById('suUsername').value.trim().toLowerCase();
+  const email=document.getElementById('suEmail').value.trim().toLowerCase();
+  const password=document.getElementById('suPassword').value;
+  const confirm=document.getElementById('suConfirm').value;
+  if(!name){showAuthError('signup','\u274C Please enter your full name.');return;}
+  if(!username){showAuthError('signup','\u274C Choose a username.');return;}
+  if(username.length<3){showAuthError('signup','\u274C Username must be at least 3 characters.');return;}
+  if(!/^[a-z0-9_]+$/.test(username)){showAuthError('signup','\u274C Username: only letters, numbers, underscore.');return;}
+  if(!password||password.length<6){showAuthError('signup','\u274C Password must be at least 6 characters.');return;}
+  if(password!==confirm){showAuthError('signup','\u274C Passwords do not match.');return;}
+  const users=getUsers();
+  if(users.find(u=>u.username===username)){showAuthError('signup','\u274C Username already taken.');return;}
+  if(email&&users.find(u=>u.email===email)){showAuthError('signup','\u274C Email already registered.');return;}
+  const newUser={id:'u_'+Date.now(),name,username,email,passwordHash:hashPassword(password),createdAt:new Date().toISOString(),type:'local'};
+  users.push(newUser); saveUsers(users);
+  const session={id:newUser.id,name,username,email,picture:'',type:'local'};
+  saveUserSession(session); currentUser=session; onLoginSuccess();
+  showToast('\uD83C\uDF89 Welcome, '+name+'! Account created.');
+}
+
+function doLogin() {
+  hideAuthError();
+  const input=document.getElementById('liUsername').value.trim().toLowerCase();
+  const password=document.getElementById('liPassword').value;
+  if(!input){showAuthError('login','\u274C Enter your username or email.');return;}
+  if(!password){showAuthError('login','\u274C Enter your password.');return;}
+  const users=getUsers();
+  const user=users.find(u=>u.username===input||u.email===input);
+  if(!user){showAuthError('login','\u274C Account not found. Please sign up first.');return;}
+  if(user.passwordHash!==hashPassword(password)){showAuthError('login','\u274C Incorrect password.');return;}
+  const session={id:user.id,name:user.name,username:user.username,email:user.email,picture:'',type:'local'};
+  saveUserSession(session); currentUser=session; onLoginSuccess();
+  showToast('\uD83D\uDC4B Welcome back, '+user.name+'!');
+}
+
+function doForgotPassword() {
+  const input=document.getElementById('forgotUsername').value.trim().toLowerCase();
+  const res=document.getElementById('forgotResult');
+  if(!input){res.style.display='block';res.style.background='#FDECEA';res.style.color='#C0392B';res.textContent='\u274C Enter username first.';return;}
+  const user=getUsers().find(u=>u.username===input||u.email===input);
+  if(!user){res.style.display='block';res.style.background='#FDECEA';res.style.color='#C0392B';res.textContent='\u274C No account found.';return;}
+  res.style.display='block';res.style.background='#D4EFDF';res.style.color='#1E8449';
+  res.innerHTML='\u2705 Account found!<br><b>Name:</b> '+user.name+'<br><b>Username:</b> '+user.username+'<br><b>Joined:</b> '+new Date(user.createdAt).toLocaleDateString('en-IN')+'<br><br><i>Contact developer to reset password.</i>';
+}
+
+function signInWithGoogle() {
+  if(window.google&&window.google.accounts){
+    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleLogin,auto_select:false,cancel_on_tap_outside:true});
+    google.accounts.id.prompt(n=>{if(n.isNotDisplayed()||n.isSkippedMoment())showAuthError('login','\u26A0\uFE0F Google Sign-in unavailable. Use username & password.');});
+  } else { showAuthError('login','\u26A0\uFE0F Google Sign-in not available. Use username & password below.'); }
+}
+
+function handleGoogleLogin(response) {
+  try {
+    const p=parseJwt(response.credential);
+    const gu={id:'g_'+p.sub,name:p.name,username:p.email.split('@')[0],email:p.email,picture:p.picture,type:'google'};
+    const users=getUsers();
+    if(!users.find(u=>u.id===gu.id)){users.push({...gu,createdAt:new Date().toISOString()});saveUsers(users);}
+    saveUserSession(gu); currentUser=gu; onLoginSuccess();
+    showToast('\uD83D\uDC4B Welcome, '+gu.name+'!');
+  } catch(e){showAuthError('login','\u274C Google login failed.');}
+}
+
+function parseJwt(token){
+  const base64=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+}
+
+function onLoginSuccess(){
+  // Reset all data before loading the new user's data
+  students=[]; trash=[]; batches=[];
+  activeBatch='all'; activeQuickFilter='';
+  notifDismissed=false;
+  dismissedStudentIds = new Set();
+  document.getElementById('loginScreen').classList.remove('active');
+  updateHeaderUser(); 
+  loadData();
+}
+
+function updateHeaderUser(){
+  if(!currentUser)return;
+  const img=document.getElementById('headerAvatar'),txt=document.getElementById('headerAvatarText');
+  const udImg=document.getElementById('udAvatar'),udTxt=document.getElementById('udAvatarText');
+  document.getElementById('udName').textContent=currentUser.name;
+  document.getElementById('udEmail').textContent=currentUser.email||('@'+(currentUser.username||'user'));
+  if(currentUser.picture){img.src=currentUser.picture;img.style.display='block';txt.style.display='none';udImg.src=currentUser.picture;udImg.style.display='block';udTxt.style.display='none';}
+  else{const i=currentUser.name.charAt(0).toUpperCase();txt.textContent=i;txt.style.display='flex';img.style.display='none';udTxt.textContent=i;udTxt.style.display='flex';udImg.style.display='none';}
+}
+
+function toggleUserDropdown(){document.getElementById('userDropdown').classList.toggle('open');}
+function closeUserDropdown(){document.getElementById('userDropdown').classList.remove('open');}
+
+function signOut(){
+  closeUserDropdown(); 
+  currentUser=null;
+  // Clear ALL in-memory data so next user starts fresh
+  students=[]; trash=[]; batches=[];
+  activeBatch='all'; activeQuickFilter='';
+  try{localStorage.removeItem('mtc_user');}catch(e){}
+  if(window.google&&window.google.accounts)google.accounts.id.disableAutoSelect();
+  switchAuthTab('login');
+  document.getElementById('liUsername').value='';
+  document.getElementById('liPassword').value='';
+  hideAuthError();
+  document.getElementById('loginScreen').classList.add('active');
+  showToast('Signed out successfully.');
+}
+
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('userDropdown'),av=document.getElementById('userAvatarBtn');
+  if(dd&&av&&!dd.contains(e.target)&&!av.contains(e.target))closeUserDropdown();
+});
+
+(function initApp(){
+  const savedUser=loadUserSession();
+  if(savedUser){currentUser=savedUser;document.getElementById('loginScreen').classList.remove('active');updateHeaderUser();loadData();}
+  else{switchAuthTab('login');}
+})();
+function exportExcel() {
+  const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
+  if (!scope.length) { showToast('No students to export.', false); return; }
+
+  const batchLabel = activeBatch === 'all' ? 'All Batches' : getBatchName(activeBatch);
+  const printDate = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+
+  // Summary stats
+  const totalFees = scope.reduce((a,s) => a + totalDue(s), 0);
+  const collected = scope.reduce((a,s) => a + (s.paidTotal||0), 0);
+  const outstanding = scope.reduce((a,s) => a + calcBalance(s), 0);
+
+  // Build XLSX using SpreadsheetML (Office Open XML) — opens in Excel, Google Sheets, WPS
+  const esc = v => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  const numFmt = (v) => `<c t="n"><v>${v}</v></c>`;
+  const strCell = (v) => `<c t="inlineStr"><is><t>${esc(v)}</t></is></c>`;
+
+  // Header row
+  const headers = ['#','Student Name','Batch','Phone','Joining Date','Monthly Fee (Rs)','Months','Total Due (Rs)','Paid (Rs)','Balance (Rs)','Status'];
+  const headerRow = `<row r="1">${headers.map((h,i) => `<c r="${colLetter(i)}1" t="inlineStr" s="1"><is><t>${esc(h)}</t></is></c>`).join('')}</row>`;
+
+  // Summary rows (top section, rows 2-6)
+  const summaryRows = [
+    `<row r="2">${strCell('Report: ' + batchLabel + '   |   Generated: ' + printDate)}</row>`,
+    `<row r="3">${strCell('Total Students: ' + scope.length + '   |   Total Fees Due: Rs.' + totalFees.toLocaleString('en-IN') + '   |   Collected: Rs.' + collected.toLocaleString('en-IN') + '   |   Outstanding: Rs.' + outstanding.toLocaleString('en-IN'))}</row>`,
+    `<row r="4"></row>`,
+  ].join('');
+
+  // Data rows start at row 5 (after summary)
+  const dataRows = scope.map((s, i) => {
+    const months = monthsActive(s.join);
+    const due = totalDue(s);
+    const bal = calcBalance(s);
+    const status = calcStatus(s);
+    const r = i + 5;
+    return `<row r="${r}">
+      <c r="A${r}" t="n"><v>${i+1}</v></c>
+      <c r="B${r}" t="inlineStr"><is><t>${esc(s.name)}</t></is></c>
+      <c r="C${r}" t="inlineStr"><is><t>${esc(getBatchName(s.batchId))}</t></is></c>
+      <c r="D${r}" t="inlineStr"><is><t>${esc(s.phone === '—' ? '-' : s.phone)}</t></is></c>
+      <c r="E${r}" t="inlineStr"><is><t>${esc(formatDate(s.join))}</t></is></c>
+      <c r="F${r}" t="n"><v>${s.fee}</v></c>
+      <c r="G${r}" t="n"><v>${months}</v></c>
+      <c r="H${r}" t="n"><v>${due}</v></c>
+      <c r="I${r}" t="n"><v>${s.paidTotal||0}</v></c>
+      <c r="J${r}" t="n"><v>${bal}</v></c>
+      <c r="K${r}" t="inlineStr"><is><t>${esc(status.charAt(0).toUpperCase()+status.slice(1))}</t></is></c>
+    </row>`;
+  }).join('');
+
+  // Totals row
+  const lastData = scope.length + 4;
+  const totalRow = `<row r="${lastData+1}">
+    <c r="A${lastData+1}" t="inlineStr" s="1"><is><t>TOTAL</t></is></c>
+    <c r="F${lastData+1}" t="n" s="1"><v>${scope.reduce((a,s)=>a+s.fee,0)}</v></c>
+    <c r="H${lastData+1}" t="n" s="1"><v>${totalFees}</v></c>
+    <c r="I${lastData+1}" t="n" s="1"><v>${collected}</v></c>
+    <c r="J${lastData+1}" t="n" s="1"><v>${outstanding}</v></c>
+  </row>`;
+
+  const sheetData = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetFormatPr defaultRowHeight="16"/>
+  <cols>
+    <col min="1" max="1" width="5" customWidth="1"/>
+    <col min="2" max="2" width="20" customWidth="1"/>
+    <col min="3" max="3" width="14" customWidth="1"/>
+    <col min="4" max="4" width="14" customWidth="1"/>
+    <col min="5" max="5" width="14" customWidth="1"/>
+    <col min="6" max="6" width="14" customWidth="1"/>
+    <col min="7" max="7" width="9" customWidth="1"/>
+    <col min="8" max="8" width="14" customWidth="1"/>
+    <col min="9" max="9" width="14" customWidth="1"/>
+    <col min="10" max="10" width="14" customWidth="1"/>
+    <col min="11" max="11" width="12" customWidth="1"/>
+  </cols>
+  <sheetData>
+    ${summaryRows}
+    ${headerRow}
+    ${dataRows}
+    ${totalRow}
+  </sheetData>
+</worksheet>`;
+
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts><font><b/><sz val="11"/></font><font><sz val="11"/></font></fonts>
+  <fills><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1D6F42"/></patternFill></fill></fills>
+  <borders><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs>
+    <xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0"><alignment horizontal="center"/></xf>
+  </cellXfs>
+</styleSheet>`;
+
+  const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets><sheet name="Fee Report" sheetId="1" r:id="rId1"/></sheets>
+</workbook>`;
+
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`;
+
+  const pkgRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+  // Build ZIP (XLSX is a ZIP) using pure JS
+  const files = {
+    '[Content_Types].xml': contentTypes,
+    '_rels/.rels': pkgRels,
+    'xl/workbook.xml': workbook,
+    'xl/_rels/workbook.xml.rels': rels,
+    'xl/worksheets/sheet1.xml': sheetData,
+    'xl/styles.xml': styles,
+  };
+
+  const zip = buildZip(files);
+  const blob = new Blob([zip], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'mahatab-tuition-' + today() + '.xlsx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  showToast('✅ Excel file downloaded!');
+}
+
+function colLetter(i) {
+  return String.fromCharCode(65 + i);
+}
+
+// Minimal pure-JS ZIP builder (no compression — stored only, fully valid XLSX)
+function buildZip(files) {
+  const enc = s => new TextEncoder().encode(s);
+  const u32le = n => [(n>>>0)&0xFF,(n>>>8)&0xFF,(n>>>16)&0xFF,(n>>>24)&0xFF];
+  const u16le = n => [(n>>>0)&0xFF,(n>>>8)&0xFF];
+  const crc32 = (() => {
+    const t = new Uint32Array(256);
+    for (let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?(0xEDB88320^(c>>>1)):c>>>1;t[i]=c;}
+    return (d) => { let c=0xFFFFFFFF; for(let i=0;i<d.length;i++)c=t[(c^d[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
+  })();
+
+  const localHeaders = [];
+  const centralDirs = [];
+  let offset = 0;
+  const parts = [];
+
+  for (const [name, content] of Object.entries(files)) {
+    const nameBytes = enc(name);
+    const dataBytes = enc(content);
+    const crc = crc32(dataBytes);
+    const lh = [
+      0x50,0x4B,0x03,0x04, // sig
+      0x14,0x00,           // version needed
+      0x00,0x00,           // flags
+      0x00,0x00,           // compression (stored)
+      0x00,0x00,0x00,0x00, // mod time/date
+      ...u32le(crc),
+      ...u32le(dataBytes.length),
+      ...u32le(dataBytes.length),
+      ...u16le(nameBytes.length),
+      0x00,0x00,           // extra len
+      ...nameBytes
+    ];
+    const cd = [
+      0x50,0x4B,0x01,0x02, // sig
+      0x14,0x00,           // version made
+      0x14,0x00,           // version needed
+      0x00,0x00,           // flags
+      0x00,0x00,           // compression
+      0x00,0x00,0x00,0x00, // mod time/date
+      ...u32le(crc),
+      ...u32le(dataBytes.length),
+      ...u32le(dataBytes.length),
+      ...u16le(nameBytes.length),
+      0x00,0x00,           // extra
+      0x00,0x00,           // comment
+      0x00,0x00,           // disk start
+      0x00,0x00,           // internal attr
+      0x00,0x00,0x00,0x00, // external attr
+      ...u32le(offset),
+      ...nameBytes
+    ];
+    offset += lh.length + dataBytes.length;
+    parts.push(new Uint8Array(lh), dataBytes);
+    centralDirs.push(new Uint8Array(cd));
+  }
+
+  const cdSize = centralDirs.reduce((a,b)=>a+b.length,0);
+  const eocd = [
+    0x50,0x4B,0x05,0x06,
+    0x00,0x00,0x00,0x00,
+    ...u16le(Object.keys(files).length),
+    ...u16le(Object.keys(files).length),
+    ...u32le(cdSize),
+    ...u32le(offset),
+    0x00,0x00
+  ];
+
+  const all = [...parts, ...centralDirs, new Uint8Array(eocd)];
+  const total = all.reduce((a,b)=>a+b.length,0);
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const p of all) { out.set(p, pos); pos += p.length; }
+  return out;
+}
+
+// Header date
+const now = new Date();
+const dayName = now.toLocaleDateString('en-IN', { weekday:'long' });
+const fullDate = now.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+document.getElementById('headerDate').innerHTML = `<div style="font-weight:600;font-size:12px">${dayName}</div><div style="font-size:11px;opacity:0.8">${fullDate}</div>`;
+
+</script>
+<script>
+// Pure JS minimal PDF writer — no libraries, direct download
+function exportPDF() {
+  const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
+  if (!scope.length) { showToast('No students to export.', false); return; }
+
+  const printDate = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+  const batchLabel = activeBatch === 'all' ? 'All Batches' : getBatchName(activeBatch);
+  const totalFees = scope.reduce((a,s) => a + totalDue(s), 0);
+  const collected = scope.reduce((a,s) => a + (s.paidTotal||0), 0);
+  const outstanding = scope.reduce((a,s) => a + calcBalance(s), 0);
+
+  // PDF uses points: 1pt = 1/72 inch. A4 = 595 x 842 pt
+  const W = 842, H = 595; // landscape A4
+  const M = 30; // margin
+
+  const objs = [];
+  const offsets = [];
+  let buf = '';
+
+  const o = s => { buf += s + '\n'; };
+  const addObj = content => {
+    offsets.push(buf.length);
+    const id = objs.length + 1;
+    objs.push(id);
+    o(`${id} 0 obj`);
+    o(content);
+    o('endobj');
+    return id;
+  };
+
+  // Escape PDF string
+  const ps = s => {
+    s = String(s).replace(/[^\x20-\x7E]/g, c => {
+      const code = c.charCodeAt(0);
+      return code > 255 ? '?' : '\\' + code.toString(8).padStart(3,'0');
+    });
+    return '(' + s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)') + ')';
+  };
+
+  // Build page content stream
+  let stream = '';
+  const s = t => { stream += t + '\n'; };
+
+  // Helper: filled rect
+  const rect = (x,y,w,h,r,g,b) => {
+    s(`${r/255} ${g/255} ${b/255} rg`);
+    s(`${x} ${y} ${w} ${h} re f`);
+  };
+  // Helper: text
+  const txt = (text, x, y, size, r, g, b, bold) => {
+    s(`BT`);
+    s(`/${bold?'F2':'F1'} ${size} Tf`);
+    s(`${r/255} ${g/255} ${b/255} rg`);
+    s(`${x} ${y} Td`);
+    s(`${ps(text)} Tj`);
+    s(`ET`);
+  };
+  // Helper: line
+  const line = (x1,y1,x2,y2,r,g,b,lw) => {
+    s(`${r/255} ${g/255} ${b/255} RG`);
+    s(`${lw} w`);
+    s(`${x1} ${y1} m ${x2} ${y2} l S`);
+  };
+
+  // ── Header bar ──
+  rect(0, H-50, W, 50, 45,106,79);
+  txt('MAHATAB TUITION CENTRE', M, H-22, 18, 255,255,255, true);
+  txt('Fee Management Report  -  ' + batchLabel, M, H-38, 9, 255,255,255, false);
+  txt('Generated: ' + printDate, W-M-120, H-30, 9, 255,255,255, false);
+
+  // ── Summary boxes ──
+  const boxes = [
+    {label:'Total Students', val: String(scope.length), r:26,g:82,b:118},
+    {label:'Total Fees Due', val:'Rs.'+totalFees.toLocaleString('en-IN'), r:44,g:62,b:80},
+    {label:'Collected', val:'Rs.'+collected.toLocaleString('en-IN'), r:30,g:132,b:73},
+    {label:'Outstanding', val:'Rs.'+outstanding.toLocaleString('en-IN'), r:192,g:57,b:43},
+  ];
+  const bw = (W - M*2 - 9) / 4;
+  boxes.forEach((b, i) => {
+    const bx = M + i*(bw+3);
+    const by = H - 90;
+    rect(bx, by, bw, 34, b.r, b.g, b.b);
+    txt(b.label.toUpperCase(), bx+6, by+22, 7, 255,255,255, false);
+    txt(b.val, bx+6, by+8, 11, 255,255,255, true);
+  });
+
+  // ── Table ──
+  const cols = ['#','Student','Batch','Phone','Join Date','Fee/mo','Months','Total Due','Paid','Balance','Status'];
+  const colW = [20, 110, 65, 72, 65, 52, 40, 65, 55, 55, 42];
+  const rowH = 18;
+  let tx = M;
+  let ty = H - 100;
+
+  // Table header
+  rect(M, ty - rowH, colW.reduce((a,b)=>a+b,0), rowH, 45,106,79);
+  cols.forEach((c, i) => {
+    txt(c, tx+3, ty-13, 7.5, 255,255,255, true);
+    tx += colW[i];
+  });
+  ty -= rowH;
+
+  // Table rows
+  scope.forEach((st, ri) => {
+    if (ty < 40) { /* simple overflow guard */ return; }
+    const months = monthsActive(st.join);
+    const due = totalDue(st);
+    const bal = calcBalance(st);
+    const status = calcStatus(st);
+    const rowData = [
+      String(ri+1),
+      st.name.substring(0,16),
+      getBatchName(st.batchId).substring(0,10),
+      (st.phone==='—'?'-':st.phone).substring(0,11),
+      formatDate(st.join),
+      'Rs.'+st.fee.toLocaleString('en-IN'),
+      months+' mo',
+      'Rs.'+due.toLocaleString('en-IN'),
+      'Rs.'+(st.paidTotal||0).toLocaleString('en-IN'),
+      'Rs.'+bal.toLocaleString('en-IN'),
+      status.charAt(0).toUpperCase()+status.slice(1)
+    ];
+    // Alternating row bg
+    if (ri % 2 === 1) rect(M, ty-rowH, colW.reduce((a,b)=>a+b,0), rowH, 245,248,245);
+
+    tx = M;
+    rowData.forEach((d, ci) => {
+      let tr=30,tg=30,tb=30;
+      if (ci===9) { tr=bal>0?192:30; tg=bal>0?57:132; tb=bal>0?43:73; }
+      if (ci===7) { tr=192; tg=57; tb=43; }
+      if (ci===8) { tr=30; tg=132; tb=73; }
+      if (ci===10) {
+        if (status==='paid') { tr=30;tg=132;tb=73; }
+        else if (status==='due') { tr=192;tg=57;tb=43; }
+        else { tr=183;tg=121;tb=31; }
+      }
+      txt(d, tx+3, ty-13, 8, tr,tg,tb, ci===1||ci===10);
+      tx += colW[ci];
+    });
+    // row bottom line
+    line(M, ty-rowH, M+colW.reduce((a,b)=>a+b,0), ty-rowH, 220,215,210, 0.3);
+    ty -= rowH;
+  });
+
+  // ── Footer ──
+  line(M, 22, W-M, 22, 200,200,200, 0.5);
+  txt('Mahatab Tuition Centre  |  ' + batchLabel + '  |  ' + printDate, M, 12, 8, 160,155,150, false);
+  txt('Total: ' + scope.length + ' student(s)', W-M-80, 12, 8, 160,155,150, false);
+
+  // ── Assemble PDF ──
+  const streamBytes = stream;
+  o('%PDF-1.4');
+  const catalogId = addObj('<< /Type /Catalog /Pages 2 0 R >>');
+  const pagesId = addObj('<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  const fontRegId = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  const fontBoldId = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  const streamLen = streamBytes.length;
+  const contentId = addObj(`<< /Length ${streamLen} >>\nstream\n${streamBytes}endstream`);
+  const pageId = addObj(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Contents ${contentId} 0 R /Resources << /Font << /F1 ${fontRegId} 0 R /F2 ${fontBoldId} 0 R >> >> >>`);
+
+  // Fix pages kids
+  buf = buf.replace('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>', `2 0 obj\n<< /Type /Pages /Kids [${pageId} 0 R] /Count 1 >>`);
+
+  // xref
+  const xrefOffset = buf.length;
+  o('xref');
+  o(`0 ${objs.length + 1}`);
+  o('0000000000 65535 f ');
+  offsets.forEach(off => o(String(off).padStart(10,'0') + ' 00000 n '));
+  o('trailer');
+  o(`<< /Size ${objs.length + 1} /Root 1 0 R >>`);
+  o('startxref');
+  o(String(xrefOffset));
+  o('%%EOF');
+
+  const blob = new Blob([buf], {type:'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  // Mobile-friendly download
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'tuition-fees-' + today() + '.pdf';
+  a.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2D6A4F;color:white;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+  a.textContent = '⬇ Tap here to download PDF';
+  document.body.appendChild(a);
+  a.click(); // works on desktop
+  showToast('Tap the green button to download PDF!');
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 15000);
+}
+</script>
+
+<!-- ══════════════ AUTO UPDATE SYSTEM ══════════════ -->
+<script>
+const APP_VERSION = '1.0.0';
+const VERSION_URL = './version.json';
+let latestVersionData = null;
+
+function compareVersions(v1, v2) {
+  const a = v1.split('.').map(Number), b = v2.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((a[i]||0) > (b[i]||0)) return 1;
+    if ((a[i]||0) < (b[i]||0)) return -1;
+  }
+  return 0;
+}
+
+async function checkForUpdate() {
+  try {
+    const res = await fetch(VERSION_URL + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.version) return;
+    latestVersionData = data;
+    if (compareVersions(data.version, APP_VERSION) > 0) {
+      const dismissed = localStorage.getItem('mtc_dismissed_update') || '';
+      if (dismissed !== data.version) showUpdateBanner(data);
+    }
+  } catch(e) {}
+}
+
+function showUpdateBanner(data) {
+  document.getElementById('updateVersionBadge').textContent = 'v' + data.version;
+  document.getElementById('updateDesc').textContent = data.description || 'New features and improvements are ready.';
+  document.getElementById('updateBanner').classList.add('show');
+}
+
+function dismissUpdate() {
+  document.getElementById('updateBanner').classList.remove('show');
+  try { localStorage.setItem('mtc_dismissed_update', latestVersionData?.version || ''); } catch(e) {}
+}
+
+function showChangelog() {
+  if (!latestVersionData) return;
+  document.getElementById('clogVersion').textContent = 'v' + latestVersionData.version;
+  document.getElementById('clogDate').textContent = latestVersionData.date || '';
+  document.getElementById('clogList').innerHTML = (latestVersionData.changes || ['Bug fixes and improvements']).map(c => `<li>${c}</li>`).join('');
+  document.getElementById('changelogModal').classList.add('open');
+}
+
+async function doUpdate() {
+  const prog = document.getElementById('clogProgress');
+  const fill = document.getElementById('clogProgressFill');
+  const txt  = document.getElementById('clogProgressText');
+  const btn  = document.getElementById('clogUpdateBtn');
+  document.getElementById('changelogModal').classList.add('open');
+  prog.style.display = 'block';
+  btn.disabled = true; btn.textContent = '⏳ Updating…';
+
+  if (!latestVersionData || !latestVersionData.url) {
+    txt.textContent = '🔄 Reloading to get latest version…';
+    fill.style.width = '80%';
+    setTimeout(() => window.location.reload(true), 800);
+    return;
+  }
+
+  try {
+    txt.textContent = 'Downloading update…'; fill.style.width = '20%';
+    const res = await fetch(latestVersionData.url + '?t=' + Date.now(), { cache: 'no-store' });
+    fill.style.width = '60%';
+    if (!res.ok) throw new Error('Download failed: ' + res.status);
+    const html = await res.text();
+    fill.style.width = '85%'; txt.textContent = 'Installing…';
+    // Write new HTML to a blob and navigate
+    const blob = new Blob([html], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    fill.style.width = '100%'; txt.textContent = '✅ Done! Restarting…';
+    setTimeout(() => { window.location.href = url; }, 800);
+  } catch(e) {
+    txt.textContent = '❌ Download failed. Reloading instead…';
+    fill.style.width = '100%';
+    setTimeout(() => window.location.reload(true), 1500);
+  }
+}
+
+// Auto-check 3s after load
+window.addEventListener('load', () => {
+  setTimeout(checkForUpdate, 3000);
+});
+
+// Add "Check for Updates" to dropdown after DOM ready
+window.addEventListener('DOMContentLoaded', () => {
+  const dropdown = document.getElementById('userDropdown');
+  if (!dropdown) return;
+  const item = document.createElement('div');
+  item.className = 'user-dropdown-item';
+  item.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Check for Updates<span id="updateDot" style="display:none;width:8px;height:8px;background:#C0392B;border-radius:50%;margin-left:auto;flex-shrink:0"></span>`;
+  item.onclick = () => {
+    closeUserDropdown();
+    checkForUpdate().then(() => {
+      if (latestVersionData && compareVersions(latestVersionData.version, APP_VERSION) > 0) {
+        showChangelog();
+      } else {
+        const t = document.createElement('div');
+        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2D6A4F;color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-family:inherit;z-index:9999;white-space:nowrap';
+        t.textContent = '✅ App is up to date! (v' + APP_VERSION + ')';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2800);
+      }
+    });
+  };
+  const signOutItem = dropdown.querySelector('.danger');
+  if (signOutItem) dropdown.insertBefore(item, signOutItem);
+});
+</script>
+
+<!-- ══════════════ PWA SETUP ══════════════ -->
+<script>
+(function() {
+
+  // ── 1. Generate App Icon as base64 PNG using Canvas ──
+  function makeIcon(size) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, '#1B4332');
+    grad.addColorStop(1, '#2D6A4F');
+    ctx.fillStyle = grad;
+    const r = size * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath(); ctx.fill();
+
+    // Graduation cap emoji
+    ctx.font = `${size * 0.52}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎓', size / 2, size / 2);
+
+    // App name text
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = `bold ${size * 0.1}px Arial`;
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('MTC', size / 2, size - size * 0.08);
+
+    return c.toDataURL('image/png');
+  }
+
+  const icon192 = makeIcon(192);
+  const icon512 = makeIcon(512);
+
+  // ── 2. Inject Manifest as blob URL ──
+  const manifest = {
+    name: 'Mahatab Tuition Centre',
+    short_name: 'MTC Fees',
+    description: 'Student Fee Management System',
+    start_url: './',
+    display: 'standalone',
+    orientation: 'portrait-primary',
+    background_color: '#1B4332',
+    theme_color: '#1B4332',
+    categories: ['education', 'finance'],
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestUrl = URL.createObjectURL(manifestBlob);
+  document.getElementById('pwaManifest').href = manifestUrl;
+  document.getElementById('appleTouchIcon').href = icon192;
+
+  // ── 3. Register Service Worker ──
+  // Skip SW in sandboxed/iframe environments where blob: SW is blocked
+  if ('serviceWorker' in navigator && window.self === window.top) {
+    try {
+      // Inline SW as a data URL workaround for hosted environments
+      const swCode = `
+        const CACHE='mtc-cache-v1';
+        self.addEventListener('install', e => { self.skipWaiting(); });
+        self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+        self.addEventListener('fetch', e => {
+          if (e.request.method !== 'GET') return;
+          e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+        });
+      `;
+      const swBlob = new Blob([swCode], {type: 'application/javascript'});
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl)
+        .then(() => console.log('SW ready'))
+        .catch(() => {}); // Silently fail in sandboxed env
+    } catch(e) {}
+  }
+
+  // ── 4. Install Prompt Banner ──
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallBanner();
+  });
+
+  function showInstallBanner() {
+    if (document.getElementById('pwaInstallBanner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'pwaInstallBanner';
+    banner.style.cssText = `
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: #1B4332; color: white; padding: 14px 20px;
+      border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex; align-items: center; gap: 14px; z-index: 9999;
+      max-width: 340px; width: 90%; font-family: 'DM Sans', sans-serif;
+      animation: slideUp 0.3s ease;
+    `;
+    banner.innerHTML = `
+      <div style="font-size:32px">📲</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">Install App</div>
+        <div style="font-size:12px;opacity:0.8;margin-top:2px">Add Mahatab Tuition Centre to your home screen</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button id="pwaInstallBtn" style="background:white;color:#1B4332;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Install</button>
+        <button id="pwaDismissBtn" style="background:rgba(255,255,255,0.15);color:white;border:none;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">Later</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById('pwaInstallBtn').onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      banner.remove();
+      if (outcome === 'accepted') {
+        showPwaToast('✅ App installed! Find it on your home screen.');
+      }
+    };
+
+    document.getElementById('pwaDismissBtn').onclick = () => banner.remove();
+  }
+
+  // Show manual install instructions for iOS / unsupported browsers
+  window.addEventListener('appinstalled', () => {
+    const b = document.getElementById('pwaInstallBanner');
+    if (b) b.remove();
+    showPwaToast('✅ Mahatab Tuition Centre installed!');
+  });
+
+  function showPwaToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2D6A4F;color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:9999;white-space:nowrap`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // ── 5. iOS Install Hint (Safari doesn't support beforeinstallprompt) ──
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const isSafari = /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
+
+  if (isIOS && isSafari && !isInStandalone) {
+    setTimeout(() => {
+      if (document.getElementById('pwaInstallBanner')) return;
+      const banner = document.createElement('div');
+      banner.id = 'pwaInstallBanner';
+      banner.style.cssText = `
+        position:fixed;bottom:0;left:0;right:0;background:#1B4332;color:white;
+        padding:16px 20px 28px;z-index:9999;font-family:'DM Sans',sans-serif;
+        box-shadow:0 -4px 20px rgba(0,0,0,0.3);
+      `;
+      banner.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-weight:700;font-size:15px">📲 Install App</div>
+          <button onclick="this.closest('#pwaInstallBanner').remove()" style="background:rgba(255,255,255,0.15);border:none;color:white;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:13px">✕</button>
+        </div>
+        <div style="font-size:13px;opacity:0.9;line-height:1.6">
+          Tap <b>Share</b> <span style="font-size:16px">⎙</span> at the bottom of Safari,
+          then tap <b>"Add to Home Screen"</b> to install this app.
+        </div>
+      `;
+      document.body.appendChild(banner);
+    }, 2000);
+  }
+
+})();
+</script>
+
+<style>
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+</style>
+
+<script>
+// ── Auto-enable persistent storage silently — no dialog needed ──
+// localStorage is already set up, so data always persists.
+// This just requests the browser to mark storage as persistent (prevents auto-cleanup).
+(async function() {
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      const already = await navigator.storage.persisted();
+      if (!already) {
+        await navigator.storage.persist();
+      }
+    }
+  } catch(e) {}
+  // Remove any leftover permission dialogs
+  const old = document.getElementById('permOverlay');
+  if (old) old.remove();
+})();
+</script>
+<!-- UPDATE BANNER -->
+<div class="update-banner" id="updateBanner">
+  <div class="update-inner">
+    <div class="update-icon">🚀</div>
+    <div class="update-text">
+      <b>New Update Available! <span id="updateVersionBadge" style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px"></span></b>
+      <span id="updateDesc">A new version of Mahatab Tuition Centre is ready.</span>
+    </div>
+    <div class="update-actions">
+      <button class="upd-now" onclick="showChangelog()">📋 What's New</button>
+      <button class="upd-now" onclick="doUpdate()" style="background:#D4EFDF;">⬇ Update Now</button>
+      <button class="upd-later" onclick="dismissUpdate()">Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGELOG MODAL -->
+<div class="clog-overlay" id="changelogModal">
+  <div class="clog-box">
+    <div class="clog-badge" id="clogVersion">v1.0.0</div>
+    <div class="clog-title">What's New 🎉</div>
+    <div class="clog-sub" id="clogDate"></div>
+    <ul class="clog-list" id="clogList"></ul>
+    <div class="clog-progress" id="clogProgress">
+      <div style="font-size:13px;font-weight:600;color:#1A1714" id="clogProgressText">Downloading update…</div>
+      <div class="clog-pbar"><div class="clog-pfill" id="clogProgressFill"></div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="doUpdate()" style="flex:1;padding:12px;background:#2D6A4F;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;" id="clogUpdateBtn">⬇ Update Now</button>
+      <button onclick="document.getElementById('changelogModal').classList.remove('open')" style="padding:12px 16px;background:none;border:1px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:#6B6560;cursor:pointer;">Close</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
