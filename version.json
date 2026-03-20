@@ -1,18 +1,17 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.0",
   "date": "2026-03-20",
-  "description": "Collapsible add student form + auto-update fix",
+  "description": "Arrow icons fixed + download permission flow",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "✅ Add Student form now hidden by default — tap to open",
-    "✅ Form auto-closes after adding a student",
-    "✅ Scrolls to student list after adding",
-    "🔄 Fixed PWA auto-update — app now updates itself",
-    "🗑️ Old cache cleared automatically on update",
-    "📤 WhatsApp/Telegram now shares actual backup file",
-    "🟡 Due Soon badge 3 days before monthly fee date",
-    "📥 Excel import fixed to match export format"
+    "⬇ Import button now shows DOWN arrow (file coming in)",
+    "⬆ Excel Export now shows UP arrow (file going out)",
+    "⬆ PDF Export now shows UP arrow with icon",
+    "📂 Download permission dialog for backup sharing",
+    "📲 4-method fallback for backup file download",
+    "✅ Add Student form collapsible",
+    "🔄 Auto-update cache fix"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"
