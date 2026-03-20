@@ -1,19 +1,18 @@
 {
-  "version": "1.3.0",
+  "version": "1.5.0",
   "date": "2026-03-20",
-  "description": "Google Drive backup, Excel import, smart notifications",
+  "description": "Collapsible add student form + auto-update fix",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "🔵 New Admission status for fresh students",
-    "🟡 Due Soon badge — 3 days before monthly fee",
-    "🔔 Smart notifications — only real dues",
-    "✕ Per-student dismiss button",
-    "📥 Import students from Excel or CSV",
-    "🔒 Google Drive backup & restore",
-    "📥 Download & restore local backup",
-    "✅ Fixed Backup failed error",
-    "✅ Fixed zero balance notifications"
+    "✅ Add Student form now hidden by default — tap to open",
+    "✅ Form auto-closes after adding a student",
+    "✅ Scrolls to student list after adding",
+    "🔄 Fixed PWA auto-update — app now updates itself",
+    "🗑️ Old cache cleared automatically on update",
+    "📤 WhatsApp/Telegram now shares actual backup file",
+    "🟡 Due Soon badge 3 days before monthly fee date",
+    "📥 Excel import fixed to match export format"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"
