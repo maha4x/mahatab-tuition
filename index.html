@@ -2948,28 +2948,38 @@ async function shareBackupFile(target) {
   const fileName = getBackupFilename();
   const count    = students.length;
   const date     = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
-  const text     = `📚 Mahatab Tuition Centre — Backup\n📅 ${date}\n👥 ${count} students\n\nFile: ${fileName}`;
+  const text     = `📚 Mahatab Tuition Centre — Backup\n📅 ${date}\n👥 ${count} students`;
+  const fileObj  = new File([json], fileName, { type: 'application/json' });
 
-  // ── If target is 'native' or direct share — use Web Share API with file ──
-  if (navigator.share) {
+  // ── METHOD 1: Web Share API with file attachment ──
+  // This is the ONLY way to pass a file directly to WhatsApp/Telegram on Android
+  // Requires HTTPS (works on GitHub Pages / Netlify — not in preview)
+  if (navigator.share && navigator.canShare) {
     try {
-      const fileObj = new File([json], fileName, { type: 'application/json' });
-      if (navigator.canShare && navigator.canShare({ files: [fileObj] })) {
-        await navigator.share({ title: 'MTC Backup', text, files: [fileObj] });
+      if (navigator.canShare({ files: [fileObj] })) {
+        // Opens Android share sheet with file attached — user picks WhatsApp/Telegram
+        await navigator.share({ files: [fileObj], title: 'MTC Backup', text });
         showToast('✅ Backup shared!');
         return;
       }
-      // Share without file
-      await navigator.share({ title: 'MTC Backup', text });
-      // Also download
-      await backupDownload();
+    } catch(e) {
+      if (e.name === 'AbortError') return; // user cancelled
+      // fall through to next method
+    }
+  }
+
+  // ── METHOD 2: navigator.share without file (text only) ──
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'MTC Backup', text: text + '\n\n(Backup file also downloaded to your Downloads folder)' });
+      backupDownload(); // download silently alongside
       return;
     } catch(e) {
       if (e.name === 'AbortError') return;
     }
   }
 
-  // ── Fallback: show permission/instruction dialog ──
+  // ── METHOD 3: Fallback dialog with download + instructions ──
   showDownloadPermissionDialog(target, fileName, date, count, json);
 }
 
@@ -2980,13 +2990,23 @@ function showDownloadPermissionDialog(target, fileName, date, count, json) {
   const appName  = target==='whatsapp'?'WhatsApp':target==='telegram'?'Telegram':target==='email'?'Email':'App';
   const appIcon  = target==='whatsapp'?'💚':target==='telegram'?'🔵':target==='email'?'📧':'📱';
   const appColor = target==='whatsapp'?'#25D366':target==='telegram'?'#0088CC':target==='email'?'#EA4335':'var(--accent)';
-  const msgText  = encodeURIComponent('📚 Mahatab Tuition Backup\n📅 '+date+' · 👥 '+count+' students\n\nFile: '+fileName);
-  const deepLink = target==='whatsapp'?'whatsapp://send?text='+msgText:target==='telegram'?'tg://msg?text='+msgText:'mailto:?subject=MTC Backup '+date+'&body='+msgText;
-  const webLink  = target==='whatsapp'?'https://wa.me/?text='+msgText:target==='telegram'?'https://t.me/share/url?url=&text='+msgText:'mailto:?subject=MTC Backup '+date+'&body='+msgText;
+
+  // Check if we are on HTTPS (required for Web Share with files)
+  const isHTTPS = location.protocol === 'https:';
+  const hasShare = !!navigator.share;
 
   const overlay = document.createElement('div');
   overlay.id = 'downloadPermModal';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+
+  // Show different UI based on capability
+  const noticeHTML = isHTTPS && hasShare
+    ? `<div style="background:#D4EFDF;border:1px solid #A9DFBF;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#1E8449;line-height:1.6">
+        ✅ <b>Your device supports file sharing!</b><br>Tap below — Android share sheet will open with the file attached.
+       </div>`
+    : `<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#6D4C41;line-height:1.6">
+        ${!isHTTPS ? '⚠️ <b>Preview mode</b> — file sharing works on your live site (GitHub Pages / Netlify).<br>Download the file and attach it manually.' : '📂 <b>Download the file</b> then attach it in '+appName+'.'}
+       </div>`;
 
   overlay.innerHTML = `
     <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;animation:slideUp 0.25s ease">
@@ -2995,36 +3015,32 @@ function showDownloadPermissionDialog(target, fileName, date, count, json) {
       <div style="font-size:17px;font-weight:700;color:var(--text);text-align:center;margin-bottom:2px">Share to ${appName}</div>
       <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:20px">${count} students · ${date}</div>
 
+      ${noticeHTML}
+
       <div id="dlStep1">
-        <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#6D4C41;line-height:1.6">
-          <b>Step 1:</b> Download the backup file to your phone, then ${appName} will open automatically to share it.
-        </div>
-        <button id="dlPermBtn" style="width:100%;padding:14px;background:${appColor};color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download & Open ${appName}
+        <button id="dlShareBtn" style="width:100%;padding:14px;background:${appColor};color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          ${isHTTPS && hasShare ? 'Share File to '+appName : 'Download Backup File'}
         </button>
         <button onclick="document.getElementById('downloadPermModal').remove()" style="width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;color:var(--text2);cursor:pointer">Cancel</button>
       </div>
 
       <div id="dlStep2" style="display:none">
         <div style="background:#D4EFDF;border:1px solid #A9DFBF;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#1E8449;line-height:1.6">
-          ✅ <b>File downloaded!</b> Opening ${appName}…<br>
-          <span style="font-size:11px;opacity:0.85">File: <b>${fileName}</b> in Downloads</span>
+          ✅ <b>File downloaded!</b><br>
+          <span style="font-size:11px">Saved as: <b>${fileName}</b></span>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text)">
-            <span>1️⃣</span><span>In ${appName} tap <b>📎 Attach → Document</b></span>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;font-size:13px">
+            <span>1️⃣</span><span>Open <b>${appName}</b> → choose a contact</span>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text)">
-            <span>2️⃣</span><span>Go to <b>Downloads</b> → select <b style="color:var(--accent)">${fileName}</b></span>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;font-size:13px">
+            <span>2️⃣</span><span>Tap <b>📎 Attach → Document</b> → Downloads</span>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text)">
-            <span>3️⃣</span><span>Tap <b>Send</b> ✅</span>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;font-size:13px">
+            <span>3️⃣</span><span>Select <b style="color:var(--accent)">${fileName}</b> → Send ✅</span>
           </div>
         </div>
-        <button id="openAppBtn" style="width:100%;padding:14px;background:${appColor};color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px">
-          <span style="font-size:20px">${appIcon}</span> Open ${appName} Again
-        </button>
         <button onclick="document.getElementById('downloadPermModal').remove()" style="width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;color:var(--text2);cursor:pointer">Done</button>
       </div>
     </div>`;
@@ -3032,30 +3048,37 @@ function showDownloadPermissionDialog(target, fileName, date, count, json) {
   document.body.appendChild(overlay);
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 
-  function openApp() {
-    try {
-      window.location.href = deepLink;
-      setTimeout(() => { if (document.visibilityState !== 'hidden') window.open(webLink, '_blank'); }, 900);
-    } catch(e) { window.open(webLink, '_blank'); }
-  }
+  document.getElementById('dlShareBtn').onclick = async () => {
+    const btn = document.getElementById('dlShareBtn');
 
-  document.getElementById('dlPermBtn').onclick = async () => {
-    const btn = document.getElementById('dlPermBtn');
+    // On HTTPS with share support — try Web Share API directly
+    if (isHTTPS && navigator.share) {
+      try {
+        const file = new File([json], fileName, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'MTC Backup', text: 'Mahatab Tuition Centre backup — '+count+' students' });
+          overlay.remove();
+          showToast('✅ Backup shared!');
+          return;
+        }
+        // Share text only
+        const msgText = encodeURIComponent('📚 MTC Backup\n📅 '+date+' · '+count+' students');
+        await navigator.share({ title: 'MTC Backup', text: 'Mahatab Tuition Centre backup' });
+        overlay.remove();
+        return;
+      } catch(e) {
+        if (e.name === 'AbortError') { overlay.remove(); return; }
+        // fall through to download
+      }
+    }
+
+    // Download fallback
     btn.innerHTML = '⏳ Downloading…'; btn.disabled = true;
     await backupDownload();
     document.getElementById('dlStep1').style.display = 'none';
     document.getElementById('dlStep2').style.display = 'block';
-    // Auto-open app after short delay
-    setTimeout(openApp, 1200);
   };
-
-  // Will be set after innerHTML renders
-  setTimeout(() => {
-    const ob = document.getElementById('openAppBtn');
-    if (ob) ob.onclick = openApp;
-  }, 100);
 }
-
 
 function restoreFromFile(event) {
   const file = event.target.files[0];

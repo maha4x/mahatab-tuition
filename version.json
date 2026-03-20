@@ -1,16 +1,15 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.0",
   "date": "2026-03-20",
-  "description": "Auto-open WhatsApp/Telegram after backup download",
+  "description": "Fixed WhatsApp/Telegram file sharing",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📲 WhatsApp/Telegram opens automatically after backup download",
-    "✅ Two-step flow: Download → App opens with file ready",
-    "🔁 'Open Again' button if app didn't open first time",
-    "⬇ Import arrow fixed to point down",
-    "⬆ Excel & PDF export arrows point up",
-    "📂 Download permission dialog improved"
+    "📲 WhatsApp/Telegram share now attaches file directly (on live site)",
+    "✅ Uses Android Web Share API for real file attachment",
+    "📱 Smart detection: HTTPS site vs preview mode",
+    "📥 Download fallback with step-by-step attach guide",
+    "🔄 Share sheet opens automatically with file ready"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"
