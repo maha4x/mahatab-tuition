@@ -1,17 +1,14 @@
 {
-  "version": "2.3.0",
-  "date": "2026-03-20",
-  "description": "Authentication fixed — proper login validation",
+  "version": "2.3.1",
+  "date": "2026-03-21",
+  "description": "Header banner improvements — date, day name & subtitle visible",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "🔐 Login now validates username/password properly",
-    "❌ Wrong password shows error — no access granted",
-    "❌ Unknown username shows 'Account not found'",
-    "✅ Session verified on app load — invalid sessions rejected",
-    "👤 Each user has completely separate data (per-user storage)",
-    "🔒 Logout clears session and data from memory"
+    "📅 Current date with day name now shown in header banner",
+    "📋 'Fee Management System' subtitle now visible on all screen sizes",
+    "🖥️ Header layout improved for mobile display"
   ],
-  "mandatory": true,
+  "mandatory": false,
   "min_supported": "1.0.0"
 }
