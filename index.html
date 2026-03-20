@@ -12,7 +12,7 @@
 <meta name="description" content="Mahatab Tuition Centre — Student Fee Management System">
 <link rel="manifest" id="pwaManifest">
 <link rel="apple-touch-icon" id="appleTouchIcon">
-<meta name="app-version" content="1.0.0">
+<meta name="app-version" content="1.4.0">
 <title>Mahatab Tuition Centre</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -646,42 +646,55 @@
     </div>
   </div>
 
-  <!-- ADD STUDENT PANEL -->
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title"><span class="panel-icon">➕</span> Add New Student</span>
+  <!-- ADD STUDENT PANEL — collapsed by default -->
+  <div class="panel" id="addStudentPanel">
+    <!-- Collapsed state: just the button -->
+    <div id="addStudentCollapsed" style="padding:14px 20px">
+      <button onclick="openAddStudentForm()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:var(--accent);color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='#1B4332'" onmouseout="this.style.background='var(--accent)'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Student
+      </button>
     </div>
-    <div class="panel-body">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Student Name *</label>
-          <input id="inName" type="text" placeholder="Enter student name" />
-        </div>
-        <div class="form-group">
-          <label>Joining Date *</label>
-          <input id="inJoin" type="date" oninput="updateStatusPreview()" />
-        </div>
-        <div class="form-group">
-          <label>Monthly Fees (₹) *</label>
-          <input id="inFee" type="number" placeholder="e.g. 1500" min="0" />
-        </div>
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input id="inPhone" type="text" placeholder="Enter phone number" />
-        </div>
-        <div class="form-group">
-          <label>Batch *</label>
-          <select id="inBatch"></select>
-        </div>
-        <div class="form-group">
-          <label>Payment Status <span style="font-size:11px;color:var(--text3);font-weight:400">(auto-detected)</span></label>
-          <div id="statusPreview" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);min-height:42px">
-            <span id="statusBadgePreview" class="badge badge-due"><span class="badge-dot"></span>Due</span>
-            <span id="statusHint" style="font-size:12px;color:var(--text3)">Select joining date to auto-detect</span>
+
+    <!-- Expanded state: full form (hidden by default) -->
+    <div id="addStudentExpanded" style="display:none">
+      <div class="panel-header" style="cursor:pointer" onclick="closeAddStudentForm()">
+        <span class="panel-title"><span class="panel-icon">➕</span> Add New Student</span>
+        <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);padding:0;line-height:1" title="Close">✕</button>
+      </div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Student Name *</label>
+            <input id="inName" type="text" placeholder="Enter student name" />
           </div>
-        </div>
-        <div class="form-full">
-          <button class="btn btn-primary" onclick="addStudent()">🎓 Add Student</button>
+          <div class="form-group">
+            <label>Joining Date *</label>
+            <input id="inJoin" type="date" oninput="updateStatusPreview()" />
+          </div>
+          <div class="form-group">
+            <label>Monthly Fees (₹) *</label>
+            <input id="inFee" type="number" placeholder="e.g. 1500" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input id="inPhone" type="text" placeholder="Enter phone number" />
+          </div>
+          <div class="form-group">
+            <label>Batch *</label>
+            <select id="inBatch"></select>
+          </div>
+          <div class="form-group">
+            <label>Payment Status <span style="font-size:11px;color:var(--text3);font-weight:400">(auto-detected)</span></label>
+            <div id="statusPreview" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);min-height:42px">
+              <span id="statusBadgePreview" class="badge badge-due"><span class="badge-dot"></span>Due</span>
+              <span id="statusHint" style="font-size:12px;color:var(--text3)">Select joining date to auto-detect</span>
+            </div>
+          </div>
+          <div class="form-full" style="display:flex;gap:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="addStudent()">🎓 Add Student</button>
+            <button class="btn" style="border:1px solid var(--border)" onclick="closeAddStudentForm()">Cancel</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1580,10 +1593,34 @@ function addStudent() {
   // Auto status: due by default, calcStatus() will handle dynamically
   students.unshift(s);
   save(); renderAll();
-  ['inName','inJoin','inFee','inPhone'].forEach(id => document.getElementById(id).value = '');
+  // Close form and go back to collapsed state
+  closeAddStudentForm();
+  showToast(`✅ "${name}" added successfully!`);
+  // Scroll to student table to see new entry
+  setTimeout(() => {
+    const table = document.querySelector('#studentTable');
+    if (table) table.closest('.panel').scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 300);
+}
+
+// ── Add Student Form Toggle ──
+function openAddStudentForm() {
+  document.getElementById('addStudentCollapsed').style.display = 'none';
+  const expanded = document.getElementById('addStudentExpanded');
+  expanded.style.display = 'block';
+  document.getElementById('addStudentPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.getElementById('inJoin').value = today();
   updateStatusPreview();
-  showToast(`Student "${name}" added successfully!`);
+  setTimeout(() => document.getElementById('inName').focus(), 300);
+}
+
+function closeAddStudentForm() {
+  document.getElementById('addStudentExpanded').style.display = 'none';
+  document.getElementById('addStudentCollapsed').style.display = 'block';
+  ['inName','inJoin','inFee','inPhone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
 }
 
 function updateStatusPreview() {
@@ -3949,7 +3986,7 @@ function exportPDF() {
 
 <!-- ══════════════ SMART PATCH UPDATE SYSTEM ══════════════ -->
 <script>
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.4.0';
 const VERSION_URL = '/version.json';  // relative — works on any Netlify/GitHub domain
 let latestVersionData = null;
 
@@ -4084,46 +4121,37 @@ async function doFullUpdate() {
   document.getElementById('changelogModal').classList.add('open');
   if (prog) prog.style.display = 'block';
   if (btn)  { btn.disabled = true; btn.textContent = '⏳ Updating…'; }
-
-  if (!latestVersionData?.url) {
-    if (txt)  txt.textContent = '🔄 Reloading…';
-    if (fill) fill.style.width = '80%';
-    setTimeout(() => window.location.reload(true), 800);
-    return;
-  }
+  if (txt)  txt.textContent = '🗑️ Clearing old cache…';
+  if (fill) fill.style.width = '20%';
 
   try {
-    if (txt)  txt.textContent = '📥 Downloading update…';
-    if (fill) fill.style.width = '20%';
-
-    const res = await fetch(latestVersionData.url + '?t=' + Date.now(), { cache: 'no-store' });
-    if (fill) fill.style.width = '60%';
-    if (!res.ok) throw new Error('Download failed: ' + res.status);
-    const html = await res.text();
-
-    if (fill) fill.style.width = '85%';
-    if (txt)  txt.textContent = '📦 Installing…';
-
-    // If hosted on GitHub Pages — just reload (GitHub serves latest)
-    if (window.location.hostname.includes('github.io') ||
-        window.location.hostname.includes('netlify.app')) {
-      if (fill) fill.style.width = '100%';
-      if (txt)  txt.textContent = '✅ Done! Reloading app…';
-      setTimeout(() => window.location.reload(true), 800);
-      return;
+    // Step 1: Unregister all service workers
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
     }
+    if (fill) fill.style.width = '40%';
 
-    // Otherwise save new HTML as blob and navigate
-    const blob = new Blob([html], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
+    // Step 2: Clear all caches
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if (fill) fill.style.width = '70%';
+    if (txt)  txt.textContent = '📥 Loading new version…';
+
+    // Step 3: Force reload bypassing cache
     if (fill) fill.style.width = '100%';
     if (txt)  txt.textContent = '✅ Done! Restarting…';
-    setTimeout(() => { window.location.href = url; }, 800);
+
+    setTimeout(() => {
+      // Hard reload — bypasses all cache
+      window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
+    }, 600);
 
   } catch(e) {
     if (txt)  txt.textContent = '❌ Failed. Please reload manually.';
-    if (fill) fill.style.width = '100%';
-    setTimeout(() => window.location.reload(true), 2000);
+    setTimeout(() => window.location.reload(true), 1500);
   }
 }
 
@@ -4175,7 +4203,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- ══════════════ PWA SETUP ══════════════ -->
 <script>
-(function() {
+(async function() {
 
   // ── 1. Generate App Icon as base64 PNG using Canvas ──
   function makeIcon(size) {
@@ -4238,24 +4266,100 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('appleTouchIcon').href = icon192;
 
   // ── 3. Register Service Worker ──
-  // Skip SW in sandboxed/iframe environments where blob: SW is blocked
   if ('serviceWorker' in navigator && window.self === window.top) {
     try {
-      // Inline SW as a data URL workaround for hosted environments
+      // ── STEP 1: Unregister ALL old service workers first ──
+      // This ensures users always get fresh content after an update
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) {
+        // Check if this SW is old (has mtc-cache-v1 — the old hardcoded key)
+        if (reg.active && reg.active.scriptURL.startsWith('blob:')) {
+          await reg.unregister();
+        }
+      }
+
+      // ── STEP 2: Register new SW with timestamp-based cache key ──
+      // Every new deployment gets a fresh cache automatically
+      const CACHE_KEY = 'mtc-v' + (window._APP_BUILD || '1.4.0');
       const swCode = `
-        const CACHE='mtc-cache-v1';
-        self.addEventListener('install', e => { self.skipWaiting(); });
-        self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+        const CACHE = '${CACHE_KEY}';
+        const NETWORK_FIRST = ['index.html', 'version.json', 'patch.json'];
+
+        self.addEventListener('install', e => {
+          self.skipWaiting(); // Activate immediately
+        });
+
+        self.addEventListener('activate', e => {
+          e.waitUntil(
+            caches.keys().then(keys =>
+              Promise.all(
+                keys.filter(k => k !== CACHE).map(k => {
+                  console.log('[SW] Deleting old cache:', k);
+                  return caches.delete(k);
+                })
+              )
+            ).then(() => clients.claim()) // Take control immediately
+          );
+        });
+
         self.addEventListener('fetch', e => {
           if (e.request.method !== 'GET') return;
-          e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+          const url = new URL(e.request.url);
+          const isNetworkFirst = NETWORK_FIRST.some(f => url.pathname.endsWith(f));
+
+          if (isNetworkFirst) {
+            // Always fetch fresh from network for key files
+            e.respondWith(
+              fetch(e.request, { cache: 'no-store' })
+                .catch(() => caches.match(e.request))
+            );
+          } else {
+            // Cache first for other assets
+            e.respondWith(
+              caches.match(e.request).then(cached => {
+                const networkFetch = fetch(e.request).then(res => {
+                  if (res.ok) {
+                    caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+                  }
+                  return res;
+                });
+                return cached || networkFetch;
+              })
+            );
+          }
+        });
+
+        // Listen for skip-waiting message from main thread
+        self.addEventListener('message', e => {
+          if (e.data === 'SKIP_WAITING') self.skipWaiting();
         });
       `;
-      const swBlob = new Blob([swCode], {type: 'application/javascript'});
-      const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl)
-        .then(() => console.log('SW ready'))
-        .catch(() => {}); // Silently fail in sandboxed env
+
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl  = URL.createObjectURL(swBlob);
+      const reg    = await navigator.serviceWorker.register(swUrl, { scope: './' });
+
+      // ── STEP 3: Listen for new SW waiting — auto-reload when update detected ──
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New SW installed — send skip waiting and reload
+            newWorker.postMessage('SKIP_WAITING');
+            setTimeout(() => window.location.reload(true), 500);
+          }
+        });
+      });
+
+      // ── STEP 4: Detect controller change (SW swapped) and reload ──
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload(true);
+        }
+      });
+
     } catch(e) {}
   }
 
