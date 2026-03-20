@@ -655,7 +655,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Student Name *</label>
-          <input id="inName" type="text" placeholder="e.g. Priya Sharma" />
+          <input id="inName" type="text" placeholder="Enter student name" />
         </div>
         <div class="form-group">
           <label>Joining Date *</label>
@@ -666,8 +666,8 @@
           <input id="inFee" type="number" placeholder="e.g. 1500" min="0" />
         </div>
         <div class="form-group">
-          <label>Contact / Phone</label>
-          <input id="inPhone" type="text" placeholder="e.g. 9876543210" />
+          <label>Phone Number</label>
+          <input id="inPhone" type="text" placeholder="Enter phone number" />
         </div>
         <div class="form-group">
           <label>Batch *</label>
@@ -691,8 +691,13 @@
   <div class="panel">
     <div class="panel-header">
       <span class="panel-title"><span class="panel-icon">📋</span> Student Records</span>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-sm" id="trashToggleBtn" style="border:1px solid var(--border)" onclick="toggleTrash()">🗑️ Deleted <span id="trashBadge" style="display:none;background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;margin-left:4px">0</span></button>
+        <label class="btn btn-sm" style="background:#0F4C81;color:white;border:none;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
+          Import
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="openImportModal(event)" style="display:none" id="importFileInput"/>
+        </label>
         <button class="btn btn-sm" style="background:#1D6F42;color:white;border:none;display:flex;align-items:center;gap:5px" onclick="exportExcel()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Excel
@@ -779,8 +784,8 @@
         <input id="editFee" type="number" min="0" placeholder="e.g. 1500" />
       </div>
       <div class="form-group">
-        <label>Contact / Phone</label>
-        <input id="editPhone" type="text" placeholder="e.g. 9876543210" />
+        <label>Phone Number</label>
+        <input id="editPhone" type="text" placeholder="Enter phone number" />
       </div>
       <div class="form-group">
         <label>Batch *</label>
@@ -903,46 +908,122 @@
 
 <!-- BACKUP MODAL -->
 <div class="modal-overlay" id="backupModal">
-  <div class="modal" style="width:420px">
-    <div class="modal-title">☁️ Cloud Backup &amp; Restore</div>
-    <p id="lastBackupTime" style="font-size:12px;color:var(--accent);margin-bottom:0.5rem;font-weight:500"></p>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Data auto-backs up to cloud every time you make changes. Save your Backup ID to restore on any device.</p>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Save your data to cloud instantly — no login needed. Save your Backup ID to restore anytime on any device.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem">
-      <button onclick="cloudBackup()" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid #4285F4;border-radius:var(--radius-sm);background:#EBF3FE;cursor:pointer;font-family:inherit;text-align:left;width:100%">
-        <span style="font-size:26px">☁️</span>
-        <div><div style="font-weight:600;font-size:14px;color:#1A5276">Save to Cloud</div><div style="font-size:12px;color:#2E86C1;margin-top:2px">Upload instantly — no login, no download</div></div>
-      </button>
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.6px">Restore from Cloud</div>
-        <div style="display:flex;gap:8px">
-          <input id="cloudRestoreId" type="text" placeholder="Paste your Backup ID here…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);outline:none"/>
-          <button onclick="cloudRestore()" class="btn btn-primary" style="white-space:nowrap;padding:10px 16px">♻️ Restore</button>
+  <div class="modal" style="width:440px;max-height:92vh;overflow-y:auto">
+    <div class="modal-title">🔒 Backup &amp; Restore</div>
+
+    <!-- Google Drive Section -->
+    <div style="background:linear-gradient(135deg,#E8F5E9,#E3F2FD);border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid #B2DFDB">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <svg width="28" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+        <div>
+          <div style="font-weight:700;font-size:14px;color:#1A237E">Google Drive Backup</div>
+          <div style="font-size:12px;color:#5C6BC0" id="driveConnectStatus">Not connected</div>
         </div>
+        <button id="driveSignInBtn" onclick="driveSignIn()" style="margin-left:auto;padding:8px 14px;background:#1A73E8;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+          Connect Drive
+        </button>
+        <button id="driveSignOutBtn" onclick="driveSignOut()" style="display:none;margin-left:auto;padding:6px 10px;background:none;border:1px solid #ccc;border-radius:8px;font-family:inherit;font-size:12px;color:#666;cursor:pointer">
+          Disconnect
+        </button>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-        <span style="font-size:11px;color:var(--text3)">OR LOCAL</span>
-        <div style="flex:1;height:1px;background:var(--border)"></div>
+      <div style="display:flex;gap:8px">
+        <button id="driveSaveBtn" onclick="driveBackup()" disabled style="flex:1;padding:11px;background:#1A73E8;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Save to Drive
+        </button>
+        <button id="driveLoadBtn" onclick="driveRestore()" disabled style="flex:1;padding:11px;background:#34A853;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
+          Load from Drive
+        </button>
       </div>
-      <button onclick="backupDownload()" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+      <div id="driveFileInfo" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:8px;font-size:12px;color:#1A237E"></div>
+    </div>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Or Local Backup</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+
+    <!-- Local Backup -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <button onclick="backupDownload()" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
         <span style="font-size:22px">📥</span>
-        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Download Backup File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Save .json file to phone</div></div>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:var(--text)">Download Backup File</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:1px">Save .json file to phone/PC</div>
+        </div>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="backupFileSize"></span>
       </button>
-      <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+      <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
         <span style="font-size:22px">♻️</span>
-        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Restore from File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Select a .json backup file</div></div>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:var(--text)">Restore from File</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:1px">Select a .json backup file</div>
+        </div>
         <input type="file" accept=".json" onchange="restoreData(event)" style="display:none" id="restoreInput"/>
       </label>
     </div>
-    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.6"></div>
+
+    <!-- Status -->
+    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:14px"></div>
+
+    <!-- Last backup info -->
+    <p id="lastBackupTime" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:14px"></p>
+
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="closeBackupModal()">Close</button>
+      <button class="btn btn-primary" onclick="closeBackupModal()">Done</button>
     </div>
   </div>
 </div>
 
 <!-- EDIT STUDENT MODAL -->
+<!-- IMPORT EXCEL MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal" style="width:560px;max-height:92vh;overflow-y:auto">
+    <div class="modal-title">📥 Import Students from Excel / CSV</div>
+
+    <!-- Info bar -->
+    <div style="background:#EBF3FE;color:#1A5276;padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:1rem;border:1px solid #B5D4F4;line-height:1.6">
+      <b>Works perfectly with this app's exported Excel file.</b><br>
+      Also accepts any Excel/CSV with columns: Name, Joining Date, Monthly Fee (required) + Phone, Batch, Paid (optional).
+    </div>
+
+    <!-- Step 1: Column Mapping -->
+    <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Map Columns</div>
+    <div id="importMappingArea" style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem"></div>
+
+    <!-- Default Batch -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+      <label style="width:145px;font-size:13px;color:var(--text2);flex-shrink:0;font-weight:500">Default Batch</label>
+      <select id="importBatch" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);outline:none"></select>
+    </div>
+
+    <!-- Preview -->
+    <div id="importPreviewArea" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px">Preview</div>
+        <div id="importRowCount" style="font-size:12px;color:var(--accent);font-weight:600"></div>
+      </div>
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:1rem">
+        <table style="width:100%;font-size:12px;border-collapse:collapse;min-width:500px" id="importPreviewTable"></table>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div id="importResult" style="display:none"></div>
+
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeImportModal()">Cancel</button>
+      <button class="btn btn-primary" id="importRunBtn" onclick="runImport()" style="display:flex;align-items:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
+        Import Students
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -1040,8 +1121,7 @@ const today = () => new Date().toISOString().split('T')[0];
 
 // ── Per-user storage key prefix ──
 function userKey(key) {
-  const uid = currentUser ? currentUser.id : 'guest';
-  return uid + '_' + key;
+  return 'mtc_' + key;
 }
 
 async function save(skipBackup = false) {
@@ -1071,30 +1151,12 @@ function scheduleAutoBackup() {
 
 async function doAutoBackup() {
   try {
-    // Only backup if there are students (don't overwrite good backup with empty/deleted state)
-    if (!students.length && !trash.length) {
-      setAutoBackupStatus('saved');
-      return;
-    }
-
-    const payload = JSON.stringify({
-      students, trash, batches,
-      exportedAt: new Date().toISOString(),
-      app: 'Mahatab Tuition Centre'
-    });
-
-    let backupId = null;
-    try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
-    if (!backupId) backupId = genBackupId();
-
-    await window.storage.set('backup_' + backupId, payload, true);
-    await window.storage.set(userKey('tfm_cloud_id'), backupId);
-    await window.storage.set(userKey('tfm_last_backup'), new Date().toISOString());
-
-    setAutoBackupStatus('saved', backupId);
-  } catch(e) {
-    setAutoBackupStatus('error');
-  }
+    if (!students.length && !trash.length) { setAutoBackupStatus('saved'); return; }
+    const payload = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
+    localStorage.setItem('mtc_local_backup', payload);
+    localStorage.setItem('mtc_last_backup', new Date().toISOString());
+    setAutoBackupStatus('saved');
+  } catch(e) { setAutoBackupStatus('error'); }
 }
 
 function setAutoBackupStatus(state, id) {
@@ -1303,7 +1365,7 @@ function deleteStudent(id) {
       try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
       if (!backupId) backupId = genBackupId();
       const snapshot = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
-      await window.storage.set('backup_' + backupId, snapshot, true);
+      localStorage.setItem('mtc_local_backup', payload||snapshot);
       await window.storage.set(userKey('tfm_cloud_id'), backupId);
     } catch(e) {}
 
@@ -2093,130 +2155,279 @@ function closeBackupModal() {
 }
 
 function backupDownload() {
-  const blob = new Blob([getBackupJson()], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = getBackupFilename();
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const json = getBackupJson();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = getBackupFilename();
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 3000);
-  setCloudStatus('✅ Backup downloaded to your device!', 'success');
   showToast('✅ Backup downloaded!');
+  // update size display
+  const sz = document.getElementById('backupFileSize');
+  if (sz) sz.textContent = (json.length / 1024).toFixed(1) + ' KB';
 }
 
-function backupWhatsApp() {
-  // Download first, then open WhatsApp
-  backupDownload();
-  setTimeout(() => {
-    const msg = encodeURIComponent('Mahatab Tuition Centre backup - ' + today() + '\nPlease save the downloaded .json file.');
-    window.open('https://wa.me/?text=' + msg, '_blank');
-  }, 800);
+// ══════════════ GOOGLE DRIVE BACKUP ══════════════
+// Uses Google Identity Services (GIS) + Drive REST API
+// No server needed — works directly from browser
+
+const DRIVE_CLIENT_ID  = '577695236166-placeholder.apps.googleusercontent.com'; // ← REPLACE with your Client ID from Google Cloud Console
+const DRIVE_SCOPES     = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE_NAME  = 'mahatab-tuition-backup.json';
+const DRIVE_SPACE      = 'appDataFolder'; // private hidden folder, only this app can access
+
+let driveToken     = null;
+let driveFileId    = null;
+let driveUser      = null;
+
+// ── Load Google Identity Services ──
+function loadGISScript(cb) {
+  if (window.google && window.google.accounts) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = cb;
+  s.onerror = () => setDriveStatus('❌ Failed to load Google Sign-in. Check internet connection.', 'error');
+  document.head.appendChild(s);
 }
 
+// ── Sign In to Google Drive ──
+function driveSignIn() {
+  setDriveStatus('⏳ Connecting to Google...', 'loading');
+  loadGISScript(() => {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPES,
+      callback: async (resp) => {
+        if (resp.error) {
+          setDriveStatus('❌ Google sign-in failed: ' + resp.error, 'error');
+          return;
+        }
+        driveToken = resp.access_token;
+        // Get user info
+        try {
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: 'Bearer ' + driveToken }
+          });
+          const info = await res.json();
+          driveUser = info.name || info.email || 'Google User';
+          localStorage.setItem('mtc_drive_user', driveUser);
+        } catch(e) { driveUser = 'Google User'; }
 
-// ── Cloud Backup using window.storage shared space ──
-// Stores backup in shared storage with a unique key — user copies the key to restore on any device
-
-function setCloudStatus(msg, type) {
-  const ds = document.getElementById('driveStatus');
-  ds.style.display = 'block';
-  const s = { loading:'background:#FEF3CD;color:#856404;border:1px solid #FFEAA7', success:'background:#D4EFDF;color:#1E8449;border:1px solid #A9DFBF', error:'background:#FDECEA;color:#C0392B;border:1px solid #F5C6C2' };
-  ds.style.cssText = `display:block;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;${s[type]||s.loading}`;
-  ds.innerHTML = msg;
+        updateDriveUI(true);
+        setDriveStatus('✅ Connected as ' + driveUser, 'success');
+        // Look for existing backup file
+        await findDriveFile();
+      }
+    });
+    client.requestAccessToken({ prompt: 'consent' });
+  });
 }
 
-async function cloudBackup() {
-  setCloudStatus('⏳ Saving to cloud...', 'loading');
-  try {
-    const payload = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
-
-    // Reuse existing ID or generate new
-    let backupId = null;
-    try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
-    if (!backupId) backupId = genBackupId();
-
-    // Save to shared storage (accessible by anyone with the key)
-    await window.storage.set('backup_' + backupId, payload, true);
-    await window.storage.set(userKey('tfm_cloud_id'), backupId);
-
-    setCloudStatus(`
-      <div style="font-weight:700;font-size:15px;margin-bottom:8px">✅ Saved to Cloud!</div>
-      <div style="font-size:12px;margin-bottom:10px">Your <b>Backup ID</b> — save this to restore on any device:</div>
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
-        <code style="flex:1;padding:10px;background:rgba(0,0,0,0.08);border-radius:8px;font-size:14px;font-weight:700;letter-spacing:2px;text-align:center;user-select:all">${backupId}</code>
-        <button onclick="copyBid('${backupId}')" style="flex-shrink:0;padding:10px 12px;background:#1E8449;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">📋 Copy</button>
-      </div>
-      <div style="font-size:11px;opacity:0.8">📌 Write this down or screenshot it — needed to restore your data on any device</div>`, 'success');
-    showToast('✅ Backup saved to cloud!');
-  } catch(e) {
-    setCloudStatus('❌ Cloud save failed: ' + (e.message || 'Unknown error'), 'error');
+function driveSignOut() {
+  if (driveToken && window.google) {
+    google.accounts.oauth2.revoke(driveToken, () => {});
   }
+  driveToken = null; driveFileId = null; driveUser = null;
+  localStorage.removeItem('mtc_drive_user');
+  updateDriveUI(false);
+  setDriveStatus('', 'success');
+  document.getElementById('driveFileInfo').style.display = 'none';
 }
 
-function copyBid(id) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(id)
-      .then(() => showToast('✅ Backup ID copied!'))
-      .catch(() => showToast('Long-press the ID to copy manually'));
+function updateDriveUI(connected) {
+  const signIn  = document.getElementById('driveSignInBtn');
+  const signOut = document.getElementById('driveSignOutBtn');
+  const saveBtn = document.getElementById('driveSaveBtn');
+  const loadBtn = document.getElementById('driveLoadBtn');
+  const status  = document.getElementById('driveConnectStatus');
+
+  if (connected) {
+    if (signIn)  { signIn.style.display  = 'none'; }
+    if (signOut) { signOut.style.display = 'inline-block'; }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; }
+    if (loadBtn) { loadBtn.disabled = false; loadBtn.style.opacity = '1'; }
+    if (status)  { status.textContent = '✅ Connected — ' + (driveUser || 'Google User'); status.style.color = '#2E7D32'; }
   } else {
-    showToast('Long-press the ID to copy manually');
+    if (signIn)  { signIn.style.display  = 'inline-block'; }
+    if (signOut) { signOut.style.display = 'none'; }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.4'; }
+    if (loadBtn) { loadBtn.disabled = true; loadBtn.style.opacity = '0.4'; }
+    if (status)  { status.textContent = 'Not connected'; status.style.color = ''; }
   }
 }
 
-async function cloudRestore() {
-  const id = document.getElementById('cloudRestoreId').value.trim().toUpperCase();
-  if (!id) { setCloudStatus('❌ Please enter your Backup ID first.', 'error'); return; }
-  setCloudStatus('⏳ Fetching backup from cloud...', 'loading');
+// ── Find existing backup file in Drive ──
+async function findDriveFile() {
+  if (!driveToken) return null;
   try {
-    const r = await window.storage.get('backup_' + id, true);
-    if (!r || !r.value) throw new Error('Backup ID not found. Check the ID and try again.');
-    const backup = JSON.parse(r.value);
-    if (!backup || !backup.students) throw new Error('Invalid backup data');
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=${DRIVE_SPACE}&q=name='${DRIVE_FILE_NAME}'&fields=files(id,name,modifiedTime,size)`,
+      { headers: { Authorization: 'Bearer ' + driveToken } }
+    );
+    const data = await res.json();
+    if (data.files && data.files.length > 0) {
+      driveFileId = data.files[0].id;
+      const f = data.files[0];
+      const modDate = new Date(f.modifiedTime).toLocaleString('en-IN', {
+        day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+      });
+      const sizeKb = f.size ? (parseInt(f.size)/1024).toFixed(1) + ' KB' : '';
+      const info = document.getElementById('driveFileInfo');
+      if (info) {
+        info.style.display = 'block';
+        info.innerHTML = `📁 Backup found on Drive<br><small>Last saved: ${modDate} ${sizeKb ? '· ' + sizeKb : ''}</small>`;
+      }
+      return driveFileId;
+    }
+  } catch(e) {}
+  return null;
+}
+
+// ── Save backup to Google Drive ──
+async function driveBackup() {
+  if (!driveToken) { driveSignIn(); return; }
+  setDriveStatus('⏳ Saving to Google Drive...', 'loading');
+
+  const payload = JSON.stringify({
+    students, trash, batches,
+    exportedAt: new Date().toISOString(),
+    app: 'Mahatab Tuition Centre',
+    version: '1.2.0'
+  }, null, 2);
+
+  try {
+    const metadata = { name: DRIVE_FILE_NAME, parents: [DRIVE_SPACE] };
+    let res;
+
+    if (driveFileId) {
+      // Update existing file
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({name: DRIVE_FILE_NAME})], {type:'application/json'}));
+      form.append('file',     new Blob([payload], {type:'application/json'}));
+      res = await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`,
+        { method:'PATCH', headers:{ Authorization:'Bearer '+driveToken }, body: form }
+      );
+    } else {
+      // Create new file
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+      form.append('file',     new Blob([payload], {type:'application/json'}));
+      res = await fetch(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        { method:'POST', headers:{ Authorization:'Bearer '+driveToken }, body: form }
+      );
+    }
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const file = await res.json();
+    driveFileId = file.id;
+
+    // Save last backup time
+    localStorage.setItem('mtc_drive_backup_time', new Date().toISOString());
+    const lbt = document.getElementById('lastBackupTime');
+    if (lbt) lbt.textContent = '✅ Last Drive backup: ' + new Date().toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+
+    const info = document.getElementById('driveFileInfo');
+    if (info) {
+      info.style.display = 'block';
+      info.innerHTML = `📁 Saved to Drive · ${(payload.length/1024).toFixed(1)} KB<br><small>Just now · ${students.length} students</small>`;
+    }
+
+    setDriveStatus(`
+      <b>✅ Saved to Google Drive!</b><br>
+      <small style="opacity:0.85">${students.length} students · ${(payload.length/1024).toFixed(1)} KB · ${new Date().toLocaleTimeString('en-IN')}</small>
+    `, 'success');
+    showToast('✅ Backed up to Google Drive!');
+  } catch(e) {
+    setDriveStatus('❌ Drive save failed: ' + (e.message || 'Unknown error') + '<br><small>Make sure you are connected and try again.</small>', 'error');
+  }
+}
+
+// ── Load backup from Google Drive ──
+async function driveRestore() {
+  if (!driveToken) { driveSignIn(); return; }
+  setDriveStatus('⏳ Loading from Google Drive...', 'loading');
+
+  try {
+    // Find file if we don't have ID
+    if (!driveFileId) await findDriveFile();
+    if (!driveFileId) {
+      setDriveStatus('❌ No backup found on Drive. Save a backup first.', 'error');
+      return;
+    }
+
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
+      { headers: { Authorization: 'Bearer ' + driveToken } }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const backup = await res.json();
+    if (!backup.students) throw new Error('Invalid backup file');
 
     students = backup.students || [];
     trash    = backup.trash    || [];
     batches  = backup.batches  || [];
     if (!batches.length) batches = [{id:'b1',name:'Batch 1'},{id:'b2',name:'Batch 2'}];
 
-    // Save locally but skip auto-backup so we don't overwrite the cloud backup
     await save(true);
-    await window.storage.set(userKey('tfm_cloud_id'), id);
     renderAll();
 
-    const backupTime = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString('en-IN') : 'unknown time';
-    setCloudStatus(`
-      <div style="font-weight:700;font-size:14px;margin-bottom:6px">✅ Restored Successfully!</div>
-      <div style="font-size:12px;color:inherit;opacity:0.85">
-        <b>${students.length}</b> student(s) restored<br>
-        Backup was from: ${backupTime}
-      </div>`, 'success');
-    showToast(`✅ ${students.length} student(s) restored!`);
+    const backupTime = backup.exportedAt
+      ? new Date(backup.exportedAt).toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      : 'unknown';
+
+    setDriveStatus(`
+      <b>✅ Restored from Google Drive!</b><br>
+      <small style="opacity:0.85">${students.length} students restored · Backup was from ${backupTime}</small>
+    `, 'success');
+    showToast(`✅ ${students.length} student(s) restored from Drive!`);
   } catch(e) {
-    setCloudStatus('❌ ' + (e.message || 'Restore failed. Check your Backup ID.'), 'error');
+    setDriveStatus('❌ Restore failed: ' + (e.message || 'Unknown error'), 'error');
   }
 }
 
+// ── Status helper ──
+function setDriveStatus(msg, type) {
+  const el = document.getElementById('driveStatus');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; return; }
+  const styles = {
+    loading: 'background:#FEF3CD;color:#856404;border:1px solid #FFEAA7',
+    success: 'background:#D4EFDF;color:#1E8449;border:1px solid #A9DFBF',
+    error:   'background:#FDECEA;color:#C0392B;border:1px solid #F5C6C2'
+  };
+  el.style.cssText = `display:block;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:8px;${styles[type]||styles.loading}`;
+  el.innerHTML = msg;
+}
+
 async function openBackupModal() {
-  document.getElementById('driveStatus').style.display = 'none';
-  try { document.getElementById('driveStatus').style.display = 'none'; } catch(e){}
-  try {
-    const r = await window.storage.get(userKey('tfm_cloud_id'));
-    if (r && r.value) document.getElementById('cloudRestoreId').value = r.value;
-  } catch(e) {}
-  // Show last auto backup time
-  try {
-    const r2 = await window.storage.get(userKey('tfm_last_backup'));
-    if (r2 && r2.value) {
-      const d = new Date(r2.value);
-      const lbt = document.getElementById('lastBackupTime');
-      if (lbt) lbt.textContent = 'Last auto-backup: ' + d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
-    }
-  } catch(e) {}
+  const ds = document.getElementById('driveStatus');
+  if (ds) ds.style.display = 'none';
+
+  // Update file size
+  const sz = document.getElementById('backupFileSize');
+  if (sz) sz.textContent = (getBackupJson().length / 1024).toFixed(1) + ' KB';
+
+  // Show last backup time
+  const t = localStorage.getItem('mtc_drive_backup_time') || localStorage.getItem('mtc_last_backup');
+  const lbt = document.getElementById('lastBackupTime');
+  if (lbt && t) {
+    lbt.textContent = 'Last backup: ' + new Date(t).toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+
+  // Restore drive user if previously connected
+  const savedUser = localStorage.getItem('mtc_drive_user');
+  if (savedUser) {
+    const status = document.getElementById('driveConnectStatus');
+    if (status) { status.textContent = 'Previously connected as ' + savedUser + ' — reconnect to use Drive'; }
+  }
+
   document.getElementById('backupModal').classList.add('open');
 }
 
+// ── Local restore functions ──
 function restoreData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -2224,22 +2435,418 @@ function restoreData(event) {
   reader.onload = async (e) => {
     try {
       const backup = JSON.parse(e.target.result);
-      if (!backup.students || !backup.batches) {
-        showToast('❌ Invalid backup file.', false); return;
-      }
+      if (!backup.students) { showToast('❌ Invalid backup file.', false); return; }
       students = backup.students || [];
-      trash = backup.trash || [];
-      batches = backup.batches || [];
+      trash    = backup.trash    || [];
+      batches  = backup.batches  || [];
+      if (!batches.length) batches = [{id:'b1',name:'Batch 1'},{id:'b2',name:'Batch 2'}];
       await save(true);
       renderAll();
-      showToast(`✅ Restored ${students.length} student(s) successfully!`);
-    } catch(err) {
-      showToast('❌ Failed to read backup file.', false);
-    }
+      showToast(`✅ Restored ${students.length} student(s)!`);
+    } catch(err) { showToast('❌ Failed to read backup file.', false); }
     document.getElementById('restoreInput').value = '';
   };
   reader.readAsText(file);
 }
+
+function restoreFromFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.students) { showToast('Invalid backup file.', false); return; }
+      students = backup.students || [];
+      trash    = backup.trash    || [];
+      batches  = backup.batches  || [];
+      if (!batches.length) batches = [{id:'b1',name:'Batch 1'},{id:'b2',name:'Batch 2'}];
+      await save(true);
+      renderAll();
+      showToast('Restored ' + students.length + ' student(s)!');
+    } catch(err) { showToast('Failed to read file.', false); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+
+// ══════════════ EXCEL / CSV IMPORT SYSTEM ══════════════
+let importRows    = [];   // data rows (excluding header/summary)
+let importHeaders = [];   // column header names
+let importAllRows = [];   // every raw row from file
+
+// ── Exact column order from our own exportExcel() ──
+// A=#, B=Student Name, C=Batch, D=Phone, E=Joining Date,
+// F=Monthly Fee(Rs), G=Months, H=Total Due(Rs), I=Paid(Rs), J=Balance(Rs), K=Status
+
+const OUR_HEADERS = ['#','student name','batch','phone','joining date','monthly fee (rs)','months','total due (rs)','paid (rs)','balance (rs)','status'];
+
+const IMPORT_FIELDS = [
+  { key:'name',  label:'Student Name *', required:true,  hints:['student name','name','student','pupil','full name','sname'] },
+  { key:'phone', label:'Phone / Mobile', required:false, hints:['phone','mobile','contact','number','tel','ph'] },
+  { key:'join',  label:'Joining Date *', required:true,  hints:['joining date','join','date','admission','enrolled','start','doj'] },
+  { key:'fee',   label:'Monthly Fee *',  required:true,  hints:['monthly fee','fee','fees','amount','charge','tuition','monthly fee (rs)'] },
+  { key:'paid',  label:'Amount Paid',    required:false, hints:['paid','paid (rs)','payment','deposited','received','collected','amount paid'] },
+  { key:'batch', label:'Batch',          required:false, hints:['batch','class','group','section','division'] },
+];
+
+// ── Open file picker result ──
+function openImportModal(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('importResult').style.display = 'none';
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') {
+    readImportCSV(file);
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    readImportXLSX(file);
+  } else {
+    showToast('Please upload .xlsx or .csv file.', false);
+  }
+  event.target.value = '';
+}
+
+// ── CSV Reader ──
+function readImportCSV(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const lines = e.target.result.split(/\r?\n/);
+      const allRows = lines.map(l => parseCSVLine(l)).filter(r => r.some(c => String(c).trim()));
+      if (allRows.length < 1) { showToast('CSV file is empty.', false); return; }
+      processRawRows(allRows);
+    } catch(err) { showToast('Failed to read CSV: ' + err.message, false); }
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVLine(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') inQ = !inQ;
+    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+    else cur += c;
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+// ── XLSX Reader using SheetJS from CDN ──
+function readImportXLSX(file) {
+  // Dynamically load SheetJS if not already loaded
+  if (!window.XLSX) {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload = () => doReadXLSX(file);
+    script.onerror = () => {
+      showToast('Could not load Excel library. Try saving as CSV.', false);
+    };
+    document.head.appendChild(script);
+  } else {
+    doReadXLSX(file);
+  }
+}
+
+function doReadXLSX(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true, raw: false });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      // Convert to array of arrays
+      const allRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      const cleaned = allRows.map(r => r.map(c => String(c === null || c === undefined ? '' : c).trim()));
+      const nonEmpty = cleaned.filter(r => r.some(c => c !== ''));
+      if (!nonEmpty.length) { showToast('Excel file is empty.', false); return; }
+      processRawRows(nonEmpty);
+    } catch(err) { showToast('Failed to read Excel: ' + err.message, false); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Detect header row and data rows ──
+function processRawRows(allRows) {
+  importAllRows = allRows;
+
+  // Find header row — look for a row containing typical column keywords
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(allRows.length, 6); i++) {
+    const row = allRows[i].map(c => String(c).toLowerCase().trim());
+    const score = row.filter(c =>
+      c.includes('name') || c.includes('date') || c.includes('fee') ||
+      c.includes('paid') || c.includes('batch') || c.includes('phone') ||
+      c.includes('joining') || c.includes('mobile') || c.includes('student')
+    ).length;
+    if (score >= 2) { headerIdx = i; break; }
+  }
+
+  importHeaders = allRows[headerIdx].map(c => String(c).trim());
+  // Data rows = everything after header, skip blank rows
+  importRows = allRows.slice(headerIdx + 1).filter(r => r.some(c => String(c).trim() !== ''));
+
+  setupImportModal();
+}
+
+// ── Auto-map columns to fields ──
+function autoMap() {
+  const map = {};
+  for (const f of IMPORT_FIELDS) {
+    const idx = importHeaders.findIndex(h => {
+      const hl = h.toLowerCase().trim();
+      return f.hints.some(hint => hl === hint || hl.includes(hint) || hint.includes(hl));
+    });
+    map[f.key] = idx;
+  }
+  return map;
+}
+
+// ── Setup Modal UI ──
+function setupImportModal() {
+  const mapping = autoMap();
+  const area = document.getElementById('importMappingArea');
+  area.innerHTML = IMPORT_FIELDS.map(f => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+      <label style="width:130px;font-size:13px;color:var(--text2);flex-shrink:0">${f.label}</label>
+      <select id="map_${f.key}" onchange="updateImportPreview()"
+        style="flex:1;padding:8px 10px;border:1.5px solid ${mapping[f.key]>=0?'var(--accent)':'var(--border)'};border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);outline:none">
+        <option value="-1">${f.required ? '— Select column —' : '— Skip —'}</option>
+        ${importHeaders.map((h,i) => `<option value="${i}" ${mapping[f.key]===i?'selected':''}>${h||'Column '+(i+1)}</option>`).join('')}
+      </select>
+    </div>`).join('');
+
+  // Batch selector
+  const bsel = document.getElementById('importBatch');
+  bsel.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+
+  document.getElementById('importModal').classList.add('open');
+  updateImportPreview();
+}
+
+// ── Live Preview ──
+function updateImportPreview() {
+  const getMap = k => parseInt(document.getElementById('map_'+k)?.value ?? '-1');
+  const table = document.getElementById('importPreviewTable');
+  const previewArea = document.getElementById('importPreviewArea');
+  previewArea.style.display = 'block';
+  const preview = importRows.slice(0, 5);
+
+  const cols = [
+    { label:'Name',         key:'name' },
+    { label:'Phone',        key:'phone' },
+    { label:'Joining Date', key:'join' },
+    { label:'Monthly Fee',  key:'fee' },
+    { label:'Paid',         key:'paid' },
+    { label:'Batch',        key:'batch' },
+  ];
+
+  table.innerHTML = `
+    <thead style="background:var(--accent)">
+      <tr>${cols.map(c=>`<th style="padding:6px 8px;font-size:11px;color:white;font-weight:600;white-space:nowrap;letter-spacing:.4px">${c.label}</th>`).join('')}</tr>
+    </thead>
+    <tbody>
+      ${preview.map((row, ri) => {
+        const bg = ri%2===0 ? 'var(--surface)':'var(--surface2)';
+        return `<tr style="background:${bg}">${cols.map(c => {
+          const idx = getMap(c.key);
+          let val = idx >= 0 ? String(row[idx]||'').trim() : '';
+          let display = val || '<span style="color:var(--text3)">—</span>';
+          let style = 'padding:6px 8px;font-size:12px;border-bottom:1px solid var(--border);white-space:nowrap';
+          if (c.key === 'join' && val) {
+            const parsed = parseImportDate(val);
+            if (parsed) { display = parsed; style += ';color:var(--accent);font-weight:600'; }
+            else style += ';color:var(--danger)';
+          }
+          if (c.key === 'fee' && val) {
+            const n = parseFloat(val.replace(/[^0-9.]/g,''));
+            if (!isNaN(n)) display = '₹' + n.toLocaleString('en-IN');
+          }
+          return `<td style="${style}">${display}</td>`;
+        }).join('')}</tr>`;
+      }).join('')}
+    </tbody>`;
+}
+
+// ── Date Parser — handles all formats ──
+function parseImportDate(val) {
+  if (!val) return null;
+  let s = String(val).trim();
+  if (!s || s === '—' || s === '-') return null;
+
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+  let m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+  if (m) {
+    const y = m[3].length === 2 ? '20'+m[3] : m[3];
+    return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  }
+
+  // MM/DD/YYYY (US format — only if first number > 12 it's DD)
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m && parseInt(m[1]) <= 12 && parseInt(m[2]) <= 31) {
+    return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  }
+
+  // "20 Feb 2026" or "Feb 20, 2026" or "20-Feb-2026"
+  const months = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
+  m = s.match(/^(\d{1,2})[\s\-]([a-zA-Z]{3,9})[\s\-,]*(\d{4})$/);
+  if (m) {
+    const mo = months[m[2].substring(0,3).toLowerCase()];
+    if (mo) return `${m[3]}-${String(mo).padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  }
+  m = s.match(/^([a-zA-Z]{3,9})[\s\-,]+(\d{1,2})[\s,]+(\d{4})$/);
+  if (m) {
+    const mo = months[m[1].substring(0,3).toLowerCase()];
+    if (mo) return `${m[3]}-${String(mo).padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  }
+
+  // Excel serial date number
+  const num = parseFloat(s);
+  if (!isNaN(num) && num > 30000 && num < 80000) {
+    const d = new Date(Math.round((num - 25569) * 86400 * 1000));
+    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  }
+
+  // Last resort — JS Date parse
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  return null;
+}
+
+// ── Clean number ──
+function parseImportNum(val) {
+  if (val === null || val === undefined || String(val).trim() === '') return 0;
+  const n = parseFloat(String(val).replace(/[^0-9.]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+
+// ── Run Import ──
+function runImport() {
+  const getMap = k => parseInt(document.getElementById('map_'+k)?.value ?? '-1');
+  const nameCol  = getMap('name');
+  const phoneCol = getMap('phone');
+  const joinCol  = getMap('join');
+  const feeCol   = getMap('fee');
+  const paidCol  = getMap('paid');
+  const batchCol = getMap('batch');
+  const defaultBatchId = document.getElementById('importBatch').value;
+
+  if (nameCol < 0) { showToast('Map the Student Name column first.', false); return; }
+  if (joinCol  < 0) { showToast('Map the Joining Date column first.', false); return; }
+  if (feeCol   < 0) { showToast('Map the Monthly Fee column first.', false); return; }
+
+  let imported = 0, skipped = 0, duplicates = 0;
+  const errors = [];
+
+  for (let ri = 0; ri < importRows.length; ri++) {
+    const row = importRows[ri];
+
+    // Skip summary/total rows
+    const firstCell = String(row[0]||'').trim().toLowerCase();
+    if (firstCell === 'total' || firstCell === '' || firstCell === '#') continue;
+
+    const name = String(row[nameCol]||'').trim();
+    if (!name || name.toLowerCase() === 'student name') continue;
+
+    // Skip duplicate names
+    if (students.find(s => s.name.toLowerCase().trim() === name.toLowerCase())) {
+      duplicates++;
+      errors.push(`"${name}" already exists — skipped`);
+      continue;
+    }
+
+    // Parse joining date
+    const joinRaw = String(row[joinCol]||'').trim();
+    const join = parseImportDate(joinRaw);
+    if (!join) {
+      skipped++;
+      errors.push(`Row ${ri+2}: "${name}" — bad date: "${joinRaw}"`);
+      continue;
+    }
+
+    // Parse fee
+    const fee = parseImportNum(row[feeCol]);
+    if (fee <= 0) {
+      skipped++;
+      errors.push(`Row ${ri+2}: "${name}" — invalid fee: "${row[feeCol]}"`);
+      continue;
+    }
+
+    const phone     = phoneCol >= 0 ? String(row[phoneCol]||'').trim() || '—' : '—';
+    const paidTotal = paidCol  >= 0 ? parseImportNum(row[paidCol]) : 0;
+
+    // Batch matching
+    let batchId = defaultBatchId;
+    if (batchCol >= 0) {
+      const bName = String(row[batchCol]||'').trim().toLowerCase();
+      if (bName) {
+        const matched = batches.find(b =>
+          b.name.toLowerCase() === bName ||
+          b.name.toLowerCase().includes(bName) ||
+          bName.includes(b.name.toLowerCase())
+        );
+        if (matched) batchId = matched.id;
+      }
+    }
+
+    const s = {
+      id:         Date.now() + imported,
+      name,
+      join,
+      batchId,
+      phone,
+      fee,
+      subject:    '—',
+      paidTotal,
+      advancePaid: 0,
+      payments:   paidTotal > 0
+        ? [{ date: join, amount: paidTotal, mode: 'Import', type: 'due', note: 'Imported from Excel' }]
+        : [],
+      status:     'due',
+      color:      avatarColors[(students.length + imported) % avatarColors.length]
+    };
+
+    students.push(s);
+    imported++;
+  }
+
+  if (imported === 0 && skipped === 0 && duplicates === 0) {
+    showToast('No valid student data found in file.', false);
+    return;
+  }
+
+  save(); renderAll();
+
+  // Build result message
+  const resultEl = document.getElementById('importResult');
+  let html = '';
+  if (imported > 0)    html += `<div style="font-size:15px;font-weight:700;color:var(--accent);margin-bottom:6px">✅ ${imported} student(s) imported successfully!</div>`;
+  if (duplicates > 0)  html += `<div style="color:var(--warn);margin-bottom:4px">⚠️ ${duplicates} duplicate(s) skipped</div>`;
+  if (skipped > 0)     html += `<div style="color:var(--danger);margin-bottom:4px">❌ ${skipped} row(s) had errors</div>`;
+  if (errors.length)   html += `<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:6px;font-size:12px;color:var(--text2);line-height:1.7">${errors.slice(0,6).map(e=>`• ${e}`).join('<br>')}</div>`;
+
+  resultEl.style.cssText = 'display:block;border:1px solid var(--border);padding:12px 14px;border-radius:var(--radius-sm);margin-top:1rem';
+  resultEl.innerHTML = html;
+  document.getElementById('importRunBtn').textContent = '✅ Done — Import More';
+  document.getElementById('importRunBtn').onclick = () => {
+    closeImportModal();
+    document.getElementById('importFileInput').click();
+  };
+
+  showToast(`Imported ${imported} student(s)!`, imported > 0);
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('open');
+  document.getElementById('importResult').style.display = 'none';
+  const btn = document.getElementById('importRunBtn');
+  if (btn) { btn.textContent = '⬆ Import Students'; btn.onclick = runImport; btn.style.display='flex'; }
+  importRows = []; importHeaders = []; importAllRows = [];
+}
+
 
 function renderAll() { renderBatchTabs(); renderStats(); renderTable(); renderTrash(); }
 // ══════════════ AUTH SYSTEM ══════════════
@@ -2840,12 +3447,13 @@ function exportPDF() {
 }
 </script>
 
-<!-- ══════════════ AUTO UPDATE SYSTEM ══════════════ -->
+<!-- ══════════════ SMART PATCH UPDATE SYSTEM ══════════════ -->
 <script>
-const APP_VERSION = '1.0.0';
-const VERSION_URL = './version.json';
+const APP_VERSION = '1.2.0';
+const VERSION_URL = '/version.json';  // relative — works on any Netlify/GitHub domain
 let latestVersionData = null;
 
+// ── Version Compare ──
 function compareVersions(v1, v2) {
   const a = v1.split('.').map(Number), b = v2.split('.').map(Number);
   for (let i = 0; i < 3; i++) {
@@ -2855,102 +3463,213 @@ function compareVersions(v1, v2) {
   return 0;
 }
 
-async function checkForUpdate() {
+// ── Check for Update ──
+async function checkForUpdate(manual = false) {
   try {
+    setUpdateStatus('checking');
     const res = await fetch(VERSION_URL + '?t=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) return;
+    if (!res.ok) { if (manual) setUpdateStatus('uptodate'); return; }
     const data = await res.json();
-    if (!data.version) return;
+    if (!data.version) { if (manual) setUpdateStatus('uptodate'); return; }
     latestVersionData = data;
+
     if (compareVersions(data.version, APP_VERSION) > 0) {
-      const dismissed = localStorage.getItem('mtc_dismissed_update') || '';
-      if (dismissed !== data.version) showUpdateBanner(data);
+      const dismissed = localStorage.getItem('mtc_dismissed_v') || '';
+      if (manual || dismissed !== data.version) {
+        showUpdateBanner(data);
+        // Show red dot on menu item
+        const dot = document.getElementById('updateDot');
+        if (dot) dot.style.display = 'inline-block';
+      }
+    } else {
+      if (manual) setUpdateStatus('uptodate');
     }
-  } catch(e) {}
+  } catch(e) {
+    if (manual) setUpdateStatus('error');
+  }
 }
 
+function setUpdateStatus(state) {
+  const menuItem = document.getElementById('updateMenuItem');
+  if (!menuItem) return;
+  if (state === 'checking') menuItem.querySelector('span.label').textContent = 'Checking...';
+  else if (state === 'uptodate') {
+    menuItem.querySelector('span.label').textContent = 'Up to date ✅';
+    setTimeout(() => { if(menuItem.querySelector('span.label')) menuItem.querySelector('span.label').textContent = 'Check for Updates'; }, 2000);
+  }
+  else if (state === 'error') {
+    menuItem.querySelector('span.label').textContent = 'No internet ❌';
+    setTimeout(() => { if(menuItem.querySelector('span.label')) menuItem.querySelector('span.label').textContent = 'Check for Updates'; }, 2000);
+  }
+}
+
+// ── Show Update Banner ──
 function showUpdateBanner(data) {
-  document.getElementById('updateVersionBadge').textContent = 'v' + data.version;
-  document.getElementById('updateDesc').textContent = data.description || 'New features and improvements are ready.';
-  document.getElementById('updateBanner').classList.add('show');
+  const badge = document.getElementById('updateVersionBadge');
+  const desc  = document.getElementById('updateDesc');
+  const banner = document.getElementById('updateBanner');
+  if (badge) badge.textContent = 'v' + data.version;
+  if (desc)  desc.textContent  = data.description || 'New improvements ready!';
+  if (banner) banner.classList.add('show');
 }
 
 function dismissUpdate() {
-  document.getElementById('updateBanner').classList.remove('show');
-  try { localStorage.setItem('mtc_dismissed_update', latestVersionData?.version || ''); } catch(e) {}
+  const banner = document.getElementById('updateBanner');
+  if (banner) banner.classList.remove('show');
+  try { localStorage.setItem('mtc_dismissed_v', latestVersionData?.version || ''); } catch(e) {}
 }
 
+// ── Show Changelog ──
 function showChangelog() {
   if (!latestVersionData) return;
+  const el = document.getElementById('changelogModal');
   document.getElementById('clogVersion').textContent = 'v' + latestVersionData.version;
-  document.getElementById('clogDate').textContent = latestVersionData.date || '';
-  document.getElementById('clogList').innerHTML = (latestVersionData.changes || ['Bug fixes and improvements']).map(c => `<li>${c}</li>`).join('');
-  document.getElementById('changelogModal').classList.add('open');
+  document.getElementById('clogDate').textContent    = latestVersionData.date || '';
+  document.getElementById('clogList').innerHTML = (latestVersionData.changes || ['Bug fixes']).map(c => `<li style="padding:4px 0">${c}</li>`).join('');
+  // Show patch badge if patch available
+  const patchBadge = document.getElementById('clogPatchBadge');
+  if (patchBadge) {
+    patchBadge.style.display = latestVersionData.patch_url ? 'inline-block' : 'none';
+  }
+  if (el) el.classList.add('open');
 }
 
-async function doUpdate() {
+// ── Apply Patch Update (small fix without full download) ──
+async function applyPatch() {
+  if (!latestVersionData?.patch_url) { doFullUpdate(); return; }
   const prog = document.getElementById('clogProgress');
   const fill = document.getElementById('clogProgressFill');
   const txt  = document.getElementById('clogProgressText');
   const btn  = document.getElementById('clogUpdateBtn');
-  document.getElementById('changelogModal').classList.add('open');
-  prog.style.display = 'block';
-  btn.disabled = true; btn.textContent = '⏳ Updating…';
+  if (prog) prog.style.display = 'block';
+  if (btn)  { btn.disabled = true; btn.textContent = '⏳ Applying patch…'; }
 
-  if (!latestVersionData || !latestVersionData.url) {
-    txt.textContent = '🔄 Reloading to get latest version…';
-    fill.style.width = '80%';
+  try {
+    if (txt) { txt.textContent = '📥 Downloading patch…'; }
+    if (fill) fill.style.width = '30%';
+
+    const res = await fetch(latestVersionData.patch_url + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Patch download failed');
+    const patch = await res.json();
+
+    if (fill) fill.style.width = '70%';
+    if (txt)  txt.textContent = '🔧 Applying patch…';
+
+    // Save patch version to storage
+    try {
+      localStorage.setItem('mtc_patch_version', patch.patch_version || latestVersionData.version);
+      localStorage.setItem('mtc_patch_applied', new Date().toISOString());
+    } catch(e) {}
+
+    if (fill) fill.style.width = '90%';
+    if (txt)  txt.textContent = '✅ Patch applied! Reloading…';
+
+    // Reload page to get fresh version from GitHub
+    setTimeout(() => window.location.reload(true), 1000);
+
+  } catch(e) {
+    // Patch failed — fall back to full update
+    if (txt) txt.textContent = '⚠️ Patch failed. Downloading full update…';
+    setTimeout(() => doFullUpdate(), 1000);
+  }
+}
+
+// ── Full Update (download entire new app) ──
+async function doFullUpdate() {
+  const prog = document.getElementById('clogProgress');
+  const fill = document.getElementById('clogProgressFill');
+  const txt  = document.getElementById('clogProgressText');
+  const btn  = document.getElementById('clogUpdateBtn');
+
+  document.getElementById('changelogModal').classList.add('open');
+  if (prog) prog.style.display = 'block';
+  if (btn)  { btn.disabled = true; btn.textContent = '⏳ Updating…'; }
+
+  if (!latestVersionData?.url) {
+    if (txt)  txt.textContent = '🔄 Reloading…';
+    if (fill) fill.style.width = '80%';
     setTimeout(() => window.location.reload(true), 800);
     return;
   }
 
   try {
-    txt.textContent = 'Downloading update…'; fill.style.width = '20%';
+    if (txt)  txt.textContent = '📥 Downloading update…';
+    if (fill) fill.style.width = '20%';
+
     const res = await fetch(latestVersionData.url + '?t=' + Date.now(), { cache: 'no-store' });
-    fill.style.width = '60%';
+    if (fill) fill.style.width = '60%';
     if (!res.ok) throw new Error('Download failed: ' + res.status);
     const html = await res.text();
-    fill.style.width = '85%'; txt.textContent = 'Installing…';
-    // Write new HTML to a blob and navigate
+
+    if (fill) fill.style.width = '85%';
+    if (txt)  txt.textContent = '📦 Installing…';
+
+    // If hosted on GitHub Pages — just reload (GitHub serves latest)
+    if (window.location.hostname.includes('github.io') ||
+        window.location.hostname.includes('netlify.app')) {
+      if (fill) fill.style.width = '100%';
+      if (txt)  txt.textContent = '✅ Done! Reloading app…';
+      setTimeout(() => window.location.reload(true), 800);
+      return;
+    }
+
+    // Otherwise save new HTML as blob and navigate
     const blob = new Blob([html], { type: 'text/html' });
     const url  = URL.createObjectURL(blob);
-    fill.style.width = '100%'; txt.textContent = '✅ Done! Restarting…';
+    if (fill) fill.style.width = '100%';
+    if (txt)  txt.textContent = '✅ Done! Restarting…';
     setTimeout(() => { window.location.href = url; }, 800);
+
   } catch(e) {
-    txt.textContent = '❌ Download failed. Reloading instead…';
-    fill.style.width = '100%';
-    setTimeout(() => window.location.reload(true), 1500);
+    if (txt)  txt.textContent = '❌ Failed. Please reload manually.';
+    if (fill) fill.style.width = '100%';
+    setTimeout(() => window.location.reload(true), 2000);
   }
 }
 
-// Auto-check 3s after load
+// doUpdate called from changelog modal button
+function doUpdate() {
+  if (latestVersionData?.patch_url) {
+    applyPatch();
+  } else {
+    doFullUpdate();
+  }
+}
+
+// ── Auto-check 3s after load ──
 window.addEventListener('load', () => {
-  setTimeout(checkForUpdate, 3000);
+  setTimeout(() => checkForUpdate(false), 3000);
 });
 
-// Add "Check for Updates" to dropdown after DOM ready
+// ── Add menu item ──
 window.addEventListener('DOMContentLoaded', () => {
   const dropdown = document.getElementById('userDropdown');
   if (!dropdown) return;
   const item = document.createElement('div');
+  item.id = 'updateMenuItem';
   item.className = 'user-dropdown-item';
-  item.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Check for Updates<span id="updateDot" style="display:none;width:8px;height:8px;background:#C0392B;border-radius:50%;margin-left:auto;flex-shrink:0"></span>`;
+  item.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    <span class="label">Check for Updates</span>
+    <span id="updateDot" style="display:none;width:8px;height:8px;background:#C0392B;border-radius:50%;margin-left:auto;flex-shrink:0"></span>
+  `;
   item.onclick = () => {
     closeUserDropdown();
-    checkForUpdate().then(() => {
-      if (latestVersionData && compareVersions(latestVersionData.version, APP_VERSION) > 0) {
-        showChangelog();
-      } else {
-        const t = document.createElement('div');
-        t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2D6A4F;color:white;padding:12px 20px;border-radius:10px;font-size:14px;font-family:inherit;z-index:9999;white-space:nowrap';
-        t.textContent = '✅ App is up to date! (v' + APP_VERSION + ')';
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 2800);
-      }
-    });
+    const dot = document.getElementById('updateDot');
+    if (dot && dot.style.display !== 'none') {
+      // Already found update — show changelog
+      showChangelog();
+    } else {
+      checkForUpdate(true).then(() => {
+        if (latestVersionData && compareVersions(latestVersionData.version, APP_VERSION) > 0) {
+          showChangelog();
+        }
+      });
+    }
   };
   const signOutItem = dropdown.querySelector('.danger');
   if (signOutItem) dropdown.insertBefore(item, signOutItem);
+  else dropdown.appendChild(item);
 });
 </script>
 
@@ -3183,17 +3902,23 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- CHANGELOG MODAL -->
 <div class="clog-overlay" id="changelogModal">
   <div class="clog-box">
-    <div class="clog-badge" id="clogVersion">v1.0.0</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div class="clog-badge" id="clogVersion">v1.0.0</div>
+      <span id="clogPatchBadge" style="display:none;background:#D4EFDF;color:#1E8449;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px">⚡ Quick Patch</span>
+    </div>
     <div class="clog-title">What's New 🎉</div>
     <div class="clog-sub" id="clogDate"></div>
     <ul class="clog-list" id="clogList"></ul>
+    <div style="background:#F7F5F0;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#6B6560" id="clogUpdateTypeInfo">
+      ☁️ Update will reload the app from your GitHub/Netlify server
+    </div>
     <div class="clog-progress" id="clogProgress">
       <div style="font-size:13px;font-weight:600;color:#1A1714" id="clogProgressText">Downloading update…</div>
       <div class="clog-pbar"><div class="clog-pfill" id="clogProgressFill"></div></div>
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="doUpdate()" style="flex:1;padding:12px;background:#2D6A4F;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;" id="clogUpdateBtn">⬇ Update Now</button>
-      <button onclick="document.getElementById('changelogModal').classList.remove('open')" style="padding:12px 16px;background:none;border:1px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:#6B6560;cursor:pointer;">Close</button>
+      <button onclick="document.getElementById('changelogModal').classList.remove('open')" style="padding:12px 16px;background:none;border:1px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:#6B6560;cursor:pointer;">Later</button>
     </div>
   </div>
 </div>
