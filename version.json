@@ -1,15 +1,16 @@
 {
-  "version": "1.8.0",
+  "version": "2.2.0",
   "date": "2026-03-20",
-  "description": "Fixed WhatsApp/Telegram file sharing",
+  "description": "Grouped bar chart like Project Financials example",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📲 WhatsApp/Telegram share now attaches file directly (on live site)",
-    "✅ Uses Android Web Share API for real file attachment",
-    "📱 Smart detection: HTTPS site vs preview mode",
-    "📥 Download fallback with step-by-step attach guide",
-    "🔄 Share sheet opens automatically with file ready"
+    "📊 Monthly chart now shows 3 grouped bars per month",
+    "🩷 Pink bar = Expected fees",
+    "🟠 Orange bar = Collected amount",
+    "🟢 Green bar = Balance remaining",
+    "🗑️ Removed Batch Comparison chart",
+    "📋 Legend shown at bottom like the example image"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"

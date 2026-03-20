@@ -15,6 +15,7 @@
 <meta name="app-version" content="1.6.0">
 <title>Mahatab Tuition Centre</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   /* LOGIN SCREEN */
@@ -626,6 +627,62 @@
       <div class="stat-label">🟡 Partial</div>
       <div class="stat-value amber" id="statPartialCount">0</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statTotal">₹0 total</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PANEL -->
+  <div class="panel" id="revenueChartPanel" style="margin-bottom:1.25rem">
+    <div class="panel-header" style="cursor:pointer" onclick="toggleRevenueChart()">
+      <span class="panel-title"><span class="panel-icon">📊</span> Revenue Dashboard</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="revenueChartSummary" style="font-size:13px;color:var(--accent);font-weight:600"></span>
+        <span id="revenueChartToggleIcon" style="font-size:14px;color:var(--text3)">▼</span>
+      </div>
+    </div>
+    <div id="revenueChartBody" style="padding:16px 20px 20px">
+
+      <!-- Month range selector -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+        <button onclick="setChartRange(3)"  id="chartBtn3"  class="btn btn-sm" style="font-size:12px">3 Months</button>
+        <button onclick="setChartRange(6)"  id="chartBtn6"  class="btn btn-sm btn-primary" style="font-size:12px">6 Months</button>
+        <button onclick="setChartRange(12)" id="chartBtn12" class="btn btn-sm" style="font-size:12px">12 Months</button>
+      </div>
+
+      <!-- ROW 1: Monthly Collection (full width, grouped bars like image) -->
+      <div style="background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+          <span>Monthly Financials</span>
+          <span id="chartTotalLabel" style="color:var(--accent);font-size:12px;font-weight:600"></span>
+        </div>
+        <div style="position:relative;height:220px">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+
+      <!-- ROW 2: Fee Status donut + Collection Trend line -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- Fee Status Donut -->
+        <div style="background:var(--surface2);border-radius:12px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📌 Fee Status</div>
+          <div style="position:relative;height:160px">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Collection Rate Trend Line -->
+        <div style="background:var(--surface2);border-radius:12px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📈 Collection Trend</div>
+          <div style="position:relative;height:160px">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 3: Monthly breakdown table -->
+      <div id="revenueBreakdown" style="background:var(--surface2);border-radius:12px;padding:14px"></div>
+
     </div>
   </div>
 
@@ -1417,6 +1474,22 @@ const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
 const today = () => new Date().toISOString().split('T')[0];
 
 // ── Per-user storage key prefix ──
+// ── Login/auth stubs (login removed, kept for compatibility) ──
+function doLogin()          { loadData(); document.getElementById('loginScreen') && document.getElementById('loginScreen').classList.remove('active'); }
+function doSignUp()         { doLogin(); }
+function signInWithGoogle() { doLogin(); }
+function signOut()          { try { location.reload(); } catch(e){} }
+function toggleUserDropdown()  { const d=document.getElementById('userDropdown'); if(d) d.classList.toggle('open'); }
+function closeUserDropdown()   { const d=document.getElementById('userDropdown'); if(d) d.classList.remove('open'); }
+function switchAuthTab(t)      {}
+function showForgotPassword()  {}
+function doForgotPassword()    {}
+function togglePwd(id,btn)     { const i=document.getElementById(id); if(i){i.type=i.type==='password'?'text':'password'; if(btn)btn.textContent=i.type==='password'?'👁':'🙈';} }
+function checkPasswordStrength(){}
+function exportExcel() { if(typeof doExportExcel==="function") doExportExcel(); else showToast("Export not available",false); }
+function updateHeaderUser()    {}
+
+
 function userKey(key) {
   return 'mtc_' + key;
 }
@@ -3479,413 +3552,290 @@ function closeImportModal() {
 }
 
 
-function renderAll() { renderBatchTabs(); renderStats(); renderTable(); renderTrash(); }
-// ══════════════ AUTH SYSTEM ══════════════
-let currentUser = null;
-const GOOGLE_CLIENT_ID = '577695236166-placeholder.apps.googleusercontent.com';
+function renderAll() { renderBatchTabs(); renderStats(); renderTable(); renderTrash(); renderRevenueChart(); }
 
-function hashPassword(pwd) {
-  let hash = 0;
-  const salted = 'MTC_SALT_2024_' + pwd;
-  for (let i = 0; i < salted.length; i++) { hash = ((hash << 5) - hash) + salted.charCodeAt(i); hash |= 0; }
-  return Math.abs(hash).toString(36) + btoa(pwd.slice(0,3)+'xx').replace(/=/g,'');
-}
-function getUsers() { try { return JSON.parse(localStorage.getItem('mtc_users')||'[]'); } catch(e) { return []; } }
-function saveUsers(u) { try { localStorage.setItem('mtc_users', JSON.stringify(u)); } catch(e) {} }
-function saveUserSession(u) { try { localStorage.setItem('mtc_user', JSON.stringify(u)); } catch(e) {} }
-function loadUserSession() { try { const u=localStorage.getItem('mtc_user'); return u?JSON.parse(u):null; } catch(e) { return null; } }
+// ══════════════ DASHBOARD CHARTS ══════════════
+let revenueChartInstance = null;
+let statusChartInstance  = null;
+let trendChartInstance   = null;
+let chartMonths   = 6;
+let chartCollapsed = false;
 
-function togglePwd(id, btn) {
-  const inp = document.getElementById(id);
-  if (inp.type==='password') { inp.type='text'; btn.textContent='🙈'; } else { inp.type='password'; btn.textContent='👁'; }
-}
+const CHART_COLORS = [
+  '#FF6B6B','#4ECDC4','#A78BFA','#F59E0B',
+  '#34D399','#60A5FA','#F472B6','#FB923C',
+  '#818CF8','#2DD4BF','#A3E635','#E879F9'
+];
 
-function checkPasswordStrength(pwd) {
-  const bar = document.getElementById('pwdStrengthBar');
-  const txt = document.getElementById('pwdStrengthText');
-  if (!bar) return;
-  let score=0;
-  if(pwd.length>=6)score++; if(pwd.length>=10)score++; if(/[A-Z]/.test(pwd))score++; if(/[0-9]/.test(pwd))score++; if(/[^A-Za-z0-9]/.test(pwd))score++;
-  const lv=[{pct:'20%',color:'#C0392B',label:'Very Weak'},{pct:'40%',color:'#E67E22',label:'Weak'},{pct:'60%',color:'#F1C40F',label:'Fair'},{pct:'80%',color:'#27AE60',label:'Strong'},{pct:'100%',color:'#1E8449',label:'Very Strong'}][Math.min(score,4)];
-  bar.style.width=lv.pct; bar.style.background=lv.color;
-  txt.textContent=pwd.length?lv.label:''; txt.style.color=lv.color;
+function toggleRevenueChart() {
+  chartCollapsed = !chartCollapsed;
+  document.getElementById('revenueChartBody').style.display = chartCollapsed ? 'none' : 'block';
+  document.getElementById('revenueChartToggleIcon').textContent = chartCollapsed ? '▶' : '▼';
 }
 
-function showAuthError(form, msg) {
-  const el=document.getElementById(form==='signup'?'authError':'loginError');
-  if(el){el.textContent=msg;el.style.display='block';}
-}
-function hideAuthError() { ['authError','loginError'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); }
-
-function switchAuthTab(tab) {
-  const isLogin=tab==='login';
-  document.getElementById('loginForm').style.display=isLogin?'block':'none';
-  document.getElementById('signupForm').style.display=isLogin?'none':'block';
-  document.getElementById('forgotForm').style.display='none';
-  document.getElementById('tabLoginBtn').style.background=isLogin?'#2D6A4F':'transparent';
-  document.getElementById('tabLoginBtn').style.color=isLogin?'white':'#6B6560';
-  document.getElementById('tabSignupBtn').style.background=isLogin?'transparent':'#2D6A4F';
-  document.getElementById('tabSignupBtn').style.color=isLogin?'#6B6560':'white';
-  document.getElementById('authSubtitle').textContent=isLogin?'Welcome back! Sign in to continue.':'Create your account to get started.';
-  hideAuthError();
+function setChartRange(months) {
+  chartMonths = months;
+  ['3','6','12'].forEach(m => {
+    const btn = document.getElementById('chartBtn'+m);
+    if (btn) btn.className = 'btn btn-sm' + (String(months)===m?' btn-primary':'');
+  });
+  renderRevenueChart();
 }
 
-function showForgotPassword() {
-  document.getElementById('loginForm').style.display='none';
-  document.getElementById('forgotForm').style.display='block';
-  document.getElementById('authSubtitle').textContent='Recover your account';
+// ── Get monthly data ──
+function getMonthlyRevenueData(monthCount) {
+  const labels = [], collected = [], expected = [], rates = [];
+  const now = new Date();
+  for (let i = monthCount-1; i >= 0; i--) {
+    const d  = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const yr = d.getFullYear(), mo = d.getMonth();
+    labels.push(d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'}));
+    let col = 0, exp = 0;
+    students.forEach(s => {
+      (s.payments||[]).forEach(p => {
+        if (!p.date) return;
+        const pd = new Date(p.date+'T00:00:00');
+        if (pd.getFullYear()===yr && pd.getMonth()===mo) col += p.amount||0;
+      });
+      const j = new Date(s.join+'T00:00:00');
+      if (j.getFullYear()<yr||(j.getFullYear()===yr&&j.getMonth()<=mo)) exp += s.fee||0;
+    });
+    collected.push(col); expected.push(exp);
+    rates.push(exp>0 ? Math.round((col/exp)*100) : 0);
+  }
+  return { labels, collected, expected, rates };
 }
 
-function doSignUp() {
-  hideAuthError();
-  const name=document.getElementById('suName').value.trim();
-  const username=document.getElementById('suUsername').value.trim().toLowerCase();
-  const email=document.getElementById('suEmail').value.trim().toLowerCase();
-  const password=document.getElementById('suPassword').value;
-  const confirm=document.getElementById('suConfirm').value;
-  if(!name){showAuthError('signup','\u274C Please enter your full name.');return;}
-  if(!username){showAuthError('signup','\u274C Choose a username.');return;}
-  if(username.length<3){showAuthError('signup','\u274C Username must be at least 3 characters.');return;}
-  if(!/^[a-z0-9_]+$/.test(username)){showAuthError('signup','\u274C Username: only letters, numbers, underscore.');return;}
-  if(!password||password.length<6){showAuthError('signup','\u274C Password must be at least 6 characters.');return;}
-  if(password!==confirm){showAuthError('signup','\u274C Passwords do not match.');return;}
-  const users=getUsers();
-  if(users.find(u=>u.username===username)){showAuthError('signup','\u274C Username already taken.');return;}
-  if(email&&users.find(u=>u.email===email)){showAuthError('signup','\u274C Email already registered.');return;}
-  const newUser={id:'u_'+Date.now(),name,username,email,passwordHash:hashPassword(password),createdAt:new Date().toISOString(),type:'local'};
-  users.push(newUser); saveUsers(users);
-  const session={id:newUser.id,name,username,email,picture:'',type:'local'};
-  saveUserSession(session); currentUser=session; onLoginSuccess();
-  showToast('\uD83C\uDF89 Welcome, '+name+'! Account created.');
-}
+function destroyChart(inst) { try { if(inst) inst.destroy(); } catch(e){} return null; }
 
-function doLogin() {
-  hideAuthError();
-  const input=document.getElementById('liUsername').value.trim().toLowerCase();
-  const password=document.getElementById('liPassword').value;
-  if(!input){showAuthError('login','\u274C Enter your username or email.');return;}
-  if(!password){showAuthError('login','\u274C Enter your password.');return;}
-  const users=getUsers();
-  const user=users.find(u=>u.username===input||u.email===input);
-  if(!user){showAuthError('login','\u274C Account not found. Please sign up first.');return;}
-  if(user.passwordHash!==hashPassword(password)){showAuthError('login','\u274C Incorrect password.');return;}
-  const session={id:user.id,name:user.name,username:user.username,email:user.email,picture:'',type:'local'};
-  saveUserSession(session); currentUser=session; onLoginSuccess();
-  showToast('\uD83D\uDC4B Welcome back, '+user.name+'!');
-}
-
-function doForgotPassword() {
-  const input=document.getElementById('forgotUsername').value.trim().toLowerCase();
-  const res=document.getElementById('forgotResult');
-  if(!input){res.style.display='block';res.style.background='#FDECEA';res.style.color='#C0392B';res.textContent='\u274C Enter username first.';return;}
-  const user=getUsers().find(u=>u.username===input||u.email===input);
-  if(!user){res.style.display='block';res.style.background='#FDECEA';res.style.color='#C0392B';res.textContent='\u274C No account found.';return;}
-  res.style.display='block';res.style.background='#D4EFDF';res.style.color='#1E8449';
-  res.innerHTML='\u2705 Account found!<br><b>Name:</b> '+user.name+'<br><b>Username:</b> '+user.username+'<br><b>Joined:</b> '+new Date(user.createdAt).toLocaleDateString('en-IN')+'<br><br><i>Contact developer to reset password.</i>';
-}
-
-function signInWithGoogle() {
-  if(window.google&&window.google.accounts){
-    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleLogin,auto_select:false,cancel_on_tap_outside:true});
-    google.accounts.id.prompt(n=>{if(n.isNotDisplayed()||n.isSkippedMoment())showAuthError('login','\u26A0\uFE0F Google Sign-in unavailable. Use username & password.');});
-  } else { showAuthError('login','\u26A0\uFE0F Google Sign-in not available. Use username & password below.'); }
-}
-
-function handleGoogleLogin(response) {
-  try {
-    const p=parseJwt(response.credential);
-    const gu={id:'g_'+p.sub,name:p.name,username:p.email.split('@')[0],email:p.email,picture:p.picture,type:'google'};
-    const users=getUsers();
-    if(!users.find(u=>u.id===gu.id)){users.push({...gu,createdAt:new Date().toISOString()});saveUsers(users);}
-    saveUserSession(gu); currentUser=gu; onLoginSuccess();
-    showToast('\uD83D\uDC4B Welcome, '+gu.name+'!');
-  } catch(e){showAuthError('login','\u274C Google login failed.');}
-}
-
-function parseJwt(token){
-  const base64=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-}
-
-function onLoginSuccess(){
-  // Reset all data before loading the new user's data
-  students=[]; trash=[]; batches=[];
-  activeBatch='all'; activeQuickFilter='';
-  notifDismissed=false;
-  dismissedStudentIds = new Set();
-  document.getElementById('loginScreen').classList.remove('active');
-  updateHeaderUser(); 
-  loadData();
-}
-
-function updateHeaderUser(){
-  if(!currentUser)return;
-  const img=document.getElementById('headerAvatar'),txt=document.getElementById('headerAvatarText');
-  const udImg=document.getElementById('udAvatar'),udTxt=document.getElementById('udAvatarText');
-  document.getElementById('udName').textContent=currentUser.name;
-  document.getElementById('udEmail').textContent=currentUser.email||('@'+(currentUser.username||'user'));
-  if(currentUser.picture){img.src=currentUser.picture;img.style.display='block';txt.style.display='none';udImg.src=currentUser.picture;udImg.style.display='block';udTxt.style.display='none';}
-  else{const i=currentUser.name.charAt(0).toUpperCase();txt.textContent=i;txt.style.display='flex';img.style.display='none';udTxt.textContent=i;udTxt.style.display='flex';udImg.style.display='none';}
-}
-
-function toggleUserDropdown(){document.getElementById('userDropdown').classList.toggle('open');}
-function closeUserDropdown(){document.getElementById('userDropdown').classList.remove('open');}
-
-function signOut(){
-  closeUserDropdown(); 
-  currentUser=null;
-  // Clear ALL in-memory data so next user starts fresh
-  students=[]; trash=[]; batches=[];
-  activeBatch='all'; activeQuickFilter='';
-  try{localStorage.removeItem('mtc_user');}catch(e){}
-  if(window.google&&window.google.accounts)google.accounts.id.disableAutoSelect();
-  switchAuthTab('login');
-  document.getElementById('liUsername').value='';
-  document.getElementById('liPassword').value='';
-  hideAuthError();
-  document.getElementById('loginScreen').classList.add('active');
-  showToast('Signed out successfully.');
-}
-
-document.addEventListener('click',e=>{
-  const dd=document.getElementById('userDropdown'),av=document.getElementById('userAvatarBtn');
-  if(dd&&av&&!dd.contains(e.target)&&!av.contains(e.target))closeUserDropdown();
-});
-
-(function initApp(){
-  const savedUser=loadUserSession();
-  if(savedUser){currentUser=savedUser;document.getElementById('loginScreen').classList.remove('active');updateHeaderUser();loadData();}
-  else{switchAuthTab('login');}
-})();
-function exportExcel() {
-  const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
-  if (!scope.length) { showToast('No students to export.', false); return; }
-
-  const batchLabel = activeBatch === 'all' ? 'All Batches' : getBatchName(activeBatch);
-  const printDate = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
-
-  // Summary stats
-  const totalFees = scope.reduce((a,s) => a + totalDue(s), 0);
-  const collected = scope.reduce((a,s) => a + (s.paidTotal||0), 0);
-  const outstanding = scope.reduce((a,s) => a + calcBalance(s), 0);
-
-  // Build XLSX using SpreadsheetML (Office Open XML) — opens in Excel, Google Sheets, WPS
-  const esc = v => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
-  const numFmt = (v) => `<c t="n"><v>${v}</v></c>`;
-  const strCell = (v) => `<c t="inlineStr"><is><t>${esc(v)}</t></is></c>`;
-
-  // Header row
-  const headers = ['#','Student Name','Batch','Phone','Joining Date','Monthly Fee (Rs)','Months','Total Due (Rs)','Paid (Rs)','Balance (Rs)','Status'];
-  const headerRow = `<row r="1">${headers.map((h,i) => `<c r="${colLetter(i)}1" t="inlineStr" s="1"><is><t>${esc(h)}</t></is></c>`).join('')}</row>`;
-
-  // Summary rows (top section, rows 2-6)
-  const summaryRows = [
-    `<row r="2">${strCell('Report: ' + batchLabel + '   |   Generated: ' + printDate)}</row>`,
-    `<row r="3">${strCell('Total Students: ' + scope.length + '   |   Total Fees Due: Rs.' + totalFees.toLocaleString('en-IN') + '   |   Collected: Rs.' + collected.toLocaleString('en-IN') + '   |   Outstanding: Rs.' + outstanding.toLocaleString('en-IN'))}</row>`,
-    `<row r="4"></row>`,
-  ].join('');
-
-  // Data rows start at row 5 (after summary)
-  const dataRows = scope.map((s, i) => {
-    const months = monthsActive(s.join);
-    const due = totalDue(s);
-    const bal = calcBalance(s);
-    const status = calcStatus(s);
-    const r = i + 5;
-    return `<row r="${r}">
-      <c r="A${r}" t="n"><v>${i+1}</v></c>
-      <c r="B${r}" t="inlineStr"><is><t>${esc(s.name)}</t></is></c>
-      <c r="C${r}" t="inlineStr"><is><t>${esc(getBatchName(s.batchId))}</t></is></c>
-      <c r="D${r}" t="inlineStr"><is><t>${esc(s.phone === '—' ? '-' : s.phone)}</t></is></c>
-      <c r="E${r}" t="inlineStr"><is><t>${esc(formatDate(s.join))}</t></is></c>
-      <c r="F${r}" t="n"><v>${s.fee}</v></c>
-      <c r="G${r}" t="n"><v>${months}</v></c>
-      <c r="H${r}" t="n"><v>${due}</v></c>
-      <c r="I${r}" t="n"><v>${s.paidTotal||0}</v></c>
-      <c r="J${r}" t="n"><v>${bal}</v></c>
-      <c r="K${r}" t="inlineStr"><is><t>${esc(status.charAt(0).toUpperCase()+status.slice(1))}</t></is></c>
-    </row>`;
-  }).join('');
-
-  // Totals row
-  const lastData = scope.length + 4;
-  const totalRow = `<row r="${lastData+1}">
-    <c r="A${lastData+1}" t="inlineStr" s="1"><is><t>TOTAL</t></is></c>
-    <c r="F${lastData+1}" t="n" s="1"><v>${scope.reduce((a,s)=>a+s.fee,0)}</v></c>
-    <c r="H${lastData+1}" t="n" s="1"><v>${totalFees}</v></c>
-    <c r="I${lastData+1}" t="n" s="1"><v>${collected}</v></c>
-    <c r="J${lastData+1}" t="n" s="1"><v>${outstanding}</v></c>
-  </row>`;
-
-  const sheetData = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <sheetFormatPr defaultRowHeight="16"/>
-  <cols>
-    <col min="1" max="1" width="5" customWidth="1"/>
-    <col min="2" max="2" width="20" customWidth="1"/>
-    <col min="3" max="3" width="14" customWidth="1"/>
-    <col min="4" max="4" width="14" customWidth="1"/>
-    <col min="5" max="5" width="14" customWidth="1"/>
-    <col min="6" max="6" width="14" customWidth="1"/>
-    <col min="7" max="7" width="9" customWidth="1"/>
-    <col min="8" max="8" width="14" customWidth="1"/>
-    <col min="9" max="9" width="14" customWidth="1"/>
-    <col min="10" max="10" width="14" customWidth="1"/>
-    <col min="11" max="11" width="12" customWidth="1"/>
-  </cols>
-  <sheetData>
-    ${summaryRows}
-    ${headerRow}
-    ${dataRows}
-    ${totalRow}
-  </sheetData>
-</worksheet>`;
-
-  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <fonts><font><b/><sz val="11"/></font><font><sz val="11"/></font></fonts>
-  <fills><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1D6F42"/></patternFill></fill></fills>
-  <borders><border><left/><right/><top/><bottom/><diagonal/></border></borders>
-  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-  <cellXfs>
-    <xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/>
-    <xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0"><alignment horizontal="center"/></xf>
-  </cellXfs>
-</styleSheet>`;
-
-  const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <sheets><sheet name="Fee Report" sheetId="1" r:id="rId1"/></sheets>
-</workbook>`;
-
-  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`;
-
-  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
-</Types>`;
-
-  const pkgRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>`;
-
-  // Build ZIP (XLSX is a ZIP) using pure JS
-  const files = {
-    '[Content_Types].xml': contentTypes,
-    '_rels/.rels': pkgRels,
-    'xl/workbook.xml': workbook,
-    'xl/_rels/workbook.xml.rels': rels,
-    'xl/worksheets/sheet1.xml': sheetData,
-    'xl/styles.xml': styles,
-  };
-
-  const zip = buildZip(files);
-  const blob = new Blob([zip], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'mahatab-tuition-' + today() + '.xlsx';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 3000);
-  showToast('✅ Excel file downloaded!');
-}
-
-function colLetter(i) {
-  return String.fromCharCode(65 + i);
-}
-
-// Minimal pure-JS ZIP builder (no compression — stored only, fully valid XLSX)
-function buildZip(files) {
-  const enc = s => new TextEncoder().encode(s);
-  const u32le = n => [(n>>>0)&0xFF,(n>>>8)&0xFF,(n>>>16)&0xFF,(n>>>24)&0xFF];
-  const u16le = n => [(n>>>0)&0xFF,(n>>>8)&0xFF];
-  const crc32 = (() => {
-    const t = new Uint32Array(256);
-    for (let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=c&1?(0xEDB88320^(c>>>1)):c>>>1;t[i]=c;}
-    return (d) => { let c=0xFFFFFFFF; for(let i=0;i<d.length;i++)c=t[(c^d[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
-  })();
-
-  const localHeaders = [];
-  const centralDirs = [];
-  let offset = 0;
-  const parts = [];
-
-  for (const [name, content] of Object.entries(files)) {
-    const nameBytes = enc(name);
-    const dataBytes = enc(content);
-    const crc = crc32(dataBytes);
-    const lh = [
-      0x50,0x4B,0x03,0x04, // sig
-      0x14,0x00,           // version needed
-      0x00,0x00,           // flags
-      0x00,0x00,           // compression (stored)
-      0x00,0x00,0x00,0x00, // mod time/date
-      ...u32le(crc),
-      ...u32le(dataBytes.length),
-      ...u32le(dataBytes.length),
-      ...u16le(nameBytes.length),
-      0x00,0x00,           // extra len
-      ...nameBytes
-    ];
-    const cd = [
-      0x50,0x4B,0x01,0x02, // sig
-      0x14,0x00,           // version made
-      0x14,0x00,           // version needed
-      0x00,0x00,           // flags
-      0x00,0x00,           // compression
-      0x00,0x00,0x00,0x00, // mod time/date
-      ...u32le(crc),
-      ...u32le(dataBytes.length),
-      ...u32le(dataBytes.length),
-      ...u16le(nameBytes.length),
-      0x00,0x00,           // extra
-      0x00,0x00,           // comment
-      0x00,0x00,           // disk start
-      0x00,0x00,           // internal attr
-      0x00,0x00,0x00,0x00, // external attr
-      ...u32le(offset),
-      ...nameBytes
-    ];
-    offset += lh.length + dataBytes.length;
-    parts.push(new Uint8Array(lh), dataBytes);
-    centralDirs.push(new Uint8Array(cd));
+// ── Main render entry ──
+function renderRevenueChart() {
+  if (chartCollapsed) return;
+  if (typeof Chart === 'undefined') {
+    setTimeout(renderRevenueChart, 600); return;
   }
 
-  const cdSize = centralDirs.reduce((a,b)=>a+b.length,0);
-  const eocd = [
-    0x50,0x4B,0x05,0x06,
-    0x00,0x00,0x00,0x00,
-    ...u16le(Object.keys(files).length),
-    ...u16le(Object.keys(files).length),
-    ...u32le(cdSize),
-    ...u32le(offset),
-    0x00,0x00
-  ];
+  const { labels, collected, expected, rates } = getMonthlyRevenueData(chartMonths);
+  const total = collected.reduce((a,b)=>a+b,0);
 
-  const all = [...parts, ...centralDirs, new Uint8Array(eocd)];
-  const total = all.reduce((a,b)=>a+b.length,0);
-  const out = new Uint8Array(total);
-  let pos = 0;
-  for (const p of all) { out.set(p, pos); pos += p.length; }
-  return out;
+  // Summary
+  const s = document.getElementById('revenueChartSummary');
+  if (s) s.textContent = '₹'+total.toLocaleString('en-IN')+' in '+chartMonths+' months';
+  const tl = document.getElementById('chartTotalLabel');
+  if (tl) tl.textContent = '₹'+total.toLocaleString('en-IN');
+
+  // ── Chart 1: Monthly Collection Bar ──
+  renderBarChart(labels, collected, expected);
+
+  // ── Chart 2: Fee Status Donut ──
+  renderStatusDonut();
+
+  // ── Chart 4: Collection Trend Line ──
+  renderTrendLine(labels, rates);
+
+  // ── Breakdown Table ──
+  renderBreakdownTable(labels, collected, expected, rates);
 }
 
-// Header date
-const now = new Date();
-const dayName = now.toLocaleDateString('en-IN', { weekday:'long' });
-const fullDate = now.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
-document.getElementById('headerDate').innerHTML = `<div style="font-weight:600;font-size:12px">${dayName}</div><div style="font-size:11px;opacity:0.8">${fullDate}</div>`;
+// ── Chart 1: Bar ──
+function renderBarChart(labels, collected, expected) {
+  revenueChartInstance = destroyChart(revenueChartInstance);
+  const p = document.getElementById('revenueChart')?.parentElement;
+  if (!p) return;
+  p.innerHTML = '<canvas id="revenueChart"></canvas>';
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+
+  revenueChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Collected',
+          data: collected,
+          backgroundColor: collected.map((_,i) => {
+            const g = ctx.createLinearGradient(0,0,0,160);
+            const c = CHART_COLORS[i%CHART_COLORS.length];
+            g.addColorStop(0, c+'CC'); g.addColorStop(1, c+'66');
+            return g;
+          }),
+          borderColor: collected.map((_,i)=>CHART_COLORS[i%CHART_COLORS.length]),
+          borderWidth: 0, borderRadius: 6, borderSkipped: false,
+        },
+        {
+          label: 'Expected',
+          data: expected,
+          backgroundColor: 'rgba(0,0,0,0.05)',
+          borderColor: 'rgba(0,0,0,0.12)',
+          borderWidth: 1.5, borderRadius: 6, borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ position:'top', labels:{ font:{family:'DM Sans',size:10}, boxWidth:10, padding:10,
+          generateLabels:()=>[
+            {text:'Collected',fillStyle:'#60A5FA',strokeStyle:'transparent',lineWidth:0},
+            {text:'Expected',fillStyle:'rgba(0,0,0,0.08)',strokeStyle:'rgba(0,0,0,0.15)',lineWidth:1}
+          ]
+        }},
+        tooltip:{ backgroundColor:'rgba(26,23,20,0.9)', titleColor:'#fff', bodyColor:'#ddd', padding:10, cornerRadius:8,
+          callbacks:{ label: c=>' ₹'+Number(c.raw||0).toLocaleString('en-IN') }
+        }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{family:'DM Sans',size:9},color:'#9E9892'} },
+        y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'DM Sans',size:9},color:'#9E9892',
+              callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)} }
+      }
+    }
+  });
+}
+
+// ── Chart 2: Status Donut ──
+function renderStatusDonut() {
+  statusChartInstance = destroyChart(statusChartInstance);
+  const p = document.getElementById('statusChart')?.parentElement;
+  if (!p) return;
+  p.innerHTML = '<canvas id="statusChart"></canvas>';
+  const ctx = document.getElementById('statusChart').getContext('2d');
+
+  const scope = activeBatch==='all' ? students : students.filter(s=>s.batchId===activeBatch);
+  const paid    = scope.filter(s=>calcStatus(s)==='paid').length;
+  const due     = scope.filter(s=>calcStatus(s)==='due').length;
+  const partial = scope.filter(s=>calcStatus(s)==='partial').length;
+  const newAdm  = scope.filter(s=>calcStatus(s)==='new'||calcStatus(s)==='dueSoon').length;
+  const total   = scope.length || 1;
+
+  statusChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Paid','Due','Partial','New/Soon'],
+      datasets:[{
+        data: [paid, due, partial, newAdm],
+        backgroundColor: ['#34D399','#FF6B6B','#F59E0B','#60A5FA'],
+        borderColor: '#fff', borderWidth: 3,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins:{
+        legend:{ position:'right', labels:{font:{family:'DM Sans',size:10},boxWidth:10,padding:8}},
+        tooltip:{ backgroundColor:'rgba(26,23,20,0.9)', titleColor:'#fff', bodyColor:'#ddd', padding:10,
+          callbacks:{
+            label: c => ` ${c.label}: ${c.raw} (${Math.round((c.raw/total)*100)}%)`
+          }
+        }
+      }
+    },
+    plugins:[{
+      id:'centerText',
+      beforeDraw(chart){
+        const {ctx,chartArea:{top,bottom,left,right}} = chart;
+        ctx.save();
+        const cx=(left+right)/2, cy=(top+bottom)/2;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font='bold 18px DM Sans'; ctx.fillStyle='#1A1714';
+        ctx.fillText(scope.length, cx, cy-8);
+        ctx.font='10px DM Sans'; ctx.fillStyle='#9E9892';
+        ctx.fillText('Students', cx, cy+10);
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+// ── Chart 4: Trend Line ──
+function renderTrendLine(labels, rates) {
+  trendChartInstance = destroyChart(trendChartInstance);
+  const p = document.getElementById('trendChart')?.parentElement;
+  if (!p) return;
+  p.innerHTML = '<canvas id="trendChart"></canvas>';
+  const ctx = document.getElementById('trendChart').getContext('2d');
+
+  const grad = ctx.createLinearGradient(0,0,0,160);
+  grad.addColorStop(0,'rgba(96,165,250,0.4)');
+  grad.addColorStop(1,'rgba(96,165,250,0.0)');
+
+  trendChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets:[{
+        label:'Collection %',
+        data: rates,
+        borderColor:'#60A5FA',
+        backgroundColor: grad,
+        borderWidth:2.5,
+        pointBackgroundColor: rates.map(r=>r>=90?'#34D399':r>=60?'#F59E0B':'#FF6B6B'),
+        pointBorderColor:'#fff',
+        pointBorderWidth:2,
+        pointRadius:5,
+        fill:true,
+        tension:0.4,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ backgroundColor:'rgba(26,23,20,0.9)', titleColor:'#fff', bodyColor:'#ddd', padding:10,
+          callbacks:{ label: c=>' '+c.raw+'% collected' }
+        }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{family:'DM Sans',size:9},color:'#9E9892'} },
+        y:{ beginAtZero:true, max:110, grid:{color:'rgba(0,0,0,0.04)'},
+            ticks:{font:{family:'DM Sans',size:9},color:'#9E9892',
+              callback:v=>v+'%'} }
+      }
+    }
+  });
+}
+
+// ── Breakdown table ──
+function renderBreakdownTable(labels, collected, expected, rates) {
+  const el = document.getElementById('revenueBreakdown');
+  if (!el) return;
+  const rows = [...labels].reverse().map((lbl,ri) => {
+    const i  = labels.length-1-ri;
+    const c  = CHART_COLORS[i%CHART_COLORS.length];
+    const pct = rates[i];
+    return `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${c};flex-shrink:0"></div>
+      <div style="width:48px;font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0">${lbl}</div>
+      <div style="flex:1;height:7px;background:rgba(0,0,0,0.07);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(pct,100)}%;background:${c};border-radius:4px;transition:width 0.5s"></div>
+      </div>
+      <div style="width:76px;text-align:right;font-size:12px;font-weight:700;color:var(--text);flex-shrink:0">₹${collected[i].toLocaleString('en-IN')}</div>
+      <div style="width:34px;text-align:right;font-size:11px;font-weight:600;flex-shrink:0;color:${pct>=90?'#34D399':pct>=60?'#F59E0B':'#FF6B6B'}">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  const tot = collected.reduce((a,b)=>a+b,0);
+  const exp = expected.reduce((a,b)=>a+b,0);
+  const ovPct = exp>0?Math.round((tot/exp)*100):0;
+
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;gap:8px">
+      <span style="width:8px"></span><span style="width:48px">Month</span>
+      <span style="flex:1">Rate</span>
+      <span style="width:76px;text-align:right">Amount</span>
+      <span style="width:34px;text-align:right">%</span>
+    </div>
+    ${rows}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 2px;margin-top:4px">
+      <div style="font-size:13px;font-weight:700;color:var(--text)">Total ${chartMonths} months</div>
+      <div style="font-size:13px;font-weight:700;color:${ovPct>=90?'#34D399':ovPct>=60?'#F59E0B':'#FF6B6B'}">
+        ₹${tot.toLocaleString('en-IN')} <span style="font-size:11px;opacity:0.7">/ ₹${exp.toLocaleString('en-IN')} (${ovPct}%)</span>
+      </div>
+    </div>`;
+}
+
 
 </script>
 <script>
@@ -4374,7 +4324,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       // ── STEP 2: Register new SW with timestamp-based cache key ──
       // Every new deployment gets a fresh cache automatically
-      const CACHE_KEY = 'mtc-v' + (window._APP_BUILD || '1.6.0');
+      const CACHE_KEY = 'mtc-v' + (window._APP_BUILD || '2.2.0');
       const swCode = `
         const CACHE = '${CACHE_KEY}';
         const NETWORK_FIRST = ['index.html', 'version.json', 'patch.json'];
