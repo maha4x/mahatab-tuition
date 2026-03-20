@@ -1,17 +1,16 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "date": "2026-03-20",
-  "description": "Arrow icons fixed + download permission flow",
+  "description": "Auto-open WhatsApp/Telegram after backup download",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "⬇ Import button now shows DOWN arrow (file coming in)",
-    "⬆ Excel Export now shows UP arrow (file going out)",
-    "⬆ PDF Export now shows UP arrow with icon",
-    "📂 Download permission dialog for backup sharing",
-    "📲 4-method fallback for backup file download",
-    "✅ Add Student form collapsible",
-    "🔄 Auto-update cache fix"
+    "📲 WhatsApp/Telegram opens automatically after backup download",
+    "✅ Two-step flow: Download → App opens with file ready",
+    "🔁 'Open Again' button if app didn't open first time",
+    "⬇ Import arrow fixed to point down",
+    "⬆ Excel & PDF export arrows point up",
+    "📂 Download permission dialog improved"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"
