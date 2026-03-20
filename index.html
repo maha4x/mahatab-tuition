@@ -911,69 +911,341 @@
   <div class="modal" style="width:440px;max-height:92vh;overflow-y:auto">
     <div class="modal-title">🔒 Backup &amp; Restore</div>
 
-    <!-- Google Drive Section -->
+    <!-- Google Drive -->
     <div style="background:linear-gradient(135deg,#E8F5E9,#E3F2FD);border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid #B2DFDB">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <svg width="28" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+        <svg width="26" height="26" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
         <div>
-          <div style="font-weight:700;font-size:14px;color:#1A237E">Google Drive Backup</div>
+          <div style="font-weight:700;font-size:14px;color:#1A237E">Google Drive</div>
           <div style="font-size:12px;color:#5C6BC0" id="driveConnectStatus">Not connected</div>
         </div>
-        <button id="driveSignInBtn" onclick="driveSignIn()" style="margin-left:auto;padding:8px 14px;background:#1A73E8;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
-          Connect Drive
-        </button>
-        <button id="driveSignOutBtn" onclick="driveSignOut()" style="display:none;margin-left:auto;padding:6px 10px;background:none;border:1px solid #ccc;border-radius:8px;font-family:inherit;font-size:12px;color:#666;cursor:pointer">
-          Disconnect
-        </button>
+        <button id="driveSignInBtn" onclick="driveSignIn()" style="margin-left:auto;padding:8px 14px;background:#1A73E8;color:white;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Connect Drive</button>
+        <button id="driveSignOutBtn" onclick="driveSignOut()" style="display:none;margin-left:auto;padding:6px 10px;background:none;border:1px solid #ccc;border-radius:8px;font-family:inherit;font-size:12px;color:#666;cursor:pointer">Disconnect</button>
       </div>
       <div style="display:flex;gap:8px">
-        <button id="driveSaveBtn" onclick="driveBackup()" disabled style="flex:1;padding:11px;background:#1A73E8;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Save to Drive
+        <button id="driveSaveBtn" onclick="driveBackup()" disabled style="flex:1;padding:10px;background:#1A73E8;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Save to Drive
         </button>
-        <button id="driveLoadBtn" onclick="driveRestore()" disabled style="flex:1;padding:11px;background:#34A853;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
-          Load from Drive
+        <button id="driveLoadBtn" onclick="driveRestore()" disabled style="flex:1;padding:10px;background:#34A853;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>Load from Drive
         </button>
       </div>
       <div id="driveFileInfo" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:8px;font-size:12px;color:#1A237E"></div>
+      <div id="driveSetupHint" style="display:none;margin-top:10px;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 12px;font-size:12px;color:#6D4C41;line-height:1.7">
+        <b>&#9881;&#65039; Setup needed for Drive:</b><br>
+        1. Go to <b>console.cloud.google.com</b><br>
+        2. Enable <b>Google Drive API</b> &rarr; Create OAuth Client ID<br>
+        3. Add your Netlify URL to Authorized Origins<br>
+        4. Replace placeholder Client ID in the app code<br>
+        <span style="color:#9E9892;font-size:11px">Drive works on Netlify/GitHub Pages &mdash; not in preview mode</span>
+      </div>
     </div>
 
-    <!-- Divider -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-      <div style="flex:1;height:1px;background:var(--border)"></div>
-      <span style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Or Local Backup</span>
-      <div style="flex:1;height:1px;background:var(--border)"></div>
+    <!-- Share Backup -->
+    <div style="background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">&#128228; Share Backup via</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="shareBackupWhatsApp()" style="flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#25D366;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button onclick="shareBackupTelegram()" style="flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#0088CC;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Telegram
+        </button>
+        <button onclick="shareBackupEmail()" style="flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#EA4335;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email
+        </button>
+      </div>
     </div>
 
     <!-- Local Backup -->
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
       <button onclick="backupDownload()" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:22px">&#128229;</span>
+        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Download Backup File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Save .json file to phone/PC</div></div>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="backupFileSize"></span>
+      </button>
+      <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:22px">&#9851;&#65039;</span>
+        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Restore from File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Select a .json backup file</div></div>
+        <input type="file" accept=".json" onchange="restoreData(event)" style="display:none" id="restoreInput"/>
+      </label>
+    </div>
+
+    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:10px"></div>
+    <p id="lastBackupTime" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:14px"></p>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeBackupModal()">Done</button></div>
+  </div>
+</div>
+<!-- EDIT STUDENT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">✏️ Edit Student Details</div>
+    <div class="form-grid">
+      <div class="form-group form-full">
+        <label>Student Name *</label>
+        <input id="editName" type="text" placeholder="Student name" />
+      </div>
+      <div class="form-group">
+        <label>Joining Date *</label>
+        <input id="editJoin" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Monthly Fees (₹) *</label>
+        <input id="editFee" type="number" min="0" placeholder="e.g. 1500" />
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input id="editPhone" type="text" placeholder="Enter phone number" />
+      </div>
+      <div class="form-group">
+        <label>Batch *</label>
+        <select id="editBatch"></select>
+      </div>
+    </div>
+    <div style="margin-top:1rem;padding:10px 14px;background:var(--warn-light);border:1px solid #E8C76A;border-radius:var(--radius-sm);font-size:12px;color:var(--warn)">
+      ⚠️ Editing the monthly fee or joining date will recalculate the total due amount.
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- BATCH MODAL -->
+<div class="modal-overlay" id="batchModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">📚 Manage Batches</div>
+    <div class="form-grid" style="margin-bottom:1rem">
+      <div class="form-group form-full">
+        <label>New Batch Name *</label>
+        <input id="inBatchName" type="text" placeholder="e.g. Batch 3, Morning Batch" />
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:1.25rem" onclick="createBatch()">＋ Create Batch</button>
+    <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Existing Batches</div>
+    <div id="batchList" style="max-height:240px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeBatchModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">💳 Record Payment</div>
+
+    <!-- Student & Fee Summary -->
+    <div id="payStudentInfo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1rem;border:1px solid var(--border)">
+      <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
+      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--text3)">Monthly Fee: <b id="payFeeAmt" style="color:var(--text)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Completed Months: <b id="payMonths" style="color:var(--info)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Already Paid: <b id="payAlreadyPaid" style="color:var(--paid)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Current Balance: <b id="payCurrentBal" style="color:var(--danger)"></b></div>
+      </div>
+    </div>
+
+    <!-- Payment Type Toggle -->
+    <div style="display:flex;gap:6px;margin-bottom:1rem">
+      <button id="payTypeDue" onclick="setPayType('due')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--accent);color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        📋 Pay Due Amount
+      </button>
+      <button id="payTypeAdv" onclick="setPayType('advance')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        ⏩ Pay in Advance
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <!-- Advance months selector (hidden by default) -->
+      <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
+        <label>Pay for how many months ahead?</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="changeAdvMonths(-1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">−</button>
+          <div style="flex:1;text-align:center">
+            <span id="advMonthsNum" style="font-size:22px;font-weight:700;color:var(--accent)">1</span>
+            <span style="font-size:13px;color:var(--text3);margin-left:4px">month(s) in advance</span>
+          </div>
+          <button onclick="changeAdvMonths(1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">+</button>
+        </div>
+        <div id="advMonthsCovered" style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Amount Paid (₹) *</label>
+        <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
+      </div>
+      <div class="form-group">
+        <label>Payment Date *</label>
+        <input id="payDate" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="payMode">
+          <option>Cash</option>
+          <option>UPI</option>
+          <option>Bank Transfer</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input id="payNote" type="text" placeholder="e.g. Advance for April" />
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div id="payPreview" style="display:none;margin-top:0.75rem;padding:10px 14px;border-radius:var(--radius-sm);background:var(--accent-light);border:1px solid var(--accent-mid);font-size:13px;color:var(--accent)"></div>
+
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPayment()">✅ Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="histModal">
+  <div class="modal" style="width:520px">
+    <div class="modal-title">📜 Payment History — <span id="histName"></span></div>
+    <div id="histBody" style="max-height:340px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeHist()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal-overlay" id="backupModal">
+  <div class="modal" style="width:440px;max-height:92vh;overflow-y:auto">
+    <div class="modal-title">🔒 Backup &amp; Restore</div>
+
+    <!-- Last backup status -->
+    <p id="lastBackupTime" style="font-size:12px;color:var(--accent);text-align:center;margin-bottom:12px;font-weight:500"></p>
+
+    <!-- ── SECTION 1: Google Drive ── -->
+    <div style="background:linear-gradient(135deg,#E8F5E9,#E3F2FD);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #B2DFDB">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <svg width="26" height="26" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px;color:#1A237E">Google Drive</div>
+          <div style="font-size:11px;color:#5C6BC0" id="driveConnectStatus">Not connected — needs setup</div>
+        </div>
+        <button id="driveSignInBtn" onclick="driveSignIn()" style="padding:7px 12px;background:#1A73E8;color:white;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Connect</button>
+        <button id="driveSignOutBtn" onclick="driveSignOut()" style="display:none;padding:6px 10px;background:none;border:1px solid #ccc;border-radius:8px;font-family:inherit;font-size:12px;color:#666;cursor:pointer">✕</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="driveSaveBtn" onclick="driveBackup()" disabled style="flex:1;padding:10px;background:#1A73E8;color:white;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;opacity:0.35;transition:opacity 0.2s">⬆ Save to Drive</button>
+        <button id="driveLoadBtn" onclick="driveRestore()" disabled style="flex:1;padding:10px;background:#34A853;color:white;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;opacity:0.35;transition:opacity 0.2s">⬇ Load from Drive</button>
+      </div>
+      <div id="driveFileInfo" style="display:none;margin-top:8px;font-size:11px;color:#1A237E;opacity:0.8"></div>
+      <div style="margin-top:8px;padding:6px 10px;background:rgba(255,193,7,0.15);border-radius:6px;font-size:11px;color:#856404;line-height:1.5">
+        ⚠️ Requires Google Cloud Client ID setup. <a onclick="showDriveSetup()" style="cursor:pointer;font-weight:700;text-decoration:underline;color:#1A73E8">How to set up →</a>
+      </div>
+    </div>
+
+    <!-- ── SECTION 2: Share via Apps ── -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin:12px 0 8px">Share Backup File</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+
+      <!-- WhatsApp -->
+      <button onclick="backupWhatsApp()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #E8F5E9;border-radius:10px;background:#F0FBF4;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#075E54">WhatsApp</div>
+          <div style="font-size:11px;color:var(--text3)">Share backup file</div>
+        </div>
+      </button>
+
+      <!-- Telegram -->
+      <button onclick="backupTelegram()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #E3F2FD;border-radius:10px;background:#EBF5FB;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#2CA5E0"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#1A6E96">Telegram</div>
+          <div style="font-size:11px;color:var(--text3)">Send to Saved</div>
+        </div>
+      </button>
+
+      <!-- Email -->
+      <button onclick="backupEmail()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #FEF3CD;border-radius:10px;background:#FFFDE7;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F39C12" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#9A6700">Email</div>
+          <div style="font-size:11px;color:var(--text3)">Send to yourself</div>
+        </div>
+      </button>
+
+      <!-- Share (native) -->
+      <button onclick="backupNativeShare()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #EDE7F6;border-radius:10px;background:#F3E5F5;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7B1FA2" stroke-width="1.8" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <div>
+          <div style="font-weight:600;font-size:13px;color:#6A1B9A">Share</div>
+          <div style="font-size:11px;color:var(--text3)">Any app</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- ── SECTION 3: Local ── -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Local Backup</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+      <button onclick="backupDownload()" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
         <span style="font-size:22px">📥</span>
         <div>
           <div style="font-weight:600;font-size:13px;color:var(--text)">Download Backup File</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:1px">Save .json file to phone/PC</div>
+          <div style="font-size:12px;color:var(--text3)">Save .json file to phone/PC</div>
         </div>
-        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="backupFileSize"></span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3);font-weight:600" id="backupFileSize"></span>
       </button>
       <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
         <span style="font-size:22px">♻️</span>
         <div>
           <div style="font-weight:600;font-size:13px;color:var(--text)">Restore from File</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:1px">Select a .json backup file</div>
+          <div style="font-size:12px;color:var(--text3)">Select a .json backup file</div>
         </div>
         <input type="file" accept=".json" onchange="restoreData(event)" style="display:none" id="restoreInput"/>
       </label>
     </div>
 
-    <!-- Status -->
-    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:14px"></div>
-
-    <!-- Last backup info -->
-    <p id="lastBackupTime" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:14px"></p>
+    <!-- Status message -->
+    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:10px"></div>
 
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="closeBackupModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRIVE SETUP GUIDE MODAL -->
+<div class="modal-overlay" id="driveSetupModal">
+  <div class="modal" style="width:440px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">⚙️ Google Drive Setup</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8">
+      <b style="color:var(--text)">One-time setup (5 minutes):</b>
+      <ol style="padding-left:20px;margin:10px 0;display:flex;flex-direction:column;gap:6px">
+        <li>Go to <b>console.cloud.google.com</b></li>
+        <li>Create a new project → name it <b>Mahatab Tuition</b></li>
+        <li>Go to <b>APIs &amp; Services → Enable APIs</b></li>
+        <li>Enable <b>Google Drive API</b></li>
+        <li>Go to <b>Credentials → Create OAuth 2.0 Client ID</b></li>
+        <li>Type: <b>Web application</b></li>
+        <li>Add your app URL to <b>Authorized JavaScript origins</b></li>
+        <li>Copy the <b>Client ID</b></li>
+        <li>Open your <b>index.html</b> file and replace:<br>
+          <code style="background:var(--surface2);padding:4px 8px;border-radius:6px;font-size:11px;display:block;margin-top:4px;word-break:break-all">577695236166-placeholder.apps.googleusercontent.com</code>
+          with your real Client ID
+        </li>
+        <li>Re-upload to Netlify/GitHub</li>
+      </ol>
+      <div style="background:#D4EFDF;color:#1E8449;padding:10px 12px;border-radius:8px;font-size:12px">
+        ✅ Once done, the <b>Connect Drive</b> button will work and you can back up to your personal Google Drive.
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:1rem">
+      <button class="btn btn-primary" onclick="document.getElementById('driveSetupModal').classList.remove('open')">Got it</button>
     </div>
   </div>
 </div>
@@ -2154,6 +2426,10 @@ function closeBackupModal() {
   document.getElementById('backupModal').classList.remove('open');
 }
 
+function showDriveSetup() {
+  document.getElementById('driveSetupModal').classList.add('open');
+}
+
 function backupDownload() {
   const json = getBackupJson();
   const blob = new Blob([json], { type: 'application/json' });
@@ -2163,9 +2439,98 @@ function backupDownload() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 3000);
   showToast('✅ Backup downloaded!');
-  // update size display
+  localStorage.setItem('mtc_last_backup', new Date().toISOString());
   const sz = document.getElementById('backupFileSize');
   if (sz) sz.textContent = (json.length / 1024).toFixed(1) + ' KB';
+}
+
+// ── WhatsApp Backup ──
+function backupWhatsApp() {
+  const json = getBackupJson();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = getBackupFilename();
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    const msg = encodeURIComponent(
+      '📚 Mahatab Tuition Centre — Data Backup\n' +
+      '📅 Date: ' + new Date().toLocaleDateString('en-IN') + '\n' +
+      '👥 Students: ' + students.length + '\n\n' +
+      '⬆️ I just downloaded the backup file above.\n' +
+      'Please save the .json file sent separately.'
+    );
+    window.open('https://wa.me/?text=' + msg, '_blank');
+  }, 800);
+  showToast('✅ File downloading — share via WhatsApp!');
+}
+
+// ── Telegram Backup ──
+function backupTelegram() {
+  const json = getBackupJson();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = getBackupFilename();
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    const msg = encodeURIComponent(
+      'Mahatab Tuition Centre backup — ' + new Date().toLocaleDateString('en-IN') +
+      ' — ' + students.length + ' students'
+    );
+    window.open('https://t.me/share/url?url=&text=' + msg, '_blank');
+  }, 600);
+  showToast('✅ File downloading — share to Telegram!');
+}
+
+// ── Email Backup ──
+function backupEmail() {
+  const json = getBackupJson();
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = getBackupFilename();
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    const subject = encodeURIComponent('Mahatab Tuition Centre — Backup ' + new Date().toLocaleDateString('en-IN'));
+    const body    = encodeURIComponent(
+      'Hello,\n\nPlease find the Mahatab Tuition Centre data backup attached.\n\n' +
+      'Students: ' + students.length + '\n' +
+      'Date: ' + new Date().toLocaleDateString('en-IN') + '\n\n' +
+      'Please attach the downloaded .json file to this email before sending.'
+    );
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+  }, 600);
+  showToast('✅ File downloading — attach to email!');
+}
+
+// ── Native Share (Android share sheet) ──
+async function backupNativeShare() {
+  const json = getBackupJson();
+  const fileName = getBackupFilename();
+
+  if (navigator.share && navigator.canShare) {
+    try {
+      const file = new File([json], fileName, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Mahatab Tuition Backup',
+          text: 'Student data backup — ' + students.length + ' students',
+          files: [file]
+        });
+        showToast('✅ Shared successfully!');
+        return;
+      }
+    } catch(e) {
+      if (e.name !== 'AbortError') showToast('Share failed, downloading instead.', false);
+    }
+  }
+  // Fallback to download
+  backupDownload();
+  showToast('✅ Backup downloaded!');
 }
 
 // ══════════════ GOOGLE DRIVE BACKUP ══════════════
@@ -2183,11 +2548,21 @@ let driveUser      = null;
 
 // ── Load Google Identity Services ──
 function loadGISScript(cb) {
-  if (window.google && window.google.accounts) { cb(); return; }
+  if (window.google && window.google.accounts && window.google.accounts.oauth2) { cb(); return; }
   const s = document.createElement('script');
   s.src = 'https://accounts.google.com/gsi/client';
-  s.onload = cb;
-  s.onerror = () => setDriveStatus('❌ Failed to load Google Sign-in. Check internet connection.', 'error');
+  s.onload = () => setTimeout(cb, 300);
+  s.onerror = () => {
+    // Show setup hint — not a scary error
+    const hint = document.getElementById('driveSetupHint');
+    if (hint) hint.style.display = 'block';
+    setDriveStatus(
+      '⚠️ Google Sign-in could not load in this preview.<br>' +
+      '<b>Drive backup works when hosted on Netlify or GitHub Pages.</b><br>' +
+      '<small>Use Download Backup or Share options below while in preview mode.</small>',
+      'loading'
+    );
+  };
   document.head.appendChild(s);
 }
 
@@ -2427,7 +2802,7 @@ async function openBackupModal() {
   document.getElementById('backupModal').classList.add('open');
 }
 
-// ── Local restore functions ──
+// ── Local Restore ──
 function restoreData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -2442,12 +2817,60 @@ function restoreData(event) {
       if (!batches.length) batches = [{id:'b1',name:'Batch 1'},{id:'b2',name:'Batch 2'}];
       await save(true);
       renderAll();
-      showToast(`✅ Restored ${students.length} student(s)!`);
+      showToast('✅ Restored ' + students.length + ' student(s)!');
     } catch(err) { showToast('❌ Failed to read backup file.', false); }
     document.getElementById('restoreInput').value = '';
   };
   reader.readAsText(file);
 }
+
+// ── Share Backup Functions ──
+function shareBackupWhatsApp() {
+  // Download file first, then open WhatsApp with message
+  backupDownload();
+  setTimeout(() => {
+    const count = students.length;
+    const date  = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+    const msg = encodeURIComponent(
+      `📚 Mahatab Tuition Centre — Data Backup\n` +
+      `📅 Date: ${date}\n` +
+      `👥 Students: ${count}\n\n` +
+      `✅ Backup file has been downloaded to your device.\n` +
+      `Share the downloaded .json file on WhatsApp.`
+    );
+    window.open('https://wa.me/?text=' + msg, '_blank');
+  }, 800);
+  showToast('📥 File downloaded — share it on WhatsApp!');
+}
+
+function shareBackupTelegram() {
+  backupDownload();
+  setTimeout(() => {
+    const count = students.length;
+    const date  = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+    const msg = encodeURIComponent(
+      `📚 Mahatab Tuition Centre Backup\n📅 ${date} · 👥 ${count} students\n\nBackup file downloaded — share the .json file on Telegram.`
+    );
+    window.open('https://t.me/share/url?url=&text=' + msg, '_blank');
+  }, 800);
+  showToast('📥 File downloaded — share it on Telegram!');
+}
+
+function shareBackupEmail() {
+  const count = students.length;
+  const date  = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+  const subject = encodeURIComponent(`Mahatab Tuition Centre Backup — ${date}`);
+  const body = encodeURIComponent(
+    `Mahatab Tuition Centre — Data Backup\n\nDate: ${date}\nStudents: ${count}\n\nPlease find the backup .json file attached.\n(Download it from the app first, then attach to this email.)\n\nOpened from: Mahatab Tuition Centre App`
+  );
+  // Download file first
+  backupDownload();
+  setTimeout(() => {
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+  }, 800);
+  showToast('📥 File downloaded — attach it to your email!');
+}
+
 
 function restoreFromFile(event) {
   const file = event.target.files[0];
