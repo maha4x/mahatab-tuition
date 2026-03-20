@@ -1474,24 +1474,204 @@ const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
 const today = () => new Date().toISOString().split('T')[0];
 
 // ── Per-user storage key prefix ──
-// ── Login/auth stubs (login removed, kept for compatibility) ──
-function doLogin()          { loadData(); document.getElementById('loginScreen') && document.getElementById('loginScreen').classList.remove('active'); }
-function doSignUp()         { doLogin(); }
-function signInWithGoogle() { doLogin(); }
-function signOut()          { try { location.reload(); } catch(e){} }
-function toggleUserDropdown()  { const d=document.getElementById('userDropdown'); if(d) d.classList.toggle('open'); }
-function closeUserDropdown()   { const d=document.getElementById('userDropdown'); if(d) d.classList.remove('open'); }
-function switchAuthTab(t)      {}
-function showForgotPassword()  {}
-function doForgotPassword()    {}
-function togglePwd(id,btn)     { const i=document.getElementById(id); if(i){i.type=i.type==='password'?'text':'password'; if(btn)btn.textContent=i.type==='password'?'👁':'🙈';} }
-function checkPasswordStrength(){}
-function exportExcel() { if(typeof doExportExcel==="function") doExportExcel(); else showToast("Export not available",false); }
-function updateHeaderUser()    {}
+// ══════════════ AUTHENTICATION SYSTEM ══════════════
+let currentUser = null;
+
+function hashPassword(pwd) {
+  let hash = 0;
+  const salted = 'MTC_SALT_2024_' + pwd;
+  for (let i = 0; i < salted.length; i++) { hash = ((hash << 5) - hash) + salted.charCodeAt(i); hash |= 0; }
+  return Math.abs(hash).toString(36) + btoa(unescape(encodeURIComponent(pwd.slice(0,3)+'xx'))).replace(/=/g,'');
+}
+function getUsers()        { try { return JSON.parse(localStorage.getItem('mtc_users')||'[]'); } catch(e) { return []; } }
+function saveUsers(u)      { try { localStorage.setItem('mtc_users', JSON.stringify(u)); } catch(e) {} }
+function saveUserSession(u){ try { localStorage.setItem('mtc_user', JSON.stringify(u)); } catch(e) {} }
+function loadUserSession() { try { const u=localStorage.getItem('mtc_user'); return u?JSON.parse(u):null; } catch(e) { return null; } }
+
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id); if (!inp) return;
+  inp.type = inp.type==='password'?'text':'password';
+  if (btn) btn.textContent = inp.type==='password'?'👁':'🙈';
+}
+function checkPasswordStrength(pwd) {
+  const bar=document.getElementById('pwdStrengthBar'), txt=document.getElementById('pwdStrengthText');
+  if (!bar) return;
+  let s=0;
+  if(pwd.length>=6)s++; if(pwd.length>=10)s++; if(/[A-Z]/.test(pwd))s++; if(/[0-9]/.test(pwd))s++; if(/[^A-Za-z0-9]/.test(pwd))s++;
+  const lv=[{pct:'20%',color:'#C0392B',label:'Very Weak'},{pct:'40%',color:'#E67E22',label:'Weak'},{pct:'60%',color:'#F1C40F',label:'Fair'},{pct:'80%',color:'#27AE60',label:'Strong'},{pct:'100%',color:'#1E8449',label:'Very Strong'}][Math.min(s,4)];
+  bar.style.width=lv.pct; bar.style.background=lv.color;
+  txt.textContent=pwd.length?lv.label:''; txt.style.color=lv.color;
+}
+function showAuthError(formId, msg) {
+  const id = formId==='signup'?'authError':'loginError';
+  const el = document.getElementById(id);
+  if (el) { el.textContent=msg; el.style.display='block'; }
+}
+function hideAuthError() {
+  ['authError','loginError'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+}
+function switchAuthTab(tab) {
+  const isLogin=tab==='login';
+  const get=id=>document.getElementById(id);
+  const lf=get('loginForm'), sf=get('signupForm'), ff=get('forgotForm');
+  const tl=get('tabLoginBtn'), ts=get('tabSignupBtn'), sub=get('authSubtitle');
+  if(lf) lf.style.display=isLogin?'block':'none';
+  if(sf) sf.style.display=isLogin?'none':'block';
+  if(ff) ff.style.display='none';
+  if(tl){tl.style.background=isLogin?'#2D6A4F':'transparent';tl.style.color=isLogin?'white':'#6B6560';}
+  if(ts){ts.style.background=isLogin?'transparent':'#2D6A4F';ts.style.color=isLogin?'#6B6560':'white';}
+  if(sub) sub.textContent=isLogin?'Welcome back! Sign in to continue.':'Create your account to get started.';
+  hideAuthError();
+}
+function showForgotPassword() {
+  const lf=document.getElementById('loginForm'), ff=document.getElementById('forgotForm');
+  if(lf) lf.style.display='none'; if(ff) ff.style.display='block';
+  const sub=document.getElementById('authSubtitle');
+  if(sub) sub.textContent='Recover your account';
+}
+
+// ── Sign Up ──
+function doSignUp() {
+  hideAuthError();
+  const name     = (document.getElementById('suName')?.value||'').trim();
+  const username = (document.getElementById('suUsername')?.value||'').trim().toLowerCase();
+  const email    = (document.getElementById('suEmail')?.value||'').trim().toLowerCase();
+  const password = document.getElementById('suPassword')?.value||'';
+  const confirm  = document.getElementById('suConfirm')?.value||'';
+  if (!name)              { showAuthError('signup','❌ Please enter your full name.'); return; }
+  if (!username)          { showAuthError('signup','❌ Please choose a username.'); return; }
+  if (username.length<3)  { showAuthError('signup','❌ Username must be at least 3 characters.'); return; }
+  if (!/^[a-z0-9_]+$/.test(username)) { showAuthError('signup','❌ Username: only letters, numbers, underscore.'); return; }
+  if (password.length<6)  { showAuthError('signup','❌ Password must be at least 6 characters.'); return; }
+  if (password!==confirm) { showAuthError('signup','❌ Passwords do not match.'); return; }
+  const users=getUsers();
+  if (users.find(u=>u.username===username)) { showAuthError('signup','❌ Username already taken.'); return; }
+  if (email && users.find(u=>u.email===email)) { showAuthError('signup','❌ Email already registered.'); return; }
+  const newUser={id:'u_'+Date.now(),name,username,email,passwordHash:hashPassword(password),createdAt:new Date().toISOString(),type:'local'};
+  users.push(newUser); saveUsers(users);
+  const session={id:newUser.id,name,username,email,picture:'',type:'local'};
+  saveUserSession(session); currentUser=session; onLoginSuccess();
+  showToast('🎉 Welcome, '+name+'! Account created.');
+}
+
+// ── Login — validates credentials ──
+function doLogin() {
+  hideAuthError();
+  const input    = (document.getElementById('liUsername')?.value||'').trim().toLowerCase();
+  const password = document.getElementById('liPassword')?.value||'';
+  if (!input)    { showAuthError('login','❌ Enter your username or email.'); return; }
+  if (!password) { showAuthError('login','❌ Enter your password.'); return; }
+  const users = getUsers();
+  const user  = users.find(u => u.username===input || (u.email && u.email===input));
+  if (!user) { showAuthError('login','❌ No account found. Please sign up first.'); return; }
+  if (user.passwordHash !== hashPassword(password)) { showAuthError('login','❌ Incorrect password. Try again.'); return; }
+  const session={id:user.id,name:user.name,username:user.username,email:user.email,picture:'',type:'local'};
+  saveUserSession(session); currentUser=session; onLoginSuccess();
+  showToast('👋 Welcome back, '+user.name+'!');
+}
+
+// ── Forgot Password ──
+function doForgotPassword() {
+  const input=(document.getElementById('forgotUsername')?.value||'').trim().toLowerCase();
+  const res=document.getElementById('forgotResult');
+  if (!input) { if(res){res.style.display='block';res.style.background='#FDECEA';res.style.color='#C0392B';res.textContent='❌ Enter username first.';} return; }
+  const user=getUsers().find(u=>u.username===input||u.email===input);
+  if (!user) { if(res){res.style.display='block';res.style.background='#FDECEA';res.style.color='#C0392B';res.textContent='❌ No account found.';} return; }
+  if (res) { res.style.display='block';res.style.background='#D4EFDF';res.style.color='#1E8449';
+    res.innerHTML='✅ Account found!<br><b>Name:</b> '+user.name+'<br><b>Username:</b> '+user.username+'<br><br><i>Contact developer to reset password.</i>'; }
+}
+
+// ── Google Sign In ──
+const GOOGLE_CLIENT_ID = '577695236166-placeholder.apps.googleusercontent.com';
+function signInWithGoogle() {
+  showAuthError('login','⚠️ Google Sign-in requires setup. Use username & password below.');
+}
+function handleGoogleLogin(response) {
+  try {
+    const b64=response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    const p=JSON.parse(decodeURIComponent(atob(b64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+    const gu={id:'g_'+p.sub,name:p.name,username:p.email.split('@')[0],email:p.email,picture:p.picture,type:'google'};
+    const users=getUsers();
+    if(!users.find(u=>u.id===gu.id)){users.push({...gu,createdAt:new Date().toISOString()});saveUsers(users);}
+    saveUserSession(gu); currentUser=gu; onLoginSuccess();
+    showToast('👋 Welcome, '+gu.name+'!');
+  } catch(e) { showAuthError('login','❌ Google login failed.'); }
+}
+
+// ── On successful login ──
+function onLoginSuccess() {
+  students=[]; trash=[]; batches=[];
+  const ls=document.getElementById('loginScreen');
+  if(ls) ls.classList.remove('active');
+  updateHeaderUser(); loadData();
+}
+
+function updateHeaderUser() {
+  if (!currentUser) return;
+  const img=document.getElementById('headerAvatar'), txt=document.getElementById('headerAvatarText');
+  const udImg=document.getElementById('udAvatar'), udTxt=document.getElementById('udAvatarText');
+  const udName=document.getElementById('udName'), udEmail=document.getElementById('udEmail');
+  if(udName)  udName.textContent  = currentUser.name;
+  if(udEmail) udEmail.textContent = currentUser.email||('@'+(currentUser.username||'user'));
+  const initial = currentUser.name.charAt(0).toUpperCase();
+  if (currentUser.picture) {
+    if(img){img.src=currentUser.picture;img.style.display='block';} if(txt) txt.style.display='none';
+    if(udImg){udImg.src=currentUser.picture;udImg.style.display='block';} if(udTxt) udTxt.style.display='none';
+  } else {
+    if(txt){txt.textContent=initial;txt.style.display='flex';} if(img) img.style.display='none';
+    if(udTxt){udTxt.textContent=initial;udTxt.style.display='flex';} if(udImg) udImg.style.display='none';
+  }
+}
+
+function toggleUserDropdown()  { document.getElementById('userDropdown')?.classList.toggle('open'); }
+function closeUserDropdown()   { document.getElementById('userDropdown')?.classList.remove('open'); }
+
+function signOut() {
+  closeUserDropdown(); currentUser=null; students=[]; trash=[]; batches=[];
+  try { localStorage.removeItem('mtc_user'); } catch(e) {}
+  if(window.google&&window.google.accounts) google.accounts.id.disableAutoSelect();
+  switchAuthTab('login');
+  ['liUsername','liPassword'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  hideAuthError();
+  const ls=document.getElementById('loginScreen'); if(ls) ls.classList.add('active');
+  showToast('Signed out successfully.');
+}
+
+document.addEventListener('click', e=>{
+  const dd=document.getElementById('userDropdown'), av=document.getElementById('userAvatarBtn');
+  if(dd&&av&&!dd.contains(e.target)&&!av.contains(e.target)) closeUserDropdown();
+});
+
+// ── Auto-login if session exists — WITH VALIDATION ──
+(function initApp(){
+  const saved = loadUserSession();
+  if (saved && saved.id) {
+    // CRITICAL: Verify this user actually exists in our user store
+    const users = getUsers();
+    const validUser = users.find(u => u.id === saved.id);
+    if (validUser) {
+      // Valid session — restore
+      currentUser = saved;
+      const ls = document.getElementById('loginScreen');
+      if (ls) ls.classList.remove('active');
+      updateHeaderUser();
+      loadData();
+      return;
+    }
+    // Session references a deleted/non-existent user — clear it
+    try { localStorage.removeItem('mtc_user'); } catch(e) {}
+  }
+  // No valid session — show login
+  switchAuthTab('login');
+  const ls = document.getElementById('loginScreen');
+  if (ls) ls.classList.add('active');
+})();
 
 
 function userKey(key) {
-  return 'mtc_' + key;
+  // Use per-user prefix so each account has completely separate data
+  const uid = currentUser ? currentUser.id : 'guest';
+  return uid + '_' + key;
 }
 
 async function save(skipBackup = false) {
@@ -3552,6 +3732,37 @@ function closeImportModal() {
 }
 
 
+// ── Export to Excel ──
+function exportExcel() {
+  const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
+  if (!scope.length) { showToast('No students to export.', false); return; }
+
+  // Build CSV as fallback (always works without library)
+  const headers = ['#','Student Name','Batch','Phone','Joining Date','Monthly Fee (Rs)','Months','Total Due (Rs)','Paid (Rs)','Balance (Rs)','Status'];
+  const rows = scope.map((s, i) => [
+    i+1, s.name, getBatchName(s.batchId),
+    s.phone === '—' ? '' : s.phone,
+    formatDate(s.join), s.fee,
+    monthsActive(s.join), totalDue(s),
+    s.paidTotal||0, calcBalance(s),
+    calcStatus(s).charAt(0).toUpperCase()+calcStatus(s).slice(1)
+  ]);
+
+  const csv = [headers, ...rows].map(r =>
+    r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')
+  ).join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'mahatab-tuition-' + today() + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  showToast('✅ Exported as CSV!');
+}
+
+
 function renderAll() { renderBatchTabs(); renderStats(); renderTable(); renderTrash(); renderRevenueChart(); }
 
 // ══════════════ DASHBOARD CHARTS ══════════════
@@ -4324,7 +4535,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       // ── STEP 2: Register new SW with timestamp-based cache key ──
       // Every new deployment gets a fresh cache automatically
-      const CACHE_KEY = 'mtc-v' + (window._APP_BUILD || '2.2.0');
+      const CACHE_KEY = 'mtc-v' + (window._APP_BUILD || '2.3.0');
       const swCode = `
         const CACHE = '${CACHE_KEY}';
         const NETWORK_FIRST = ['index.html', 'version.json', 'patch.json'];
