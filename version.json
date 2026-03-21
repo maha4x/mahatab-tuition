@@ -1,13 +1,16 @@
 {
-  "version": "2.3.1",
+  "version": "2.5.0",
   "date": "2026-03-21",
-  "description": "Header banner improvements — date, day name & subtitle visible",
+  "description": "Android PWA install support + persistent auto-save",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📅 Current date with day name now shown in header banner",
-    "📋 'Fee Management System' subtitle now visible on all screen sizes",
-    "🖥️ Header layout improved for mobile display"
+    "📲 Install as Android App — step-by-step guide added",
+    "📲 'Install' button appears in header when app is installable",
+    "📲 Install shortcut added inside Backup modal",
+    "💾 navigator.storage.persist() called automatically on every load",
+    "💾 Storage permission now saved to IndexedDB for true persistence",
+    "✅ Install guide shows real-time persistent storage status"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"

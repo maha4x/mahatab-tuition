@@ -12,7 +12,7 @@
 <meta name="description" content="Mahatab Tuition Centre — Student Fee Management System">
 <link rel="manifest" id="pwaManifest">
 <link rel="apple-touch-icon" id="appleTouchIcon">
-<meta name="app-version" content="1.6.0">
+<meta name="app-version" content="1.6.1">
 <title>Mahatab Tuition Centre</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -307,7 +307,7 @@
     text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3);
     border-bottom: 1px solid var(--border); white-space: nowrap;
   }
-  td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  td { padding: 7px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--bg); }
 
@@ -356,6 +356,47 @@
   @keyframes slideIn { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 1.25rem; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+
+  /* NOTIFICATION PAGE MODAL */
+  .notif-page-overlay {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: var(--bg); flex-direction: column;
+    animation: slideInUp 0.25s ease;
+  }
+  .notif-page-overlay.open { display: flex; }
+  @keyframes slideInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .notif-page-header {
+    background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1B4332 100%);
+    color: white; padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .notif-page-back {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    color: white; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .notif-page-title { font-family: 'DM Serif Display', serif; font-size: 20px; flex: 1; }
+  .notif-page-count { font-size: 12px; opacity: 0.75; font-weight: 500; }
+  .notif-page-body { flex: 1; overflow-y: auto; padding: 1rem 1rem 2rem; }
+  .notif-card {
+    background: var(--surface); border-radius: 14px;
+    padding: 1rem 1.1rem; margin-bottom: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .notif-card-info { flex: 1; min-width: 0; }
+  .notif-card-name { font-weight: 700; font-size: 15px; color: var(--text); }
+  .notif-card-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .notif-card-urgency { font-size: 13px; font-weight: 600; margin-top: 6px; }
+  .notif-card-amount { font-size: 18px; font-weight: 700; margin-top: 4px; }
+  .notif-card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .notif-empty { text-align: center; padding: 3rem 1rem; color: var(--text3); }
+  .notif-empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .notif-empty-text { font-size: 15px; font-weight: 600; color: var(--text2); }
+  .notif-empty-sub { font-size: 13px; margin-top: 6px; }
 
   /* TOAST */
   .toast {
@@ -592,6 +633,9 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#C0392B;color:white;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1">0</span>
     </button>
+    <button id="pwaInstallHeaderBtn" onclick="triggerPwaInstall()" style="display:none;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);color:white;padding:7px 12px;border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:none;align-items:center;gap:6px">
+      📲 Install
+    </button>
     <button class="header-btn" onclick="openBackupModal()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Backup
@@ -728,8 +772,23 @@
             <input id="inJoin" type="date" oninput="updateStatusPreview()" />
           </div>
           <div class="form-group">
+            <label>Class *</label>
+            <select id="inClass" onchange="onClassChange()">
+              <option value="">— Select Class —</option>
+              <option value="0">Class 0 (KG)</option>
+              <option value="1">Class 1</option>
+              <option value="2">Class 2</option>
+              <option value="3">Class 3</option>
+              <option value="4">Class 4</option>
+              <option value="5">Class 5</option>
+              <option value="6">Class 6</option>
+              <option value="7">Class 7</option>
+              <option value="8">Class 8</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>Monthly Fees (₹) *</label>
-            <input id="inFee" type="number" placeholder="e.g. 1500" min="0" />
+            <input id="inFee" type="number" placeholder="Auto-set by class" min="0" />
           </div>
           <div class="form-group">
             <label>Phone Number</label>
@@ -854,8 +913,23 @@
         <input id="editJoin" type="date" />
       </div>
       <div class="form-group">
+        <label>Class *</label>
+        <select id="editClass" onchange="onEditClassChange()">
+          <option value="">— Select Class —</option>
+          <option value="0">Class 0 (KG)</option>
+          <option value="1">Class 1</option>
+          <option value="2">Class 2</option>
+          <option value="3">Class 3</option>
+          <option value="4">Class 4</option>
+          <option value="5">Class 5</option>
+          <option value="6">Class 6</option>
+          <option value="7">Class 7</option>
+          <option value="8">Class 8</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Monthly Fees (₹) *</label>
-        <input id="editFee" type="number" min="0" placeholder="e.g. 1500" />
+        <input id="editFee" type="number" min="0" placeholder="Auto-set by class" />
       </div>
       <div class="form-group">
         <label>Phone Number</label>
@@ -939,6 +1013,17 @@
       <div class="form-group">
         <label>Amount Paid (₹) *</label>
         <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
+      </div>
+      <div class="form-group">
+        <label>Discount (₹) <span style="font-size:11px;color:var(--text3);font-weight:400">optional</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="payDiscount" type="number" placeholder="0" min="0" oninput="updatePayPreview()" style="flex:1" />
+          <select id="payDiscountType" onchange="updatePayPreview()" style="width:90px;font-size:12px">
+            <option value="flat">₹ Flat</option>
+            <option value="percent">% Off</option>
+          </select>
+        </div>
+        <div id="discountHint" style="font-size:11px;color:var(--warn);margin-top:4px;display:none"></div>
       </div>
       <div class="form-group">
         <label>Payment Date *</label>
@@ -1160,6 +1245,17 @@
         <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
       </div>
       <div class="form-group">
+        <label>Discount (₹) <span style="font-size:11px;color:var(--text3);font-weight:400">optional</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="payDiscount" type="number" placeholder="0" min="0" oninput="updatePayPreview()" style="flex:1" />
+          <select id="payDiscountType" onchange="updatePayPreview()" style="width:90px;font-size:12px">
+            <option value="flat">₹ Flat</option>
+            <option value="percent">% Off</option>
+          </select>
+        </div>
+        <div id="discountHint" style="font-size:11px;color:var(--warn);margin-top:4px;display:none"></div>
+      </div>
+      <div class="form-group">
         <label>Payment Date *</label>
         <input id="payDate" type="date" />
       </div>
@@ -1292,6 +1388,20 @@
 
     <!-- Status message -->
     <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:10px"></div>
+
+    <!-- Install App section -->
+    <div style="background:linear-gradient(135deg,#1B4332,#2D6A4F);border-radius:12px;padding:14px;margin-bottom:10px;color:white">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:28px">📲</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">Install as Android App</div>
+          <div style="font-size:12px;opacity:0.8;margin-top:2px">Auto-saves data, works offline, no browser bar</div>
+        </div>
+        <button onclick="closeBackupModal();openInstallGuide()" style="background:white;color:#1B4332;border:none;padding:8px 14px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
+          How to →
+        </button>
+      </div>
+    </div>
 
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="closeBackupModal()">Done</button>
@@ -1741,14 +1851,30 @@ function setAutoBackupStatus(state, id) {
 // ── Storage Permission System ──
 let storageGranted = false;
 
-async function requestStoragePermission() {
-  // localStorage always works — just check if user has seen the dialog
+// Check IndexedDB (persistent) + localStorage + sessionStorage
+async function hasStoragePermission() {
+  // Check fast sync storages first
+  try { if (localStorage.getItem('mtc_storage_granted') === 'yes') return true; } catch(e) {}
+  try { if (sessionStorage.getItem('mtc_storage_granted') === 'yes') return true; } catch(e) {}
+  // Check IndexedDB (most reliable across reloads in artifact environment)
   try {
-    const prev = localStorage.getItem('mtc_storage_granted');
-    if (prev === 'yes') { storageGranted = true; return true; }
+    const r = await window.storage.get('mtc_storage_granted');
+    if (r && r.value === 'yes') return true;
   } catch(e) {}
+  return false;
+}
 
-  // First time: show dialog
+async function saveStoragePermission() {
+  // Save to all three storages for maximum persistence
+  try { localStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
+  try { sessionStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
+  try { await window.storage.set('mtc_storage_granted', 'yes'); } catch(e) {}
+}
+
+async function requestStoragePermission() {
+  if (await hasStoragePermission()) { storageGranted = true; return true; }
+
+  // First time ever: show dialog
   return new Promise((resolve) => {
     showStorageDialog(resolve);
   });
@@ -1789,7 +1915,7 @@ function showStorageDialog(resolve) {
 
   document.getElementById('storageAllowBtn').onclick = async () => {
     storageGranted = true;
-    try { localStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
+    await saveStoragePermission();
     // Request persistent storage silently
     try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e) {}
     overlay.remove();
@@ -1797,9 +1923,9 @@ function showStorageDialog(resolve) {
     if (resolve) resolve(true);
   };
 
-  document.getElementById('storageSkipBtn').onclick = () => {
-    storageGranted = true; // still use localStorage, just don't show again
-    try { localStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
+  document.getElementById('storageSkipBtn').onclick = async () => {
+    storageGranted = true; // still use storage, just don't show again
+    await saveStoragePermission();
     overlay.remove();
     if (resolve) resolve(true);
   };
@@ -1835,6 +1961,25 @@ function showToast(msg, ok=true) {
   setTimeout(() => t.style.display = 'none', 2800);
 }
 
+// ── Class → Fee auto-select ──
+function getClassFee(cls) {
+  const c = parseInt(cls);
+  if (isNaN(c)) return null;
+  if (c <= 4) return 100;
+  if (c <= 8) return 150;
+  return null;
+}
+function onClassChange() {
+  const cls = document.getElementById('inClass').value;
+  const fee = getClassFee(cls);
+  if (fee !== null) document.getElementById('inFee').value = fee;
+}
+function onEditClassChange() {
+  const cls = document.getElementById('editClass').value;
+  const fee = getClassFee(cls);
+  if (fee !== null) document.getElementById('editFee').value = fee;
+}
+
 function addStudent() {
   const name = document.getElementById('inName').value.trim();
   const join = document.getElementById('inJoin').value;
@@ -1850,6 +1995,7 @@ function addStudent() {
     batchId,
     subject: '—',
     phone: document.getElementById('inPhone').value.trim() || '—',
+    studentClass: document.getElementById('inClass').value || '',
     fee,
     paidTotal: 0,
     status: 'due',
@@ -2053,6 +2199,7 @@ function openEditModal(id) {
   document.getElementById('editJoin').value = s.join;
   document.getElementById('editFee').value = s.fee;
   document.getElementById('editPhone').value = s.phone === '—' ? '' : s.phone;
+  document.getElementById('editClass').value = s.studentClass || '';
 
   // Populate batch dropdown
   const sel = document.getElementById('editBatch');
@@ -2085,6 +2232,7 @@ function saveEdit() {
   s.fee = fee;
   s.phone = phone || '—';
   s.batchId = batchId;
+  s.studentClass = document.getElementById('editClass').value || '';
   s.status = calcStatus(s);
 
   save(); renderAll(); closeEditModal();
@@ -2122,6 +2270,13 @@ function openPayModal(id) {
   document.getElementById('payPreview').style.display = 'none';
 
   setPayType('due');
+  // Reset discount fields
+  const discEl = document.getElementById('payDiscount');
+  if (discEl) discEl.value = '';
+  const discTypeEl = document.getElementById('payDiscountType');
+  if (discTypeEl) discTypeEl.value = 'flat';
+  const discHint = document.getElementById('discountHint');
+  if (discHint) discHint.style.display = 'none';
   updatePayPreview();
   document.getElementById('payModal').classList.add('open');
 }
@@ -2191,27 +2346,49 @@ function updateAdvanceInfo() {
   document.getElementById('payNote').value = 'Advance — ' + monthNames.join(', ');
 }
 
+// ── Discount calculation ──
+function getDiscountAmount(baseAmt) {
+  const disc = parseFloat(document.getElementById('payDiscount')?.value) || 0;
+  const type = document.getElementById('payDiscountType')?.value || 'flat';
+  if (!disc) return 0;
+  if (type === 'percent') return Math.round(baseAmt * disc / 100);
+  return Math.min(disc, baseAmt);
+}
+
 function updatePayPreview() {
   const s = students.find(s => s.id === activePayId);
   if (!s) return;
   const amt = parseFloat(document.getElementById('payAmount').value) || 0;
   const preview = document.getElementById('payPreview');
+  const discountAmt = getDiscountAmount(amt);
+  const effectiveAmt = Math.max(0, amt - discountAmt);
+  // Show discount hint
+  const hint = document.getElementById('discountHint');
+  if (hint) {
+    if (discountAmt > 0) {
+      hint.style.display = 'block';
+      hint.textContent = `🏷️ Discount: ${fmt(discountAmt)} — Effective payment: ${fmt(effectiveAmt)}`;
+    } else {
+      hint.style.display = 'none';
+    }
+  }
   if (!amt) { preview.style.display = 'none'; return; }
 
-  const newPaid = (s.paidTotal || 0) + amt;
+  const newPaid = (s.paidTotal || 0) + effectiveAmt;
   const due = payType === 'advance' ? totalDue(s) + (s.fee * advMonths) : totalDue(s);
   const newBal = due - newPaid;
 
   preview.style.display = 'block';
+  const discStr = discountAmt > 0 ? ` (after ${fmt(discountAmt)} discount)` : '';
   if (payType === 'advance') {
-    preview.innerHTML = `⏩ <b>Advance payment</b> of ${fmt(amt)} for ${advMonths} month(s) ahead. Total paid will be ${fmt(newPaid)}.`;
+    preview.innerHTML = `⏩ <b>Advance payment</b> of ${fmt(effectiveAmt)}${discStr} for ${advMonths} month(s) ahead.`;
   } else if (newBal <= 0) {
-    preview.innerHTML = `✅ This payment clears all dues. Balance: <b>${fmt(0)}</b>`;
+    preview.innerHTML = `✅ This payment clears all dues${discStr}. Balance: <b>${fmt(0)}</b>`;
     preview.style.background = 'var(--paid-light)';
     preview.style.borderColor = 'var(--accent-mid)';
     preview.style.color = 'var(--paid)';
   } else {
-    preview.innerHTML = `After payment: Paid <b>${fmt(newPaid)}</b> — Remaining balance <b>${fmt(newBal)}</b>`;
+    preview.innerHTML = `After payment${discStr}: Paid <b>${fmt(newPaid)}</b> — Remaining <b>${fmt(newBal)}</b>`;
     preview.style.background = 'var(--accent-light)';
     preview.style.borderColor = 'var(--accent-mid)';
     preview.style.color = 'var(--accent)';
@@ -2227,8 +2404,10 @@ function submitPayment() {
 
   const s = students.find(s => s.id === activePayId);
   const note = document.getElementById('payNote').value;
+  const discountAmt = getDiscountAmount(amt);
+  const effectiveAmt = Math.max(0, amt - discountAmt);
 
-  s.paidTotal = (s.paidTotal || 0) + amt;
+  s.paidTotal = (s.paidTotal || 0) + effectiveAmt;
 
   // Store advance months on student for calcStatus awareness
   if (payType === 'advance') {
@@ -2237,11 +2416,13 @@ function submitPayment() {
 
   s.payments.push({
     date: dt,
-    amount: amt,
+    amount: effectiveAmt,
+    discount: discountAmt || 0,
+    discountType: document.getElementById('payDiscountType')?.value || 'flat',
     mode: document.getElementById('payMode').value,
     type: payType,
     advanceMonths: payType === 'advance' ? advMonths : 0,
-    note: note
+    note: note + (discountAmt > 0 ? ` [Discount: ${fmt(discountAmt)}]` : '')
   });
 
   s.status = calcStatus(s);
@@ -2396,7 +2577,8 @@ function renderTable() {
     // 'new' and 'dueSoon' appear under 'due' filter or all
     const sm = !filt ||
                dynamicStatus === filt ||
-               (filt === 'due' && (dynamicStatus === 'new' || dynamicStatus === 'dueSoon'));
+               (filt === 'due' && (dynamicStatus === 'new' || dynamicStatus === 'dueSoon' || dynamicStatus === 'due' || (dynamicStatus && dynamicStatus.startsWith('due:')))) ||
+               (filt === 'partial' && dynamicStatus && dynamicStatus.startsWith('due:'));
     const bm = activeBatch === 'all' || s.batchId === activeBatch;
     return match && sm && bm;
   });
@@ -2427,7 +2609,10 @@ function renderTable() {
           </div>
         </div>
       </td>
-      <td><span style="display:inline-block;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px">${bName}</span></td>
+      <td>
+        <span style="display:inline-block;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px">${bName}</span>
+        ${s.studentClass !== undefined && s.studentClass !== '' ? `<div style="font-size:11px;color:var(--text3);margin-top:3px;padding-left:2px">Class ${s.studentClass == '0' ? '0 (KG)' : s.studentClass}</div>` : ''}
+      </td>
       <td style="color:var(--text2);font-size:13px">${formatDate(s.join)}</td>
       <td><span class="amount">${fmt(s.fee)}</span></td>
       <td style="text-align:center">
@@ -2486,7 +2671,7 @@ function renderStats() {
   const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
   const paidStudents    = scope.filter(s => calcStatus(s) === 'paid');
   const dueStudents     = scope.filter(s => calcStatus(s) === 'due');
-  const partialStudents = scope.filter(s => calcStatus(s) === 'partial');
+  const partialStudents = scope.filter(s => { const st = calcStatus(s); return st && st.startsWith('due:'); });
   const newStudents     = scope.filter(s => calcStatus(s) === 'new');
   const totalFees    = scope.reduce((a,s) => a + totalDue(s), 0);
   const collected    = scope.reduce((a,s) => a + (s.paidTotal||0), 0);
@@ -2504,7 +2689,7 @@ function renderStats() {
   const now2 = new Date();
   const urgentCount = scope.filter(s => {
     const st = calcStatus(s);
-    return st === 'dueSoon' || st === 'due' || st === 'partial';
+    return st === 'dueSoon' || st === 'due' || (st && st.startsWith('due:'));
   }).filter(s => !dismissedStudentIds.has(s.id)).length;
 
   const badge = document.getElementById('notifBadge');
@@ -2534,7 +2719,7 @@ function renderNotifications(scope) {
     const st = calcStatus(s);
     if (dismissedStudentIds.has(s.id)) return false;
     if (st === 'dueSoon') return true; // always show due-soon
-    if (st === 'due' || st === 'partial') {
+    if (st === 'due' || (st && st.startsWith('due:'))) {
       return calcBalance(s) > 0; // only show if real balance
     }
     return false;
@@ -2644,23 +2829,109 @@ function calcStatus(s) {
 
   // Advance payments cover everything
   if (advance > 0 && paid >= due) return 'paid';
-  if (paid <= 0 && due > 0) return 'due';
   if (paid >= due) return 'paid';
-  return 'partial';
+  // How many months are outstanding (including partial month)
+  const monthsDue = Math.max(1, Math.ceil((due - paid) / (s.fee || 1)));
+  return 'due:' + monthsDue;
 }
 
 function statusBadge(st) {
   if (st === 'paid')     return `<span class="badge badge-paid"><span class="badge-dot"></span>Paid</span>`;
-  if (st === 'due')      return `<span class="badge badge-due"><span class="badge-dot"></span>Due</span>`;
   if (st === 'new')      return `<span class="badge" style="background:#EBF3FE;color:#1A5276"><span class="badge-dot" style="background:#1A5276"></span>New Admission</span>`;
   if (st === 'dueSoon')  return `<span class="badge" style="background:#FEF3CD;color:#B7791F;animation:pulse 1.5s infinite"><span class="badge-dot" style="background:#B7791F"></span>Due Soon</span>`;
-  return `<span class="badge badge-partial"><span class="badge-dot"></span>Partial</span>`;
+  if (st === 'due')      return `<span class="badge badge-due"><span class="badge-dot"></span>1 Month Due</span>`;
+  if (st && st.startsWith('due:')) {
+    const n = st.split(':')[1];
+    return `<span class="badge badge-due"><span class="badge-dot"></span>${n} Month${n > 1 ? 's' : ''} Due</span>`;
+  }
+  return `<span class="badge badge-due"><span class="badge-dot"></span>Due</span>`;
 }
 
 function toggleNotifPanel() {
-  notifDismissed = false;
-  const panel = document.getElementById('notifPanel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  openNotifPage();
+}
+
+function openNotifPage() {
+  const overlay = document.getElementById('notifPageOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderNotifPage();
+}
+
+function closeNotifPage() {
+  const overlay = document.getElementById('notifPageOverlay');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderNotifPage() {
+  const body = document.getElementById('notifPageBody');
+  const countEl = document.getElementById('notifPageCount');
+  if (!body) return;
+
+  const notifStudents = students.filter(s => {
+    const st = calcStatus(s);
+    if (dismissedStudentIds.has(s.id)) return false;
+    if (st === 'dueSoon') return true;
+    if (st === 'due' || (st && st.startsWith('due:'))) return calcBalance(s) > 0;
+    return false;
+  });
+
+  if (countEl) countEl.textContent = notifStudents.length ? notifStudents.length + ' pending' : '';
+
+  if (!notifStudents.length) {
+    body.innerHTML = `
+      <div class="notif-empty">
+        <div class="notif-empty-icon">🎉</div>
+        <div class="notif-empty-text">All caught up!</div>
+        <div class="notif-empty-sub">No pending fee notifications</div>
+      </div>`;
+    return;
+  }
+
+  body.innerHTML = notifStudents.map(s => {
+    const st = calcStatus(s);
+    const bal = calcBalance(s);
+    const days = daysUntilCompletion(s.join);
+    const nextDue = getNextDueDate(s.join);
+    const isDueSoon = st === 'dueSoon';
+    const months = monthsActive(s.join);
+
+    const urgencyColor = isDueSoon ? 'var(--warn)' : 'var(--danger)';
+    const urgencyLabel = isDueSoon
+      ? (days === 0 ? '⏰ Monthly fee completes TODAY' : `⏰ Due in ${days} day(s) — ${formatDate(nextDue)}`)
+      : `🔴 ${months} month(s) overdue`;
+    const amount = isDueSoon ? s.fee : bal;
+
+    return `
+    <div class="notif-card" id="npage_${s.id}">
+      <div class="avatar ${s.color}" style="width:42px;height:42px;font-size:14px;flex-shrink:0">${getInitials(s.name)}</div>
+      <div class="notif-card-info">
+        <div class="notif-card-name">${s.name}</div>
+        <div class="notif-card-meta">${getBatchName(s.batchId)} · Joined ${formatDate(s.join)}</div>
+        <div class="notif-card-urgency" style="color:${urgencyColor}">${urgencyLabel}</div>
+        <div class="notif-card-amount" style="color:${urgencyColor}">${fmt(amount)}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-success" onclick="openPayModal(${s.id});closeNotifPage()">💳 Pay Now</button>
+          <button class="btn btn-sm" style="border:1px solid var(--border);color:var(--text2)" onclick="dismissFromPage(${s.id})">✕ Dismiss</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function dismissFromPage(id) {
+  dismissedStudentIds.add(id);
+  const el = document.getElementById('npage_' + id);
+  if (el) el.remove();
+  // Update count
+  const body = document.getElementById('notifPageBody');
+  const countEl = document.getElementById('notifPageCount');
+  const remaining = body ? body.querySelectorAll('.notif-card').length : 0;
+  if (countEl) countEl.textContent = remaining ? remaining + ' pending' : '';
+  if (!remaining) renderNotifPage(); // show empty state
+  // Also update bell badge
+  updateStats(students);
 }
 
 function dismissNotif() {
@@ -2697,7 +2968,7 @@ function checkMonthlyFeeNotifications() {
 
   const dueStudents = students.filter(s => {
     const st = calcStatus(s);
-    return st === 'due' || st === 'partial';
+    return st === 'due' || (st && st.startsWith('due:'));
   });
 
   if (dueStudents.length > 0) {
@@ -4632,6 +4903,12 @@ window.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     deferredPrompt = e;
     showInstallBanner();
+    // Show install button in header
+    const hBtn = document.getElementById('pwaInstallHeaderBtn');
+    if (hBtn) hBtn.style.display = 'flex';
+    // Show quick install in guide modal
+    const sec = document.getElementById('directInstallSection');
+    if (sec) sec.style.display = 'block';
   });
 
   function showInstallBanner() {
@@ -4679,6 +4956,65 @@ window.addEventListener('DOMContentLoaded', () => {
     if (b) b.remove();
     showPwaToast('✅ Mahatab Tuition Centre installed!');
   });
+
+  // ── Install trigger (called from header btn & guide modal) ──
+  window.triggerPwaInstall = async function() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      const b = document.getElementById('pwaInstallBanner');
+      if (b) b.remove();
+      const hBtn = document.getElementById('pwaInstallHeaderBtn');
+      if (hBtn) hBtn.style.display = 'none';
+      if (outcome === 'accepted') showPwaToast('✅ App installed! Find it on your home screen.');
+    } else {
+      openInstallGuide();
+    }
+  };
+
+  window.openInstallGuide = function() {
+    const modal = document.getElementById('installGuideModal');
+    if (modal) {
+      modal.classList.add('open');
+      // Check persistent storage status
+      checkPersistStatus();
+    }
+  };
+
+  async function checkPersistStatus() {
+    const el = document.getElementById('persistStorageStatus');
+    if (!el) return;
+    try {
+      if (navigator.storage && navigator.storage.persisted) {
+        const persisted = await navigator.storage.persisted();
+        if (persisted) {
+          el.textContent = '✅ Persistent storage granted — data is safe';
+        } else {
+          el.textContent = 'Requesting persistent storage...';
+          if (navigator.storage.persist) {
+            const granted = await navigator.storage.persist();
+            el.textContent = granted
+              ? '✅ Persistent storage granted — data is safe'
+              : '⚠️ Install the app for guaranteed data persistence';
+          }
+        }
+      } else {
+        el.textContent = 'Auto-save active via IndexedDB';
+      }
+    } catch(e) {
+      el.textContent = 'Auto-save active via IndexedDB';
+    }
+  }
+
+  // Auto-request persist on load
+  (async () => {
+    try {
+      if (navigator.storage && navigator.storage.persist) {
+        await navigator.storage.persist();
+      }
+    } catch(e) {}
+  })();
 
   function showPwaToast(msg) {
     const t = document.createElement('div');
@@ -4785,6 +5121,89 @@ window.addEventListener('DOMContentLoaded', () => {
     <div style="display:flex;gap:8px">
       <button onclick="doUpdate()" style="flex:1;padding:12px;background:#2D6A4F;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;" id="clogUpdateBtn">⬇ Update Now</button>
       <button onclick="document.getElementById('changelogModal').classList.remove('open')" style="padding:12px 16px;background:none;border:1px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:#6B6560;cursor:pointer;">Later</button>
+    </div>
+  </div>
+</div>
+<!-- NOTIFICATION PAGE -->
+<div class="notif-page-overlay" id="notifPageOverlay">
+  <div class="notif-page-header">
+    <button class="notif-page-back" onclick="closeNotifPage()">&#8592;</button>
+    <div class="notif-page-title">🔔 Notifications</div>
+    <div class="notif-page-count" id="notifPageCount"></div>
+  </div>
+  <div class="notif-page-body" id="notifPageBody"></div>
+</div>
+
+<!-- ANDROID INSTALL GUIDE MODAL -->
+<div class="modal-overlay" id="installGuideModal">
+  <div class="modal" style="width:480px;max-height:90vh;overflow-y:auto;padding:0;border-radius:20px">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#1B4332,#2D6A4F);color:white;padding:1.5rem 1.5rem 1rem;border-radius:20px 20px 0 0;text-align:center">
+      <div style="font-size:48px;margin-bottom:8px">📲</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;font-weight:700">Install on Android</div>
+      <div style="font-size:13px;opacity:0.8;margin-top:4px">Add Mahatab Tuition Centre to your home screen</div>
+    </div>
+    <div style="padding:1.25rem 1.5rem">
+
+      <!-- Auto-save status -->
+      <div id="installAutoSaveStatus" style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:12px;padding:12px 14px;margin-bottom:1rem;font-size:13px;color:#2D6A4F;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">💾</span>
+        <div>
+          <div style="font-weight:700">Auto-Save Active</div>
+          <div style="opacity:0.8;margin-top:2px" id="persistStorageStatus">Checking storage...</div>
+        </div>
+      </div>
+
+      <!-- Option A: Direct Install (when available) -->
+      <div id="directInstallSection" style="display:none;margin-bottom:1rem">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">⚡ Quick Install</div>
+        <button onclick="triggerPwaInstall()" style="width:100%;padding:14px;background:#1B4332;color:white;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+          📲 Install App Now
+        </button>
+        <div style="font-size:12px;color:var(--text3);text-align:center;margin-top:6px">Tap to add directly to your home screen</div>
+      </div>
+
+      <!-- Option B: Step-by-step Chrome guide -->
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px">📖 How to Install (Chrome on Android)</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:#1B4332;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+          <div style="font-size:13px;color:var(--text);padding-top:4px">Open this app in <b>Chrome browser</b> on your Android phone</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:#1B4332;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+          <div style="font-size:13px;color:var(--text);padding-top:4px">Tap the <b>⋮ menu</b> (three dots) at the top right</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:#1B4332;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+          <div style="font-size:13px;color:var(--text);padding-top:4px">Tap <b>"Add to Home screen"</b> or <b>"Install app"</b></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:#1B4332;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">4</div>
+          <div style="font-size:13px;color:var(--text);padding-top:4px">Tap <b>"Install"</b> in the popup — the app appears on your home screen!</div>
+        </div>
+      </div>
+
+      <!-- Benefits -->
+      <div style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:1.25rem;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">✨ What you get after installing:</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="font-size:13px;color:var(--text);display:flex;gap:8px"><span>💾</span> All data saved automatically — never lost</div>
+          <div style="font-size:13px;color:var(--text);display:flex;gap:8px"><span>📴</span> Works offline — no internet needed</div>
+          <div style="font-size:13px;color:var(--text);display:flex;gap:8px"><span>🚀</span> Opens instantly like a native app</div>
+          <div style="font-size:13px;color:var(--text);display:flex;gap:8px"><span>🔔</span> No browser address bar — full screen</div>
+          <div style="font-size:13px;color:var(--text);display:flex;gap:8px"><span>🔒</span> Your data stays on your device only</div>
+        </div>
+      </div>
+
+      <!-- Hosting note -->
+      <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 12px;margin-bottom:1.25rem;font-size:12px;color:#6D4C41;line-height:1.6">
+        <b>⚠️ Note:</b> For best results, host this app on <b>Netlify</b> or <b>GitHub Pages</b> so your data is fully persistent and installable from any device.
+      </div>
+
+      <button onclick="document.getElementById('installGuideModal').classList.remove('open')" style="width:100%;padding:12px;background:var(--accent);color:white;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">
+        Got it ✓
+      </button>
     </div>
   </div>
 </div>
