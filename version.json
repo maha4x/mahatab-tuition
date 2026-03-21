@@ -1,16 +1,16 @@
 {
-  "version": "2.5.0",
+  "version": "2.5.1",
   "date": "2026-03-21",
-  "description": "Android PWA install support + persistent auto-save",
+  "description": "Download backup fixed for Android PWA + storage protection improvements",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📲 Install as Android App — step-by-step guide added",
-    "📲 'Install' button appears in header when app is installable",
-    "📲 Install shortcut added inside Backup modal",
-    "💾 navigator.storage.persist() called automatically on every load",
-    "💾 Storage permission now saved to IndexedDB for true persistence",
-    "✅ Install guide shows real-time persistent storage status"
+    "📥 Download backup fixed on Android PWA — now uses Web Share API with file attachment",
+    "📥 Download button opens Android share sheet — save to Files, WhatsApp, Telegram etc.",
+    "🔒 5-method fallback chain for maximum download compatibility",
+    "⚠️ One-time warning if Android 'Manage app if unused' may delete data",
+    "🔒 Storage protection status card added in Backup modal",
+    "🔒 Persistent storage requested automatically on every app launch"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"
