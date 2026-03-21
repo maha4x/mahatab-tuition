@@ -1303,6 +1303,15 @@
     <!-- Last backup status -->
     <p id="lastBackupTime" style="font-size:12px;color:var(--accent);text-align:center;margin-bottom:12px;font-weight:500"></p>
 
+    <!-- Storage Protection Status -->
+    <div id="storageProtectionCard" style="border-radius:12px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #ccc;background:#f9f9f9;display:flex;align-items:center;gap:10px">
+      <div style="font-size:22px" id="storageProtectionIcon">⏳</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px" id="storageProtectionTitle">Checking storage...</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px" id="storageProtectionSub"></div>
+      </div>
+    </div>
+
     <!-- ── SECTION 1: Google Drive ── -->
     <div style="background:linear-gradient(135deg,#E8F5E9,#E3F2FD);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #B2DFDB">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -1851,12 +1860,34 @@ function setAutoBackupStatus(state, id) {
 // ── Storage Permission System ──
 let storageGranted = false;
 
+// Request persistent storage from browser/Android so data is NEVER auto-deleted
+async function requestPersistentStorage() {
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      const persisted = await navigator.storage.persist();
+      // Store the result so we know it's been requested
+      try { localStorage.setItem('mtc_persist_requested', 'yes'); } catch(e) {}
+      try { await window.storage.set('mtc_persist_requested', 'yes'); } catch(e) {}
+      return persisted;
+    }
+  } catch(e) {}
+  return false;
+}
+
+// Check if persistent storage is active
+async function isPersisted() {
+  try {
+    if (navigator.storage && navigator.storage.persisted) {
+      return await navigator.storage.persisted();
+    }
+  } catch(e) {}
+  return false;
+}
+
 // Check IndexedDB (persistent) + localStorage + sessionStorage
 async function hasStoragePermission() {
-  // Check fast sync storages first
   try { if (localStorage.getItem('mtc_storage_granted') === 'yes') return true; } catch(e) {}
   try { if (sessionStorage.getItem('mtc_storage_granted') === 'yes') return true; } catch(e) {}
-  // Check IndexedDB (most reliable across reloads in artifact environment)
   try {
     const r = await window.storage.get('mtc_storage_granted');
     if (r && r.value === 'yes') return true;
@@ -1865,16 +1896,20 @@ async function hasStoragePermission() {
 }
 
 async function saveStoragePermission() {
-  // Save to all three storages for maximum persistence
   try { localStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
   try { sessionStorage.setItem('mtc_storage_granted', 'yes'); } catch(e) {}
   try { await window.storage.set('mtc_storage_granted', 'yes'); } catch(e) {}
+  // Always request persistent storage when granting permission
+  await requestPersistentStorage();
 }
 
 async function requestStoragePermission() {
-  if (await hasStoragePermission()) { storageGranted = true; return true; }
-
-  // First time ever: show dialog
+  if (await hasStoragePermission()) {
+    storageGranted = true;
+    // Re-request persist every launch to maintain it
+    await requestPersistentStorage();
+    return true;
+  }
   return new Promise((resolve) => {
     showStorageDialog(resolve);
   });
@@ -1892,19 +1927,23 @@ function showStorageDialog(resolve) {
     <div style="background:white;border-radius:16px;padding:28px 24px;max-width:340px;width:100%;font-family:'DM Sans',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
       <div style="text-align:center;font-size:52px;margin-bottom:12px">🔒</div>
       <div style="font-family:'DM Serif Display',serif;font-size:21px;font-weight:700;text-align:center;color:#1A1714;margin-bottom:10px">Allow Data Storage</div>
-      <p style="font-size:13px;color:#6B6560;line-height:1.7;text-align:center;margin-bottom:16px">
-        <b style="color:#1A1714">Mahatab Tuition Centre</b> needs permission to save your student data on this device so it is not lost when you close the app.
+      <p style="font-size:13px;color:#6B6560;line-height:1.7;text-align:center;margin-bottom:14px">
+        <b style="color:#1A1714">Mahatab Tuition Centre</b> needs permission to permanently save your student data so it is never lost — even if the app is unused for months.
       </p>
-      <div style="background:#F7F5F0;border-radius:10px;padding:12px 14px;margin-bottom:18px">
+      <div style="background:#F7F5F0;border-radius:10px;padding:12px 14px;margin-bottom:12px">
         <div style="font-size:13px;color:#444;display:flex;flex-direction:column;gap:9px">
-          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Save student records locally</div>
-          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Keep data after closing browser</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Save student records permanently</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Protected from Android auto-cleanup</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Works offline — no internet needed</div>
           <div style="display:flex;align-items:center;gap:10px"><span style="color:#2D6A4F;font-size:15px">✅</span> Auto backup to cloud</div>
           <div style="display:flex;align-items:center;gap:10px"><span style="color:#C0392B;font-size:15px">❌</span> No access to other apps or files</div>
         </div>
       </div>
+      <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#7B6200;line-height:1.6">
+        <b>⚠️ Android tip:</b> Go to <b>Settings → Apps → MS TFees → Unused app settings</b> and turn OFF <b>"Manage app if unused"</b> to prevent Android from deleting your data.
+      </div>
       <button id="storageAllowBtn" style="width:100%;padding:14px;background:#2D6A4F;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px">
-        🔓 Allow & Save Data
+        🔒 Allow & Protect Data
       </button>
       <button id="storageSkipBtn" style="width:100%;padding:10px;background:none;border:1px solid #E2DDD5;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#6B6560;cursor:pointer">
         Continue without saving
@@ -1951,6 +1990,44 @@ async function loadData() {
     requestNotifPermission();
     setTimeout(() => checkMonthlyFeeNotifications(), 2000);
   }, 1500);
+  // Check persistent storage and warn if not granted
+  setTimeout(checkAndWarnPersistence, 3000);
+}
+
+async function checkAndWarnPersistence() {
+  try {
+    const alreadyWarned = localStorage.getItem('mtc_persist_warned');
+    if (alreadyWarned) return;
+    const persisted = await isPersisted();
+    if (!persisted) {
+      // Try to get it
+      const granted = await requestPersistentStorage();
+      if (!granted) {
+        // Show a gentle one-time warning
+        showPersistWarning();
+        localStorage.setItem('mtc_persist_warned', 'yes');
+      }
+    }
+  } catch(e) {}
+}
+
+function showPersistWarning() {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#7B6200;color:white;padding:14px 18px;
+    border-radius:14px;font-size:13px;font-family:'DM Sans',sans-serif;
+    box-shadow:0 4px 20px rgba(0,0,0,0.25);z-index:9999;
+    max-width:320px;width:90%;line-height:1.6;
+  `;
+  toast.innerHTML = `
+    <div style="font-weight:700;margin-bottom:4px">⚠️ Protect your data</div>
+    <div style="opacity:0.9;font-size:12px">Go to <b>Settings → Apps → MS TFees → Unused app settings</b> and turn OFF <b>"Manage app if unused"</b> to prevent data loss.</div>
+    <button onclick="this.parentElement.remove()" style="margin-top:10px;width:100%;padding:7px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:8px;font-family:inherit;font-size:12px;cursor:pointer;font-weight:600">Got it</button>
+  `;
+  document.body.appendChild(toast);
+  // Auto remove after 12 seconds
+  setTimeout(() => { if (toast.parentElement) toast.remove(); }, 12000);
 }
 
 function showToast(msg, ok=true) {
@@ -3421,6 +3498,41 @@ function setDriveStatus(msg, type) {
   el.innerHTML = msg;
 }
 
+
+async function updateStorageProtectionCard() {
+  const card = document.getElementById('storageProtectionCard');
+  const icon = document.getElementById('storageProtectionIcon');
+  const title = document.getElementById('storageProtectionTitle');
+  const sub = document.getElementById('storageProtectionSub');
+  if (!card) return;
+
+  try {
+    const persisted = await isPersisted();
+    if (persisted) {
+      card.style.background = '#E8F5E9';
+      card.style.borderColor = '#A5D6A7';
+      icon.textContent = '🔒';
+      title.textContent = 'Storage Protected';
+      title.style.color = '#2D6A4F';
+      sub.textContent = 'Your data is permanently protected — Android will not delete it';
+    } else {
+      card.style.background = '#FFF8E1';
+      card.style.borderColor = '#FFE082';
+      icon.textContent = '⚠️';
+      title.textContent = 'Storage Not Protected';
+      title.style.color = '#7B6200';
+      sub.innerHTML = 'Go to <b>Settings → Apps → MS TFees → Unused app settings</b> → turn OFF <b>"Manage app if unused"</b>';
+    }
+  } catch(e) {
+    card.style.background = '#E8F5E9';
+    card.style.borderColor = '#A5D6A7';
+    icon.textContent = '💾';
+    title.textContent = 'Auto-Save Active';
+    title.style.color = '#2D6A4F';
+    sub.textContent = 'Data is saved automatically in IndexedDB';
+  }
+}
+
 async function openBackupModal() {
   const ds = document.getElementById('driveStatus');
   if (ds) ds.style.display = 'none';
@@ -3435,6 +3547,9 @@ async function openBackupModal() {
   if (lbt && t) {
     lbt.textContent = 'Last backup: ' + new Date(t).toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   }
+
+  // Update storage protection card
+  updateStorageProtectionCard();
 
   // Restore drive user if previously connected
   const savedUser = localStorage.getItem('mtc_drive_user');
