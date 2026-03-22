@@ -561,7 +561,7 @@
 <!-- AUTH SCREEN -->
 <!-- SPLASH SCREEN -->
 <div class="splash-screen" id="splashScreen">
-  <div class="splash-icon-ring">🎓</div>
+  <img id="splashLogo" src="" alt="MTC" style="width:110px;height:110px;border-radius:28px;box-shadow:0 8px 32px rgba(0,0,0,0.25);animation:splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;" />
   <div class="splash-title">Mahatab Tuition Centre</div>
   <div class="splash-sub">Welcome to Fee Management System</div>
   <div class="splash-dev">Developed by Mahatab</div>
@@ -575,7 +575,7 @@
 <div class="login-screen" id="loginScreen">
   <div class="login-card" style="max-height:95vh;overflow-y:auto">
 
-    <div class="login-logo">🎓</div>
+    <img id="loginLogo" src="" alt="MTC" style="width:72px;height:72px;border-radius:18px;margin:0 auto 10px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15);" />
     <div class="login-title">Mahatab Tuition Centre</div>
     <div class="login-sub" id="authSubtitle">Welcome back! Sign in to continue.</div>
 
@@ -694,7 +694,7 @@
 
 <header class="header">
   <div class="header-brand">
-    <div class="header-icon">🎓</div>
+    <img id="headerLogo" src="" alt="MTC" style="width:46px;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 2px 8px rgba(0,0,0,0.15);flex-shrink:0;" />
     <div>
       <div class="header-title">Mahatab Tuition Centre</div>
       <div class="header-sub">Fee Management System</div>
@@ -4943,39 +4943,114 @@ window.addEventListener('DOMContentLoaded', () => {
     const c = document.createElement('canvas');
     c.width = c.height = size;
     const ctx = c.getContext('2d');
+    const s = size;
+    const cx = s / 2, cy = s / 2;
 
-    // Background gradient
-    const grad = ctx.createLinearGradient(0, 0, size, size);
-    grad.addColorStop(0, '#1B4332');
-    grad.addColorStop(1, '#2D6A4F');
-    ctx.fillStyle = grad;
-    const r = size * 0.18;
+    // ── Background: deep green radial gradient ──
+    const bg = ctx.createRadialGradient(cx, cy * 0.7, 0, cx, cy, s * 0.75);
+    bg.addColorStop(0, '#2D6A4F');
+    bg.addColorStop(1, '#1B4332');
+    const r = s * 0.22;
     ctx.beginPath();
-    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
-    ctx.quadraticCurveTo(size, 0, size, r);
-    ctx.lineTo(size, size - r);
-    ctx.quadraticCurveTo(size, size, size - r, size);
-    ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.moveTo(r, 0); ctx.lineTo(s - r, 0);
+    ctx.quadraticCurveTo(s, 0, s, r);
+    ctx.lineTo(s, s - r);
+    ctx.quadraticCurveTo(s, s, s - r, s);
+    ctx.lineTo(r, s); ctx.quadraticCurveTo(0, s, 0, s - r);
     ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
-    ctx.closePath(); ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = bg;
+    ctx.fill();
 
-    // Graduation cap emoji
-    ctx.font = `${size * 0.52}px serif`;
+    // ── Subtle inner glow circle ──
+    const glow = ctx.createRadialGradient(cx, cy * 0.65, 0, cx, cy, s * 0.55);
+    glow.addColorStop(0, 'rgba(255,255,255,0.08)');
+    glow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, s * 0.55, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    // ── Draw graduation cap (mortarboard) ──
+    const capY = cy * 0.78;
+    const brimW = s * 0.54;
+    const brimH = s * 0.11;
+    const topW  = s * 0.42;
+    const topH  = s * 0.22;
+
+    // Cap top (square/trapezoidal top)
+    ctx.beginPath();
+    ctx.moveTo(cx - topW / 2, capY);
+    ctx.lineTo(cx + topW / 2, capY);
+    ctx.lineTo(cx + topW / 2 - s * 0.02, capY - topH);
+    ctx.lineTo(cx - topW / 2 + s * 0.02, capY - topH);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fill();
+
+    // Brim (diamond/rhombus shape)
+    ctx.beginPath();
+    ctx.moveTo(cx, capY - brimH * 0.5);           // top
+    ctx.lineTo(cx + brimW / 2, capY + brimH * 0.2); // right
+    ctx.lineTo(cx, capY + brimH * 0.9);             // bottom
+    ctx.lineTo(cx - brimW / 2, capY + brimH * 0.2); // left
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,1)';
+    ctx.fill();
+
+    // Tassel string
+    const tasselX = cx + brimW * 0.42;
+    const tasselStartY = capY + brimH * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(tasselX, tasselStartY);
+    ctx.lineTo(tasselX, tasselStartY + s * 0.13);
+    ctx.strokeStyle = 'rgba(255,220,100,0.95)';
+    ctx.lineWidth = s * 0.025;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Tassel ball
+    ctx.beginPath();
+    ctx.arc(tasselX, tasselStartY + s * 0.16, s * 0.035, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,220,100,0.95)';
+    ctx.fill();
+
+    // ── "MTC" text ──
+    const textY = s * 0.82;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🎓', size / 2, size / 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.font = `bold ${s * 0.155}px Arial, sans-serif`;
+    ctx.letterSpacing = `${s * 0.01}px`;
+    ctx.fillText('MTC', cx, textY);
 
-    // App name text
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = `bold ${size * 0.1}px Arial`;
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('MTC', size / 2, size - size * 0.08);
+    // ── Bottom accent line ──
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.18, s * 0.90);
+    ctx.lineTo(cx + s * 0.18, s * 0.90);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = s * 0.012;
+    ctx.lineCap = 'round';
+    ctx.stroke();
 
     return c.toDataURL('image/png');
   }
 
   const icon192 = makeIcon(192);
   const icon512 = makeIcon(512);
+
+  // ── Inject logo into all logo image elements ──
+  function applyLogos() {
+    const els = ['splashLogo', 'loginLogo', 'headerLogo'];
+    els.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.src = icon192;
+    });
+  }
+  // Apply now and after DOM is ready
+  applyLogos();
+  document.addEventListener('DOMContentLoaded', applyLogos);
+  setTimeout(applyLogos, 100);
 
   // ── 2. Inject Manifest as blob URL ──
   const manifest = {
