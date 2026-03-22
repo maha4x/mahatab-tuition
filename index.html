@@ -12,7 +12,7 @@
 <meta name="description" content="Mahatab Tuition Centre — Student Fee Management System">
 <link rel="manifest" id="pwaManifest">
 <link rel="apple-touch-icon" id="appleTouchIcon">
-<meta name="app-version" content="1.6.1">
+<meta name="app-version" content="1.7.0">
 <title>Mahatab Tuition Centre</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -728,14 +728,8 @@
     </div>
   </div>
 
-  <!-- NOTIFICATION PANEL -->
-  <div id="notifPanel" class="panel" style="display:none;margin-bottom:1.25rem;border-left:4px solid var(--warn)">
-    <div class="panel-header" style="background:var(--warn-light)">
-      <span class="panel-title" style="color:var(--warn)"><span class="panel-icon">🔔</span> Fee Due Notifications</span>
-      <button class="btn btn-sm" style="border:1px solid var(--warn);color:var(--warn)" onclick="dismissNotif()">Dismiss</button>
-    </div>
-    <div id="notifBody" class="panel-body" style="padding:0.75rem 1.5rem"></div>
-  </div>
+  <!-- NOTIFICATION PANEL (hidden - notifications open as full page via bell) -->
+  <div id="notifPanel" style="display:none"></div>
 
   <!-- BATCH TABS -->
   <div class="panel" style="margin-bottom:1.25rem">
@@ -878,24 +872,9 @@
   </div>
 
   <!-- RECOVERY PANEL -->
-  <div class="panel" id="recoveryPanel" style="display:none">
-    <div class="panel-header">
-      <span class="panel-title"><span class="panel-icon">♻️</span> Deleted Students &nbsp;<span id="trashCount" style="background:var(--danger-light);color:var(--danger);font-size:12px;padding:2px 9px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:500">0</span></span>
-      <button class="btn btn-sm btn-danger" onclick="emptyTrash()">🗑 Empty Trash</button>
-    </div>
-    <div class="panel-body">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Student</th><th>Phone</th><th>Joining Date</th><th>Monthly Fee</th><th>Paid</th><th>Deleted On</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="trashBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <!-- recoveryPanel replaced by full-page overlay -->
+  <div id="recoveryPanel" style="display:none"></div>
+  <div id="trashBody" style="display:none"></div>
 
 </div>
 
@@ -2221,48 +2200,107 @@ function emptyTrash() {
   };
 }
 
+// ── Deleted Students: now opens as full page ──
 function toggleTrash() {
-  trashVisible = !trashVisible;
-  document.getElementById('recoveryPanel').style.display = trashVisible ? 'block' : 'none';
-  document.getElementById('trashToggleBtn').style.background = trashVisible ? 'var(--danger-light)' : '';
-  document.getElementById('trashToggleBtn').style.color = trashVisible ? 'var(--danger)' : '';
+  openTrashPage();
+}
+
+function openTrashPage() {
+  const overlay = document.getElementById('trashPageOverlay');
+  if (overlay) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderTrashPage();
+  }
+}
+
+function closeTrashPage() {
+  const overlay = document.getElementById('trashPageOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+function renderTrashPage() {
+  const body = document.getElementById('trashPageBody');
+  const countEl = document.getElementById('trashPageCount');
+  const emptyBtn = document.getElementById('emptyTrashPageBtn');
+  if (!body) return;
+
+  const count = trash.length;
+  if (countEl) countEl.textContent = count ? count + ' deleted' : '';
+  if (emptyBtn) emptyBtn.style.display = count ? 'block' : 'none';
+
+  if (!count) {
+    body.innerHTML = `
+      <div class="notif-empty">
+        <div class="notif-empty-icon">✅</div>
+        <div class="notif-empty-text">No deleted students</div>
+        <div class="notif-empty-sub">Deleted students will appear here and can be restored</div>
+      </div>`;
+    return;
+  }
+
+  body.innerHTML = trash.map((s, i) => {
+    const paid = s.paidTotal || 0;
+    const classLabel = s.studentClass !== undefined && s.studentClass !== ''
+      ? `Class ${s.studentClass == '0' ? '0 (KG)' : s.studentClass}` : '';
+    return `
+    <div class="notif-card" style="opacity:0.92" id="trash_${s.id}">
+      <div class="avatar ${s.color}" style="width:42px;height:42px;font-size:14px;flex-shrink:0;opacity:0.7">${getInitials(s.name)}</div>
+      <div class="notif-card-info">
+        <div class="notif-card-name" style="text-decoration:line-through;color:var(--text2)">${s.name}</div>
+        <div class="notif-card-meta">
+          ${getBatchName(s.batchId)}${classLabel ? ' · ' + classLabel : ''} · ${s.phone}
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+          <div style="font-size:12px;color:var(--text3)">Joined: <b style="color:var(--text2)">${formatDate(s.join)}</b></div>
+          <div style="font-size:12px;color:var(--text3)">Fee: <b style="color:var(--text2)">${fmt(s.fee)}/mo</b></div>
+          <div style="font-size:12px;color:var(--text3)">Paid: <b style="color:var(--paid)">${fmt(paid)}</b></div>
+        </div>
+        <div style="font-size:11px;color:var(--danger);margin-top:4px;font-weight:600">
+          🗑 Deleted on ${formatDate(s.deletedOn)}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-success" onclick="restoreFromPage(${s.id})">♻️ Restore</button>
+          <button class="btn btn-sm btn-danger" onclick="permDeleteFromPage(${s.id})">🗑 Delete Forever</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restoreFromPage(id) {
+  restoreStudent(id);
+  renderTrashPage();
+  // Update badge
+  const badge = document.getElementById('trashBadge');
+  if (badge) { badge.textContent = trash.length; badge.style.display = trash.length > 0 ? 'inline' : 'none'; }
+}
+
+function permDeleteFromPage(id) {
+  permanentDelete(id);
+  renderTrashPage();
+  const badge = document.getElementById('trashBadge');
+  if (badge) { badge.textContent = trash.length; badge.style.display = trash.length > 0 ? 'inline' : 'none'; }
+}
+
+function emptyTrashFromPage() {
+  if (!trash.length) return;
+  if (!confirm(`Permanently delete all ${trash.length} students? This cannot be undone.`)) return;
+  trash = [];
+  save();
+  renderTrashPage();
+  renderAll();
+  showToast('Trash emptied.');
 }
 
 function renderTrash() {
+  // Update badge only — table is rendered in the full-page overlay now
   const count = trash.length;
-  document.getElementById('trashCount').textContent = count;
   const badge = document.getElementById('trashBadge');
-  badge.textContent = count;
-  badge.style.display = count > 0 ? 'inline' : 'none';
-
-  const tbody = document.getElementById('trashBody');
-  if (!count) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🗑️</div><div class="empty-text">Trash is empty.</div></div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = trash.map((s, i) => `
-    <tr style="opacity:0.8">
-      <td style="color:var(--text3);font-size:13px">${i+1}</td>
-      <td>
-        <div class="student-cell">
-          <div class="avatar ${s.color}" style="opacity:0.7">${getInitials(s.name)}</div>
-          <div>
-            <div class="student-name" style="text-decoration:line-through;color:var(--text2)">${s.name}</div>
-          </div>
-        </div>
-      </td>
-      <td style="color:var(--text3)">${s.phone}</td>
-      <td style="color:var(--text3);font-size:13px">${formatDate(s.join)}</td>
-      <td><span class="amount" style="color:var(--text2)">${fmt(s.fee)}</span></td>
-      <td><span class="amount" style="color:var(--paid)">${fmt(s.paidTotal||0)}</span></td>
-      <td style="font-size:13px;color:var(--danger)">${formatDate(s.deletedOn)}</td>
-      <td>
-        <div style="display:flex;gap:5px">
-          <button class="btn btn-sm btn-success" onclick="restoreStudent(${s.id})">♻️ Restore</button>
-          <button class="btn btn-sm btn-danger" onclick="permanentDelete(${s.id})">🗑 Delete</button>
-        </div>
-      </td>
-    </tr>`).join('');
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
 }
 
 let activeEditId = null;
@@ -2802,68 +2840,15 @@ function renderNotifications(scope) {
     return false;
   });
 
-  const panel = document.getElementById('notifPanel');
-  const body  = document.getElementById('notifBody');
-
-  if (!notifStudents.length || notifDismissed) {
-    panel.style.display = 'none';
-    return;
-  }
-
-  panel.style.display = 'block';
-
-  body.innerHTML = notifStudents.map(s => {
-    const st = calcStatus(s);
-    const bal = calcBalance(s);
-    const months = monthsActive(s.join);
-    const nextDue = getNextDueDate(s.join);
-    const days = daysUntilCompletion(s.join);
-    const isDueSoon = st === 'dueSoon';
-
-    let urgencyColor, urgencyLabel, amountLabel;
-    if (isDueSoon) {
-      urgencyColor = days === 0 ? '#E67E22' : 'var(--warn)';
-      urgencyLabel = days === 0
-        ? '⏰ Monthly fee completes TODAY — pay now!'
-        : `⏰ Monthly fee completes in ${days} day(s) — on ${formatDate(nextDue)}`;
-      amountLabel = `Next fee: ${fmt(s.fee)}`;
-    } else {
-      urgencyColor = 'var(--danger)';
-      urgencyLabel = `🔴 ${months} month(s) overdue`;
-      amountLabel = `Balance: ${fmt(bal)}`;
-    }
-
-    return `
-    <div id="notif_${s.id}" style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:10px;flex:1">
-        <div class="avatar ${s.color}" style="width:36px;height:36px;font-size:13px;flex-shrink:0">${getInitials(s.name)}</div>
-        <div>
-          <div style="font-weight:700;font-size:14px">${s.name}</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:1px">${getBatchName(s.batchId)} · Joined ${formatDate(s.join)}</div>
-          <div style="font-size:12px;color:${urgencyColor};font-weight:600;margin-top:4px">${urgencyLabel}</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <div style="text-align:right">
-          <div style="font-weight:700;color:${isDueSoon ? 'var(--warn)' : 'var(--danger)'};font-size:15px">${isDueSoon ? fmt(s.fee) : fmt(bal)}</div>
-          <div style="font-size:11px;color:var(--text3)">${isDueSoon ? 'upcoming fee' : 'outstanding'}</div>
-        </div>
-        <button class="btn btn-sm btn-success" onclick="openPayModal(${s.id})" style="white-space:nowrap">💳 Pay</button>
-        <button onclick="dismissStudentNotif(${s.id})" style="width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:14px;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Dismiss">✕</button>
-      </div>
-    </div>`;
-  }).join('');
+  // Notifications now show only in the full-page overlay (notifPanel removed from home)
+  // Nothing to render inline — badge is already updated above
 }
 
 function dismissStudentNotif(id) {
   dismissedStudentIds.add(id);
-  const el = document.getElementById('notif_' + id);
+  // Remove from full-page notification overlay if open
+  const el = document.getElementById('npage_' + id);
   if (el) el.remove();
-  // Hide panel if no more notifications
-  const body = document.getElementById('notifBody');
-  if (body && !body.children.length) {
-    document.getElementById('notifPanel').style.display = 'none';
-  }
 }
 
 // Returns the next monthly completion date for a student
@@ -3013,7 +2998,8 @@ function dismissFromPage(id) {
 
 function dismissNotif() {
   notifDismissed = true;
-  document.getElementById('notifPanel').style.display = 'none';
+  // Panel is now full-page overlay — close it
+  closeNotifPage();
 }
 
 // ── Push Notifications ──
@@ -5337,6 +5323,21 @@ window.addEventListener('DOMContentLoaded', () => {
       </button>
     </div>
   </div>
+</div>
+
+<!-- DELETED STUDENTS FULL PAGE -->
+<div class="notif-page-overlay" id="trashPageOverlay">
+  <div class="notif-page-header">
+    <button class="notif-page-back" onclick="closeTrashPage()">&#8592;</button>
+    <div class="notif-page-title">🗑️ Deleted Students</div>
+    <div class="notif-page-count" id="trashPageCount"></div>
+  </div>
+  <div style="padding:0.75rem 1rem 0.5rem;display:flex;justify-content:flex-end">
+    <button id="emptyTrashPageBtn" onclick="emptyTrashFromPage()" style="background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);padding:7px 14px;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:none">
+      🗑 Empty Trash
+    </button>
+  </div>
+  <div class="notif-page-body" id="trashPageBody"></div>
 </div>
 </body>
 </html>

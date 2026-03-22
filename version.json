@@ -1,17 +1,16 @@
 {
-  "version": "2.5.1",
-  "date": "2026-03-21",
-  "description": "Download backup fixed for Android PWA + storage protection improvements",
+  "version": "2.6.0",
+  "date": "2026-03-22",
+  "description": "Bug fix: TypeError null innerHTML crash on home screen",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📥 Download backup fixed on Android PWA — now uses Web Share API with file attachment",
-    "📥 Download button opens Android share sheet — save to Files, WhatsApp, Telegram etc.",
-    "🔒 5-method fallback chain for maximum download compatibility",
-    "⚠️ One-time warning if Android 'Manage app if unused' may delete data",
-    "🔒 Storage protection status card added in Backup modal",
-    "🔒 Persistent storage requested automatically on every app launch"
+    "🐛 Fixed: 'Cannot set properties of null (setting innerHTML)' error on home screen",
+    "🐛 Fixed: renderNotifications no longer tries to write to removed notifBody element",
+    "🐛 Fixed: dismissStudentNotif no longer references removed notifPanel",
+    "🗑️ Deleted Students now always opens as full-page (inline panel fully removed)",
+    "🔔 Notifications only show in full-page overlay via bell button — home screen is clean"
   ],
-  "mandatory": false,
+  "mandatory": true,
   "min_supported": "1.0.0"
 }
