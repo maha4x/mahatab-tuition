@@ -1,16 +1,16 @@
 {
-  "version": "2.6.0",
+  "version": "2.7.0",
   "date": "2026-03-22",
-  "description": "Bug fix: TypeError null innerHTML crash on home screen",
+  "description": "Splash screen added on app launch",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "🐛 Fixed: 'Cannot set properties of null (setting innerHTML)' error on home screen",
-    "🐛 Fixed: renderNotifications no longer tries to write to removed notifBody element",
-    "🐛 Fixed: dismissStudentNotif no longer references removed notifPanel",
-    "🗑️ Deleted Students now always opens as full-page (inline panel fully removed)",
-    "🔔 Notifications only show in full-page overlay via bell button — home screen is clean"
+    "✨ Splash screen shown on every app launch",
+    "✨ Splash shows app icon, 'Welcome to Fee Management System', and 'Developed by Mahatab'",
+    "✨ Animated bouncing dots loader during splash",
+    "✨ Smooth fade-out transition after 2.2 seconds before login or home screen",
+    "🐛 Includes all previous bug fixes from v2.6.0"
   ],
-  "mandatory": true,
+  "mandatory": false,
   "min_supported": "1.0.0"
 }

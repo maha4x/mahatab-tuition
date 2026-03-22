@@ -19,6 +19,68 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   /* LOGIN SCREEN */
+  /* SPLASH SCREEN */
+  .splash-screen {
+    display: flex; position: fixed; inset: 0; z-index: 10000;
+    background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1B4332 100%);
+    align-items: center; justify-content: center; flex-direction: column;
+    gap: 0; transition: opacity 0.6s ease;
+  }
+  .splash-screen.fade-out { opacity: 0; pointer-events: none; }
+  .splash-screen.hidden { display: none; }
+  .splash-icon-ring {
+    width: 110px; height: 110px; border-radius: 28px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 56px; margin-bottom: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    animation: splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  @keyframes splashPop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .splash-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px; color: white; text-align: center;
+    letter-spacing: 0.3px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: splashFadeUp 0.5s 0.2s ease both;
+    padding: 0 20px;
+  }
+  .splash-sub {
+    font-size: 13px; color: rgba(255,255,255,0.7);
+    text-align: center; margin-top: 10px;
+    font-family: 'DM Sans', sans-serif; font-weight: 400;
+    animation: splashFadeUp 0.5s 0.35s ease both;
+    letter-spacing: 0.3px;
+  }
+  .splash-dev {
+    font-size: 12px; color: rgba(255,255,255,0.5);
+    text-align: center; margin-top: 6px;
+    font-family: 'DM Sans', sans-serif;
+    animation: splashFadeUp 0.5s 0.45s ease both;
+  }
+  .splash-loader {
+    margin-top: 48px; display: flex; gap: 8px;
+    animation: splashFadeUp 0.5s 0.5s ease both;
+  }
+  .splash-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    animation: splashBounce 1.2s infinite ease-in-out;
+  }
+  .splash-dot:nth-child(2) { animation-delay: 0.2s; }
+  .splash-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes splashFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes splashBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40%           { transform: scale(1);   opacity: 1; }
+  }
+
   .login-screen {
     display: none; position: fixed; inset: 0; z-index: 9999;
     background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 60%, #1B4332 100%);
@@ -497,7 +559,20 @@
 <body>
 
 <!-- AUTH SCREEN -->
-<div class="login-screen active" id="loginScreen">
+<!-- SPLASH SCREEN -->
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-icon-ring">🎓</div>
+  <div class="splash-title">Mahatab Tuition Centre</div>
+  <div class="splash-sub">Welcome to Fee Management System</div>
+  <div class="splash-dev">Developed by Mahatab</div>
+  <div class="splash-loader">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
+
+<div class="login-screen" id="loginScreen">
   <div class="login-card" style="max-height:95vh;overflow-y:auto">
 
     <div class="login-logo">🎓</div>
@@ -1748,28 +1823,36 @@ document.addEventListener('click', e=>{
 
 // ── Auto-login if session exists — WITH VALIDATION ──
 (function initApp(){
-  const saved = loadUserSession();
-  if (saved && saved.id) {
-    // CRITICAL: Verify this user actually exists in our user store
-    const users = getUsers();
-    const validUser = users.find(u => u.id === saved.id);
-    if (validUser) {
-      // Valid session — restore
-      currentUser = saved;
-      const ls = document.getElementById('loginScreen');
-      if (ls) ls.classList.remove('active');
-      updateHeaderUser();
-      updateHeaderDate();
-      loadData();
-      return;
+  // Show splash for 2.2s then proceed
+  const splash = document.getElementById('splashScreen');
+
+  function proceedAfterSplash() {
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => splash.classList.add('hidden'), 650);
     }
-    // Session references a deleted/non-existent user — clear it
-    try { localStorage.removeItem('mtc_user'); } catch(e) {}
+
+    const saved = loadUserSession();
+    if (saved && saved.id) {
+      const users = getUsers();
+      const validUser = users.find(u => u.id === saved.id);
+      if (validUser) {
+        currentUser = saved;
+        const ls = document.getElementById('loginScreen');
+        if (ls) ls.classList.remove('active');
+        updateHeaderUser();
+        updateHeaderDate();
+        loadData();
+        return;
+      }
+      try { localStorage.removeItem('mtc_user'); } catch(e) {}
+    }
+    switchAuthTab('login');
+    const ls = document.getElementById('loginScreen');
+    if (ls) ls.classList.add('active');
   }
-  // No valid session — show login
-  switchAuthTab('login');
-  const ls = document.getElementById('loginScreen');
-  if (ls) ls.classList.add('active');
+
+  setTimeout(proceedAfterSplash, 2200);
 })();
 
 
