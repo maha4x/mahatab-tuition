@@ -1,16 +1,17 @@
 {
-  "version": "2.9.0",
+  "version": "2.4.0",
   "date": "2026-03-25",
-  "description": "Student detail page + compact list layout",
+  "description": "Android back button now works inside app",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "👤 Tap any student name to open full detail page",
-    "📊 Detail page shows: fee summary, monthly breakdown, leave periods, payment history",
-    "💳 Pay Now & Edit buttons on detail page bottom action bar",
-    "📋 Student list redesigned to compact single-line rows — no more scrolling",
-    "🏖️ Leave period badge shown inline in compact list",
-    "🗑️ Remove leave fields from Add Student form — manage via Edit only"
+    "📱 Android back button no longer closes the app",
+    "✅ Back button closes open modal/panel instead",
+    "✅ Back button closes payment, edit, history modals",
+    "✅ Back button closes backup, batch, import dialogs",
+    "✅ Back button closes notifications panel",
+    "✅ Back button closes user dropdown menu",
+    "✅ Back button collapses add student form"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"

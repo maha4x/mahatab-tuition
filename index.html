@@ -6074,5 +6074,153 @@ window.addEventListener('DOMContentLoaded', () => {
     <button class="btn" style="flex:1;font-size:14px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="sdpEdit()">✏️ Edit</button>
   </div>
 </div>
+<
+<!-- ══════════════ ANDROID BACK BUTTON HANDLER ══════════════ -->
+<script>
+(function() {
+
+  // ── Push a dummy state so we can intercept popstate ──
+  // Every time something opens, push a state. On back, pop it and close.
+  function pushState(name) {
+    history.pushState({ panel: name }, '', window.location.href);
+  }
+
+  // ── Check what is currently open ──
+  function getOpenPanel() {
+    // Check modals (highest priority first)
+    const modals = [
+      'downloadPermModal',    // dynamic - check by existence
+      'shareInstructModal',
+      'installGuideModal',
+    ];
+    for (const id of modals) {
+      if (document.getElementById(id)) return id;
+    }
+
+    // Check overlay modals with .open class
+    const overlayIds = [
+      'changelogModal',
+      'importModal',
+      'confirmOverlay',
+      'payModal',
+      'histModal',
+      'editModal',
+      'backupModal',
+      'batchModal',
+    ];
+    for (const id of overlayIds) {
+      const el = document.getElementById(id);
+      if (el && (el.classList.contains('open') || el.style.display === 'flex')) return id;
+    }
+
+    // Check user dropdown
+    const dd = document.getElementById('userDropdown');
+    if (dd && dd.classList.contains('open')) return 'userDropdown';
+
+    // Check notification panel
+    const notif = document.getElementById('notifPanel');
+    if (notif && notif.style.display !== 'none' && notif.style.display !== '') return 'notifPanel';
+
+    // Check student detail panel (SDP)
+    const sdp = document.getElementById('sdpOverlay');
+    if (sdp && sdp.classList.contains('open')) return 'sdpOverlay';
+
+    // Check update banner
+    const banner = document.getElementById('updateBanner');
+    if (banner && banner.classList.contains('show')) return 'updateBanner';
+
+    // Check add student form expanded
+    const addExp = document.getElementById('addStudentExpanded');
+    if (addExp && addExp.style.display !== 'none' && addExp.style.display !== '') return 'addStudentExpanded';
+
+    // Check revenue chart panel expanded (not collapsed)
+    const chartBody = document.getElementById('revenueChartBody');
+    if (chartBody && chartBody.style.display !== 'none') return null; // don't close chart on back
+
+    return null;
+  }
+
+  // ── Close the given panel ──
+  function closePanel(id) {
+    switch (id) {
+      case 'downloadPermModal':
+      case 'shareInstructModal':
+      case 'installGuideModal': {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+        break;
+      }
+      case 'changelogModal': {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('open');
+        break;
+      }
+      case 'importModal':      if (typeof closeImportModal==='function')  closeImportModal();  break;
+      case 'confirmOverlay':   {
+        const el = document.getElementById('confirmOverlay');
+        if (el) el.classList.remove('open');
+        break;
+      }
+      case 'payModal':         if (typeof closeModal==='function')        closeModal();        break;
+      case 'histModal':        if (typeof closeHist==='function')         closeHist();         break;
+      case 'editModal':        if (typeof closeEditModal==='function')    closeEditModal();    break;
+      case 'backupModal':      if (typeof closeBackupModal==='function')  closeBackupModal();  break;
+      case 'batchModal':       if (typeof closeBatchModal==='function')   closeBatchModal();   break;
+      case 'userDropdown':     if (typeof closeUserDropdown==='function') closeUserDropdown(); break;
+      case 'notifPanel': {
+        const el = document.getElementById('notifPanel');
+        if (el) el.style.display = 'none';
+        break;
+      }
+      case 'sdpOverlay': {
+        const el = document.getElementById('sdpOverlay');
+        if (el) el.classList.remove('open');
+        break;
+      }
+      case 'updateBanner':     if (typeof dismissUpdate==='function') dismissUpdate(); break;
+      case 'addStudentExpanded':
+        if (typeof closeAddStudentForm==='function') closeAddStudentForm();
+        break;
+      default: break;
+    }
+  }
+
+  // ── Intercept popstate (fired when Android back is pressed) ──
+  window.addEventListener('popstate', function(e) {
+    const open = getOpenPanel();
+    if (open) {
+      // Something is open — close it, push state again to stay in app
+      closePanel(open);
+      pushState('app');
+    } else {
+      // Nothing open — push state again so next back press can be caught
+      // This prevents the app from closing on first back press
+      history.pushState({ panel: 'app' }, '', window.location.href);
+    }
+  });
+
+  // ── Push initial state when app loads ──
+  // This ensures the first back press is caught by popstate
+  window.addEventListener('load', function() {
+    // Replace current state (not push, so we don't add to history)
+    history.replaceState({ panel: 'app' }, '', window.location.href);
+    // Push one extra state so back press pops to replaceState above
+    history.pushState({ panel: 'app' }, '', window.location.href);
+  });
+
+  // ── Auto-push state whenever a modal/panel opens ──
+  // Monkey-patch classList.add to detect .open being added
+  const _origAdd = DOMTokenList.prototype.add;
+  DOMTokenList.prototype.add = function(...classes) {
+    _origAdd.apply(this, classes);
+    if (classes.includes('open') || classes.includes('active')) {
+      // A panel/modal just opened — push history state
+      pushState('modal');
+    }
+  };
+
+})();
+</script>
+
 </body>
 </html>
