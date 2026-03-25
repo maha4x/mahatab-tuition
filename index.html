@@ -415,7 +415,7 @@
     text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3);
     border-bottom: 1px solid var(--border); white-space: nowrap;
   }
-  td { padding: 7px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  td { padding: 4px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--bg); }
 
@@ -505,6 +505,66 @@
   .notif-empty-icon { font-size: 48px; margin-bottom: 12px; }
   .notif-empty-text { font-size: 15px; font-weight: 600; color: var(--text2); }
   .notif-empty-sub { font-size: 13px; margin-top: 6px; }
+
+  /* STUDENT DETAIL PAGE */
+  .student-detail-page {
+    display: none; position: fixed; inset: 0; z-index: 400;
+    background: var(--bg); flex-direction: column;
+    animation: slideInUp 0.25s ease;
+  }
+  .student-detail-page.open { display: flex; }
+  .sdp-header {
+    background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1B4332 100%);
+    color: white; padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+  }
+  .sdp-back {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    color: white; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sdp-header-info { flex: 1; min-width: 0; }
+  .sdp-header-name { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .sdp-header-sub  { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+  .sdp-body { flex: 1; overflow-y: auto; padding: 1rem; }
+  .sdp-card {
+    background: var(--surface); border-radius: 14px;
+    padding: 1rem 1.1rem; margin-bottom: 0.75rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .sdp-card-title {
+    font-size: 11px; font-weight: 700; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.7px;
+    margin-bottom: 0.75rem;
+  }
+  .sdp-stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .sdp-stat {
+    background: var(--bg); border-radius: 10px;
+    padding: 10px 12px; text-align: center;
+  }
+  .sdp-stat-val { font-size: 20px; font-weight: 700; }
+  .sdp-stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .sdp-month-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .sdp-month-row:last-child { border-bottom: none; }
+  .sdp-pay-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px;
+  }
+  .sdp-pay-row:last-child { border-bottom: none; }
+  .sdp-action-bar {
+    padding: 0.75rem 1rem; background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px; flex-shrink: 0;
+  }
 
   /* TOAST */
   .toast {
@@ -927,6 +987,7 @@
             <label>Batch *</label>
             <select id="inBatch"></select>
           </div>
+
           <div class="form-group">
             <label>Payment Status <span style="font-size:11px;color:var(--text3);font-weight:400">(auto-detected)</span></label>
             <div id="statusPreview" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);min-height:42px">
@@ -982,17 +1043,10 @@
         <table id="studentTable">
           <thead>
             <tr>
-              <th>#</th>
+              <th style="width:28px">#</th>
               <th>Student</th>
-              <th>Batch</th>
-              <th>Joining Date</th>
-              <th>Monthly Fee</th>
-              <th>Months</th>
-              <th>Total Due</th>
-              <th>Paid</th>
-              <th>Balance</th>
+              <th style="text-align:right">Balance</th>
               <th>Status</th>
-              <th>Last Payment</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -1057,6 +1111,33 @@
     <div style="margin-top:1rem;padding:10px 14px;background:var(--warn-light);border:1px solid #E8C76A;border-radius:var(--radius-sm);font-size:12px;color:var(--warn)">
       ⚠️ Editing the monthly fee or joining date will recalculate the total due amount.
     </div>
+
+    <!-- Leave Periods Section -->
+    <div style="margin-top:1rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
+      <div style="background:var(--surface2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:13px;color:var(--text)">🏖️ Leave Periods</span>
+        <button class="btn btn-sm" onclick="addLeaveRow()" style="background:var(--accent);color:white;border:none">＋ Add Leave</button>
+      </div>
+      <div id="leaveList" style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto">
+        <div id="leaveEmpty" style="font-size:12px;color:var(--text3);text-align:center;padding:8px">No leave periods — fee counts all months</div>
+      </div>
+
+      <!-- Save leave button row — shown when rows exist -->
+      <div id="leaveSaveRow" style="display:none;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div id="editLeaveSummary" style="font-size:12px;color:var(--accent);font-weight:600;flex:1"></div>
+        <button class="btn btn-sm btn-success" onclick="saveLeaveOnly()" style="white-space:nowrap">✅ Save Leave</button>
+      </div>
+
+      <div style="padding:8px 14px;background:var(--bg);font-size:11px;color:var(--text3);border-top:1px solid var(--border)">
+        💡 Fee is paused during leave. Months on leave are not counted as due.
+      </div>
+    </div>
+
+    <!-- Leave saved confirmation toast -->
+    <div id="leaveSavedMsg" style="display:none;margin-top:8px;padding:8px 14px;background:var(--paid-light);border:1px solid var(--accent-mid);border-radius:8px;font-size:12px;color:var(--paid);font-weight:600">
+      ✅ Leave saved — fee recalculated
+    </div>
+
     <div class="modal-actions">
       <button class="btn" style="border:1px solid var(--border)" onclick="closeEditModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
@@ -1093,7 +1174,8 @@
       <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
       <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
         <div style="font-size:12px;color:var(--text3)">Monthly Fee: <b id="payFeeAmt" style="color:var(--text)"></b></div>
-        <div style="font-size:12px;color:var(--text3)">Completed Months: <b id="payMonths" style="color:var(--info)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Active Months: <b id="payMonths" style="color:var(--info)"></b></div>
+        <div style="font-size:12px;color:var(--text3)" id="payLeaveInfo" style="display:none"></div>
         <div style="font-size:12px;color:var(--text3)">Already Paid: <b id="payAlreadyPaid" style="color:var(--paid)"></b></div>
         <div style="font-size:12px;color:var(--text3)">Current Balance: <b id="payCurrentBal" style="color:var(--danger)"></b></div>
       </div>
@@ -2205,6 +2287,7 @@ function addStudent() {
     paidTotal: 0,
     status: 'due',
     payments: [],
+    leaves: [],
     color: avatarColors[students.length % 6]
   };
   // Auto status: due by default, calcStatus() will handle dynamically
@@ -2469,12 +2552,122 @@ function openEditModal(id) {
   const sel = document.getElementById('editBatch');
   sel.innerHTML = batches.map(b => `<option value="${b.id}" ${b.id === s.batchId ? 'selected' : ''}>${b.name}</option>`).join('');
 
+  // Load leave periods
+  renderLeaveList(s.leaves || []);
+
   document.getElementById('editModal').classList.add('open');
 }
 
 function closeEditModal() {
   document.getElementById('editModal').classList.remove('open');
   activeEditId = null;
+}
+
+// ── Leave Period Management ──
+let editLeaves = [];
+
+function renderLeaveList(leaves) {
+  editLeaves = leaves ? leaves.map(l => ({...l})) : [];
+  const list    = document.getElementById('leaveList');
+  const empty   = document.getElementById('leaveEmpty');
+  const summary = document.getElementById('editLeaveSummary');
+  if (!list) return;
+
+  const saveRow = document.getElementById('leaveSaveRow');
+  const savedMsg = document.getElementById('leaveSavedMsg');
+
+  if (!editLeaves.length) {
+    list.innerHTML = '';
+    if (empty) { empty.style.display = 'block'; list.appendChild(empty); }
+    if (saveRow) saveRow.style.display = 'none';
+    if (savedMsg) savedMsg.style.display = 'none';
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  if (saveRow) saveRow.style.display = 'flex';
+  if (savedMsg) savedMsg.style.display = 'none';
+  list.innerHTML = editLeaves.map((lv, i) => `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px">📅 Leave Date *</div>
+        <input type="date" value="${lv.from||''}" onchange="updateLeaveRow(${i},'from',this.value)"
+          style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:var(--surface)" />
+      </div>
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px">🔄 Rejoin Date</div>
+        <input type="date" value="${lv.to||''}" onchange="updateLeaveRow(${i},'to',this.value)"
+          placeholder="Still on leave"
+          style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:var(--surface)" />
+      </div>
+      <div style="font-size:11px;color:${lv.to ? 'var(--paid)' : 'var(--warn)'};font-weight:600;padding-bottom:6px;white-space:nowrap">
+        ${lv.to ? '✅ Returned' : '⏳ On Leave'}
+      </div>
+      <button onclick="removeLeaveRow(${i})" style="background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;flex-shrink:0">✕</button>
+    </div>
+  `).join('');
+
+  // Update summary in save row
+  if (activeEditId) {
+    const s = students.find(s => s.id === activeEditId);
+    if (s) {
+      const tempS    = {...s, leaves: editLeaves};
+      const leaveMo  = totalLeaveMonths(tempS);
+      const activeMo = monthsActive(s.join, editLeaves);
+      const sumEl    = document.getElementById('editLeaveSummary');
+      if (sumEl) {
+        sumEl.textContent = leaveMo > 0
+          ? `📊 ${leaveMo}mo leave → ${activeMo} active → Due: ${fmt(s.fee * activeMo)}`
+          : `📊 ${activeMo} active months → Due: ${fmt(s.fee * activeMo)}`;
+      }
+    }
+  }
+}
+
+function addLeaveRow() {
+  editLeaves.push({ from: '', to: '' });
+  renderLeaveList(editLeaves);
+}
+
+function updateLeaveRow(i, field, val) {
+  if (editLeaves[i]) {
+    editLeaves[i][field] = val;
+    renderLeaveList(editLeaves);
+  }
+}
+
+function removeLeaveRow(i) {
+  editLeaves.splice(i, 1);
+  renderLeaveList(editLeaves);
+}
+
+function collectLeaveRows() {
+  return editLeaves.filter(lv => lv.from); // only keep rows with a leave date set
+}
+
+function saveLeaveOnly() {
+  if (!activeEditId) return;
+  const s = students.find(s => s.id === activeEditId);
+  if (!s) return;
+  s.leaves = collectLeaveRows();
+  s.status  = calcStatus(s);
+  save();
+  renderAll();
+  // Show confirmation
+  const savedMsg = document.getElementById('leaveSavedMsg');
+  const saveRow  = document.getElementById('leaveSaveRow');
+  if (savedMsg) savedMsg.style.display = 'block';
+  if (saveRow)  saveRow.style.display  = 'none';
+  // Update summary text
+  const leaveMo  = totalLeaveMonths(s);
+  const activeMo = monthsActive(s.join, s.leaves);
+  const sumEl    = document.getElementById('editLeaveSummary');
+  if (sumEl) sumEl.textContent = `✅ ${leaveMo}mo leave → ${activeMo} active months → Due: ${fmt(s.fee * activeMo)}`;
+  // Auto-hide after 3s, restore save row
+  setTimeout(() => {
+    if (savedMsg) savedMsg.style.display = 'none';
+    if (editLeaves.length) { if (saveRow) saveRow.style.display = 'flex'; }
+  }, 3000);
 }
 
 function saveEdit() {
@@ -2497,10 +2690,13 @@ function saveEdit() {
   s.phone = phone || '—';
   s.batchId = batchId;
   s.studentClass = document.getElementById('editClass').value || '';
+  s.leaves = collectLeaveRows();
   s.status = calcStatus(s);
 
   save(); renderAll(); closeEditModal();
-  showToast(`✅ "${name}" updated successfully!`);
+  const leaveMo = totalLeaveMonths(s);
+  const msg = leaveMo > 0 ? ` (${leaveMo} month(s) on leave excluded)` : '';
+  showToast(`✅ "${name}" updated!${msg}`);
 }
 
 function closeConfirm() {
@@ -2516,13 +2712,14 @@ function openPayModal(id) {
   payType = 'due';
   advMonths = 1;
   const s = students.find(s => s.id === id);
-  const months = monthsActive(s.join);
+  const months = monthsActive(s.join, s.leaves);
   const due = totalDue(s);
   const bal = calcBalance(s);
+  const leaveMo = totalLeaveMonths(s);
 
   document.getElementById('payStudentName2').textContent = s.name;
   document.getElementById('payFeeAmt').textContent = fmt(s.fee);
-  document.getElementById('payMonths').textContent = months + ' mo';
+  document.getElementById('payMonths').textContent = months + ' mo' + (leaveMo > 0 ? ` (${leaveMo}mo leave excluded)` : '');
   document.getElementById('payAlreadyPaid').textContent = fmt(s.paidTotal || 0);
   document.getElementById('payCurrentBal').textContent = fmt(bal);
   document.getElementById('payAmount').value = bal > 0 ? bal : s.fee;
@@ -2726,6 +2923,228 @@ function openHist(id) {
 
 function closeHist() { document.getElementById('histModal').classList.remove('open'); }
 
+// ── Student Detail Page ──
+let activeDetailId = null;
+
+function openStudentDetail(id) {
+  activeDetailId = id;
+  const s = students.find(s => s.id === id);
+  if (!s) return;
+  document.body.style.overflow = 'hidden';
+  document.getElementById('studentDetailPage').classList.add('open');
+  renderStudentDetail(s);
+}
+
+function closeStudentDetail() {
+  document.getElementById('studentDetailPage').classList.remove('open');
+  document.body.style.overflow = '';
+  activeDetailId = null;
+}
+
+function sdpPay() {
+  closeStudentDetail();
+  if (activeDetailId !== null) openPayModal(activeDetailId);
+}
+
+function sdpEdit() {
+  closeStudentDetail();
+  if (activeDetailId !== null) openEditModal(activeDetailId);
+}
+
+function renderStudentDetail(s) {
+  const months    = monthsActive(s.join, s.leaves);
+  const due       = totalDue(s);
+  const paid      = s.paidTotal || 0;
+  const bal       = calcBalance(s);
+  const pct       = due > 0 ? Math.min(100, Math.round(paid / due * 100)) : 100;
+  const status    = calcStatus(s);
+  const leaveMo   = totalLeaveMonths(s);
+  const batchName = getBatchName(s.batchId);
+  const classLbl  = s.studentClass !== undefined && s.studentClass !== ''
+    ? (s.studentClass == '0' ? 'Class 0 (KG)' : 'Class ' + s.studentClass) : '—';
+
+  // Header
+  document.getElementById('sdpName').textContent = s.name;
+  document.getElementById('sdpSub').textContent  =
+    `${batchName} · ${classLbl} · Joined ${formatDate(s.join)}`;
+  document.getElementById('sdpStatusBadge').innerHTML = statusBadge(status);
+
+  // Build monthly breakdown
+  const joinDate = new Date(s.join + 'T00:00:00');
+  const now      = new Date();
+  const monthNames2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Generate month rows from join to now
+  let monthRows = '';
+  let mDate = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);
+  let mIndex = 0;
+  while (mDate <= now) {
+    const yr  = mDate.getFullYear();
+    const mo  = mDate.getMonth();
+    const lbl = monthNames2[mo] + ' ' + yr;
+
+    // Check if this month is a leave month
+    let isLeave = false;
+    if (s.leaves && s.leaves.length) {
+      for (const lv of s.leaves) {
+        if (!lv.from) continue;
+        const lvFrom = new Date(lv.from + 'T00:00:00');
+        const lvTo   = lv.to ? new Date(lv.to + 'T00:00:00') : now;
+        const lvFromMo = new Date(lvFrom.getFullYear(), lvFrom.getMonth(), 1);
+        const lvToMo   = new Date(lvTo.getFullYear(),   lvTo.getMonth(),   1);
+        if (mDate >= lvFromMo && mDate <= lvToMo) { isLeave = true; break; }
+      }
+    }
+
+    // Check if payment was made this month
+    const monthPay = s.payments.filter(p => {
+      const pd = new Date(p.date + 'T00:00:00');
+      return pd.getFullYear() === yr && pd.getMonth() === mo;
+    }).reduce((a,p) => a + p.amount, 0);
+
+    const isFuture = mDate > now;
+    let badge, amtColor;
+    if (isLeave) {
+      badge    = '<span style="background:#FEF3CD;color:#B7791F;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">🏖️ Leave</span>';
+      amtColor = 'var(--text3)';
+    } else if (monthPay >= s.fee) {
+      badge    = '<span style="background:var(--paid-light);color:var(--paid);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">✅ Paid</span>';
+      amtColor = 'var(--paid)';
+    } else if (monthPay > 0) {
+      badge    = `<span style="background:#FEF3CD;color:#B7791F;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">🟡 Partial</span>`;
+      amtColor = 'var(--warn)';
+    } else {
+      badge    = '<span style="background:var(--danger-light);color:var(--danger);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">❌ Due</span>';
+      amtColor = 'var(--danger)';
+    }
+
+    monthRows += `
+      <div class="sdp-month-row">
+        <div style="font-weight:500">${lbl}</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${badge}
+          <span style="font-weight:600;color:${isLeave ? 'var(--text3)' : amtColor};font-size:13px">
+            ${isLeave ? '—' : (monthPay > 0 ? fmt(monthPay) : fmt(s.fee))}
+          </span>
+        </div>
+      </div>`;
+    mDate.setMonth(mDate.getMonth() + 1);
+    mIndex++;
+    if (mIndex > 60) break; // safety cap
+  }
+
+  // Payment history rows
+  let payRows = '';
+  if (s.payments.length === 0) {
+    payRows = '<div style="text-align:center;color:var(--text3);font-size:13px;padding:1rem">No payments yet</div>';
+  } else {
+    payRows = [...s.payments].reverse().map(p => `
+      <div class="sdp-pay-row">
+        <div>
+          <div style="font-weight:600;font-size:14px">${formatDate(p.date)}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">${p.mode}${p.note ? ' · ' + p.note : ''}${p.discount > 0 ? ` · 🏷️ Disc: ${fmt(p.discount)}` : ''}</div>
+          ${p.type === 'advance' ? `<span style="background:var(--info-light);color:var(--info);font-size:11px;padding:2px 7px;border-radius:8px;font-weight:600">⏩ Advance ×${p.advanceMonths}</span>` : ''}
+        </div>
+        <div style="font-weight:700;color:var(--paid);font-size:16px">${fmt(p.amount)}</div>
+      </div>`).join('');
+  }
+
+  // Leave periods rows
+  let leaveRows = '';
+  if (s.leaves && s.leaves.length) {
+    leaveRows = s.leaves.filter(lv => lv.from).map(lv => `
+      <div class="sdp-month-row">
+        <div>${formatDate(lv.from)} → ${lv.to ? formatDate(lv.to) : '<span style="color:var(--warn)">Still on leave</span>'}</div>
+        <span style="font-size:11px;background:#FEF3CD;color:#B7791F;padding:2px 8px;border-radius:10px;font-weight:600">
+          ${lv.to ? '✅ Returned' : '⏳ On Leave'}
+        </span>
+      </div>`).join('');
+  } else {
+    leaveRows = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:6px">No leave periods</div>';
+  }
+
+  document.getElementById('sdpBody').innerHTML = `
+    <!-- Fee Summary Stats -->
+    <div class="sdp-card">
+      <div class="sdp-card-title">💰 Fee Summary</div>
+      <div class="sdp-stat-grid">
+        <div class="sdp-stat" style="background:var(--accent-light)">
+          <div class="sdp-stat-val" style="color:var(--accent)">${fmt(s.fee)}</div>
+          <div class="sdp-stat-lbl">Monthly Fee</div>
+        </div>
+        <div class="sdp-stat" style="background:var(--info-light)">
+          <div class="sdp-stat-val" style="color:var(--info)">${months} mo${leaveMo > 0 ? `<span style="font-size:12px"> (-${leaveMo})</span>` : ''}</div>
+          <div class="sdp-stat-lbl">Active Months</div>
+        </div>
+        <div class="sdp-stat" style="background:var(--danger-light)">
+          <div class="sdp-stat-val" style="color:var(--danger)">${fmt(due)}</div>
+          <div class="sdp-stat-lbl">Total Due</div>
+        </div>
+        <div class="sdp-stat" style="background:var(--paid-light)">
+          <div class="sdp-stat-val" style="color:var(--paid)">${fmt(paid)}</div>
+          <div class="sdp-stat-lbl">Total Paid</div>
+        </div>
+      </div>
+      <!-- Balance + progress -->
+      <div style="margin-top:12px;padding:10px 14px;border-radius:10px;background:${bal > 0 ? 'var(--danger-light)' : 'var(--paid-light)'};display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600;color:${bal > 0 ? 'var(--danger)' : 'var(--paid)'}">
+          ${bal > 0 ? '🔴 Balance Due' : '✅ Fully Paid'}
+        </span>
+        <span style="font-size:20px;font-weight:700;color:${bal > 0 ? 'var(--danger)' : 'var(--paid)'}">${fmt(bal)}</span>
+      </div>
+      <div style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px">
+          <span>Payment progress</span><span>${pct}%</span>
+        </div>
+        <div style="background:var(--surface2);border-radius:6px;height:8px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${pct>=100 ? 'var(--paid)' : 'var(--accent)'};border-radius:6px;transition:width 0.4s"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Info -->
+    <div class="sdp-card">
+      <div class="sdp-card-title">👤 Student Info</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text3)">Phone</span><span style="font-weight:500">${s.phone}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text3)">Batch</span><span style="font-weight:500">${batchName}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text3)">Class</span><span style="font-weight:500">${classLbl}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text3)">Joining Date</span><span style="font-weight:500">${formatDate(s.join)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text3)">Last Payment</span>
+          <span style="font-weight:500">${s.payments.length ? formatDate(s.payments[s.payments.length-1].date) : '—'}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Breakdown -->
+    <div class="sdp-card">
+      <div class="sdp-card-title">📅 Monthly Breakdown</div>
+      ${monthRows}
+    </div>
+
+    <!-- Leave Periods -->
+    <div class="sdp-card">
+      <div class="sdp-card-title">🏖️ Leave Periods</div>
+      ${leaveRows}
+    </div>
+
+    <!-- Payment History -->
+    <div class="sdp-card">
+      <div class="sdp-card-title">📜 Payment History (${s.payments.length} payments · Total: ${fmt(paid)})</div>
+      ${payRows}
+    </div>
+  `;
+}
+
 function formatDate(d) {
   if (!d) return '—';
   const dt = new Date(d + 'T00:00:00');
@@ -2810,18 +3229,53 @@ function setActiveBatch(id) {
   renderStats();
 }
 
-function monthsActive(joinDate) {
+function monthsActive(joinDate, leaves) {
   const j = new Date(joinDate + 'T00:00:00');
   const now = new Date();
   let months = (now.getFullYear() - j.getFullYear()) * 12 + (now.getMonth() - j.getMonth());
-  // If today's date hasn't reached the joining day yet this month, subtract 1
   if (now.getDate() < j.getDate()) months--;
+  months = Math.max(0, months);
+
+  // Subtract leave months
+  if (leaves && leaves.length) {
+    for (const lv of leaves) {
+      if (!lv.from) continue;
+      const lvFrom  = new Date(lv.from + 'T00:00:00');
+      const lvTo    = lv.to ? new Date(lv.to + 'T00:00:00') : now;
+      // Clamp leave period within join→now
+      const start = lvFrom < j ? j : lvFrom;
+      const end   = lvTo  > now ? now : lvTo;
+      if (end <= start) continue;
+      let lvMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+      if (end.getDate() < start.getDate()) lvMonths--;
+      months -= Math.max(0, lvMonths);
+    }
+  }
   return Math.max(0, months);
 }
 
 function totalDue(s) {
-  // Only count completed months — advance paid months don't add to due
-  return s.fee * monthsActive(s.join);
+  return s.fee * monthsActive(s.join, s.leaves);
+}
+
+// Calculate total leave months for display
+function totalLeaveMonths(s) {
+  if (!s.leaves || !s.leaves.length) return 0;
+  const now = new Date();
+  const j   = new Date(s.join + 'T00:00:00');
+  let total = 0;
+  for (const lv of s.leaves) {
+    if (!lv.from) continue;
+    const lvFrom = new Date(lv.from + 'T00:00:00');
+    const lvTo   = lv.to ? new Date(lv.to + 'T00:00:00') : now;
+    const start  = lvFrom < j ? j : lvFrom;
+    const end    = lvTo > now ? now : lvTo;
+    if (end <= start) continue;
+    let m = (end.getFullYear()-start.getFullYear())*12+(end.getMonth()-start.getMonth());
+    if (end.getDate()<start.getDate()) m--;
+    total += Math.max(0, m);
+  }
+  return total;
 }
 
 function calcBalance(s) {
@@ -2862,41 +3316,38 @@ function renderTable() {
     const status = calcStatus(s);
     const lastPay = s.payments.length ? formatDate(s.payments[s.payments.length-1].date) : '—';
     const bName = getBatchName(s.batchId);
-    return `<tr>
-      <td style="color:var(--text3);font-size:13px">${i+1}</td>
-      <td>
-        <div class="student-cell">
-          <div class="avatar ${s.color}">${getInitials(s.name)}</div>
-          <div>
-            <div class="student-name">${s.name}</div>
-            <div class="student-sub">${s.phone}</div>
+    const classLbl = s.studentClass !== undefined && s.studentClass !== ''
+      ? (s.studentClass == '0' ? 'KG' : 'Cls ' + s.studentClass) : '';
+    const leaveBadge = s.leaves && s.leaves.length && totalLeaveMonths(s) > 0
+      ? `<span style="font-size:10px;color:var(--warn);background:#FEF3CD;padding:1px 5px;border-radius:6px">🏖️${totalLeaveMonths(s)}mo</span>` : '';
+
+    return `<tr style="cursor:pointer" onclick="openStudentDetail(${s.id})">
+      <td style="color:var(--text3);font-size:12px;padding:6px 8px;width:28px">${i+1}</td>
+      <td style="padding:6px 10px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="avatar ${s.color}" style="width:32px;height:32px;font-size:12px;flex-shrink:0">${getInitials(s.name)}</div>
+          <div style="min-width:0">
+            <div style="font-weight:600;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+            <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:1px">
+              <span style="background:var(--accent-light);color:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;font-size:11px">${bName}</span>
+              ${classLbl ? `<span style="color:var(--text3)">${classLbl}</span>` : ''}
+              ${leaveBadge}
+            </div>
           </div>
         </div>
       </td>
-      <td>
-        <span style="display:inline-block;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px">${bName}</span>
-        ${s.studentClass !== undefined && s.studentClass !== '' ? `<div style="font-size:11px;color:var(--text3);margin-top:3px;padding-left:2px">Class ${s.studentClass == '0' ? '0 (KG)' : s.studentClass}</div>` : ''}
+      <td style="padding:6px 8px;text-align:right">
+        <div style="font-weight:700;font-size:14px;color:${bal > 0 ? 'var(--danger)' : 'var(--paid)'}">${fmt(bal > 0 ? bal : paid)}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px">${bal > 0 ? 'due' : 'paid'}</div>
       </td>
-      <td style="color:var(--text2);font-size:13px">${formatDate(s.join)}</td>
-      <td><span class="amount">${fmt(s.fee)}</span></td>
-      <td style="text-align:center">
-        <span style="display:inline-block;background:var(--info-light);color:var(--info);font-weight:600;font-size:13px;padding:3px 10px;border-radius:12px">${months} mo</span>
+      <td style="padding:6px 8px">
+        ${statusBadge(status)}
       </td>
-      <td><span class="amount" style="color:var(--danger)">${fmt(due)}</span><div style="font-size:11px;color:var(--text3);margin-top:2px">${fmt(s.fee)} × ${months}</div></td>
-      <td>
-        <span class="amount" style="color:var(--paid)">${fmt(paid)}</span>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${pct}%</div>
-      </td>
-      <td><span class="amount" style="color:${bal > 0 ? 'var(--danger)':'var(--paid)'}">${fmt(bal)}</span></td>
-      <td>${statusBadge(status)}</td>
-      <td style="font-size:13px;color:var(--text3)">${lastPay}</td>
-      <td>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-sm btn-success" onclick="openPayModal(${s.id})">💳 Pay</button>
-          <button class="btn btn-sm" style="background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="openEditModal(${s.id})">✏️ Edit</button>
-          <button class="btn btn-sm" style="border:1px solid var(--border)" onclick="openHist(${s.id})">📜</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteStudent(${s.id})">🗑</button>
+      <td style="padding:6px 6px" onclick="event.stopPropagation()">
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-success" style="padding:5px 8px;font-size:12px" onclick="openPayModal(${s.id})">💳</button>
+          <button class="btn btn-sm" style="padding:5px 8px;font-size:12px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="openEditModal(${s.id})">✏️</button>
+          <button class="btn btn-sm btn-danger" style="padding:5px 8px;font-size:12px" onclick="deleteStudent(${s.id})">🗑</button>
         </div>
       </td>
     </tr>`;
@@ -5563,6 +6014,25 @@ window.addEventListener('DOMContentLoaded', () => {
     </button>
   </div>
   <div class="notif-page-body" id="trashPageBody"></div>
+</div>
+
+<!-- STUDENT DETAIL PAGE -->
+<div class="student-detail-page" id="studentDetailPage">
+  <div class="sdp-header">
+    <button class="sdp-back" onclick="closeStudentDetail()">&#8592;</button>
+    <div class="sdp-header-info">
+      <div class="sdp-header-name" id="sdpName"></div>
+      <div class="sdp-header-sub" id="sdpSub"></div>
+    </div>
+    <div id="sdpStatusBadge"></div>
+  </div>
+
+  <div class="sdp-body" id="sdpBody"></div>
+
+  <div class="sdp-action-bar">
+    <button class="btn btn-success" style="flex:1;font-size:14px" onclick="sdpPay()">💳 Pay Now</button>
+    <button class="btn" style="flex:1;font-size:14px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="sdpEdit()">✏️ Edit</button>
+  </div>
 </div>
 </body>
 </html>

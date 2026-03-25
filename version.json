@@ -1,15 +1,16 @@
 {
-  "version": "2.7.0",
-  "date": "2026-03-22",
-  "description": "Splash screen added on app launch",
+  "version": "2.9.0",
+  "date": "2026-03-25",
+  "description": "Student detail page + compact list layout",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "✨ Splash screen shown on every app launch",
-    "✨ Splash shows app icon, 'Welcome to Fee Management System', and 'Developed by Mahatab'",
-    "✨ Animated bouncing dots loader during splash",
-    "✨ Smooth fade-out transition after 2.2 seconds before login or home screen",
-    "🐛 Includes all previous bug fixes from v2.6.0"
+    "👤 Tap any student name to open full detail page",
+    "📊 Detail page shows: fee summary, monthly breakdown, leave periods, payment history",
+    "💳 Pay Now & Edit buttons on detail page bottom action bar",
+    "📋 Student list redesigned to compact single-line rows — no more scrolling",
+    "🏖️ Leave period badge shown inline in compact list",
+    "🗑️ Remove leave fields from Add Student form — manage via Edit only"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"
