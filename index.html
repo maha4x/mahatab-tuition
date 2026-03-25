@@ -3002,10 +3002,21 @@ function renderStudentDetail(s) {
       return pd.getFullYear() === yr && pd.getMonth() === mo;
     }).reduce((a,p) => a + p.amount, 0);
 
-    const isFuture = mDate > now;
+    // Is this the current incomplete month?
+    // A month is "ongoing" (not yet due) if it's the same year+month as today
+    // AND the joining day hasn't been reached yet this month (same logic as monthsActive)
+    const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
+    const monthCompleted = !isCurrentMonth || (now.getDate() >= joinDate.getDate());
+    // Month is only "due" if it has been completed (monthsActive counts it)
+    const isDueMonth = monthCompleted && !isLeave;
+
     let badge, amtColor;
     if (isLeave) {
       badge    = '<span style="background:#FEF3CD;color:#B7791F;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">🏖️ Leave</span>';
+      amtColor = 'var(--text3)';
+    } else if (isCurrentMonth && !monthCompleted) {
+      // Current month not yet completed — show as ongoing, not due
+      badge    = '<span style="background:var(--info-light);color:var(--info);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">🕐 Ongoing</span>';
       amtColor = 'var(--text3)';
     } else if (monthPay >= s.fee) {
       badge    = '<span style="background:var(--paid-light);color:var(--paid);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">✅ Paid</span>';
@@ -3023,8 +3034,8 @@ function renderStudentDetail(s) {
         <div style="font-weight:500">${lbl}</div>
         <div style="display:flex;align-items:center;gap:10px">
           ${badge}
-          <span style="font-weight:600;color:${isLeave ? 'var(--text3)' : amtColor};font-size:13px">
-            ${isLeave ? '—' : (monthPay > 0 ? fmt(monthPay) : fmt(s.fee))}
+          <span style="font-weight:600;color:${isLeave ? 'var(--text3)' : (isCurrentMonth && !monthCompleted ? 'var(--text3)' : amtColor)};font-size:13px">
+            ${isLeave ? '—' : (isCurrentMonth && !monthCompleted && monthPay === 0) ? '—' : (monthPay > 0 ? fmt(monthPay) : fmt(s.fee))}
           </span>
         </div>
       </div>`;
@@ -3474,7 +3485,7 @@ function daysUntilCompletion(join) {
 }
 
 function calcStatus(s) {
-  const months = monthsActive(s.join);
+  const months = monthsActive(s.join, s.leaves);
   const due = totalDue(s);
   const paid = s.paidTotal || 0;
   const advance = s.advancePaid || 0;
