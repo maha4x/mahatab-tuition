@@ -2974,6 +2974,40 @@ function renderStudentDetail(s) {
   const now      = new Date();
   const monthNames2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+  // ── Build ordered list of due months (leave months excluded) ──
+  // Allocate total paid amount across months in order (FIFO)
+  // So a Feb payment covers Jan if Jan was unpaid
+  const allDueMonths = [];
+  {
+    let d = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);
+    while (d <= now) {
+      const yr2 = d.getFullYear(), mo2 = d.getMonth();
+      const isCur = yr2 === now.getFullYear() && mo2 === now.getMonth();
+      if (!isCur) { // only completed months are "due"
+        let isLv = false;
+        if (s.leaves && s.leaves.length) {
+          for (const lv of s.leaves) {
+            if (!lv.from) continue;
+            const lvFm = new Date(new Date(lv.from+'T00:00:00').getFullYear(), new Date(lv.from+'T00:00:00').getMonth(), 1);
+            const lvTm = lv.to ? new Date(new Date(lv.to+'T00:00:00').getFullYear(), new Date(lv.to+'T00:00:00').getMonth(), 1) : new Date(now.getFullYear(), now.getMonth(), 1);
+            if (d >= lvFm && d <= lvTm) { isLv = true; break; }
+          }
+        }
+        allDueMonths.push({ yr: yr2, mo: mo2, isLeave: isLv, paid: 0 });
+      }
+      d.setMonth(d.getMonth() + 1);
+    }
+  }
+  // Allocate total paid (FIFO) across due non-leave months
+  let remainingPaid = s.paidTotal || 0;
+  for (const dm of allDueMonths) {
+    if (dm.isLeave) continue;
+    if (remainingPaid <= 0) break;
+    const alloc = Math.min(remainingPaid, s.fee);
+    dm.paid = alloc;
+    remainingPaid -= alloc;
+  }
+
   // Generate month rows from join to now
   let monthRows = '';
   let mDate = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);
@@ -2996,18 +3030,13 @@ function renderStudentDetail(s) {
       }
     }
 
-    // Check if payment was made this month
-    const monthPay = s.payments.filter(p => {
-      const pd = new Date(p.date + 'T00:00:00');
-      return pd.getFullYear() === yr && pd.getMonth() === mo;
-    }).reduce((a,p) => a + p.amount, 0);
+    // Get allocated payment for this month (FIFO allocation)
+    const dmEntry = allDueMonths.find(d => d.yr === yr && d.mo === mo);
+    const monthPay = dmEntry ? dmEntry.paid : 0;
 
-    // Is this the current incomplete month?
-    // A month is "ongoing" (not yet due) if it's the same year+month as today
-    // AND the joining day hasn't been reached yet this month (same logic as monthsActive)
+    // Is this the current calendar month? → always show as Ongoing, never Due
     const isCurrentMonth = yr === now.getFullYear() && mo === now.getMonth();
-    const monthCompleted = !isCurrentMonth || (now.getDate() >= joinDate.getDate());
-    // Month is only "due" if it has been completed (monthsActive counts it)
+    const monthCompleted = !isCurrentMonth;
     const isDueMonth = monthCompleted && !isLeave;
 
     let badge, amtColor;
