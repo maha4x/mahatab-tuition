@@ -1,18 +1,17 @@
 {
-  "version": "2.5.1",
+  "version": "2.5.3",
   "date": "2026-03-26",
-  "description": "Android back button fixed — single tap works correctly",
+  "description": "Pay Now fixed + back button completely rewritten",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "🔧 Fixed double-tap back button bug — one tap now closes correctly",
-    "✅ Back button closes Student Detail page (single tap)",
-    "✅ Back button closes Notification full-page overlay",
-    "✅ Back button closes Deleted Students full-page overlay",
-    "✅ Back button closes all modals (Pay, Edit, History, Backup, Batch)",
-    "✅ Back button closes User dropdown",
-    "✅ Back button collapses Add Student form",
-    "🔧 History stack seeded with exactly one guard state (no duplicate)"
+    "🐛 Pay Now button on Student Detail page now works reliably",
+    "🐛 Edit button on Student Detail page now works reliably",
+    "🔧 Student detail page forcibly hidden before opening modals (z-index fix)",
+    "📱 Android back button completely rewritten — simpler, more reliable",
+    "📱 Back button: single press closes any open modal/page",
+    "📱 Back button: press twice on home to exit app",
+    "📱 'Press back again to exit' toast shown on first press at home"
   ],
   "mandatory": true,
   "min_supported": "1.0.0"

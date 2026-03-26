@@ -453,7 +453,7 @@
   /* MODAL */
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-    z-index: 200; align-items: center; justify-content: center;
+    z-index: 500; align-items: center; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
@@ -467,7 +467,7 @@
 
   /* NOTIFICATION PAGE MODAL */
   .notif-page-overlay {
-    display: none; position: fixed; inset: 0; z-index: 300;
+    display: none; position: fixed; inset: 0; z-index: 450;
     background: var(--bg); flex-direction: column;
     animation: slideInUp 0.25s ease;
   }
@@ -2931,24 +2931,45 @@ function openStudentDetail(id) {
   const s = students.find(s => s.id === id);
   if (!s) return;
   document.body.style.overflow = 'hidden';
-  document.getElementById('studentDetailPage').classList.add('open');
+  const page = document.getElementById('studentDetailPage');
+  page.style.display = 'flex'; // ensure visible before animation
+  page.classList.add('open');
   renderStudentDetail(s);
 }
 
 function closeStudentDetail() {
-  document.getElementById('studentDetailPage').classList.remove('open');
+  const page = document.getElementById('studentDetailPage');
+  if (page) {
+    page.classList.remove('open');
+    // Force hide immediately so modals can appear on top
+    setTimeout(() => { if (!page.classList.contains('open')) page.style.display = 'none'; }, 300);
+  }
   document.body.style.overflow = '';
   activeDetailId = null;
 }
 
+function forceShowStudentDetail() {
+  const page = document.getElementById('studentDetailPage');
+  if (page) page.style.display = 'flex';
+}
+
 function sdpPay() {
+  const id = activeDetailId; // save BEFORE closing (closeStudentDetail sets it to null)
   closeStudentDetail();
-  if (activeDetailId !== null) openPayModal(activeDetailId);
+  if (id !== null) {
+    // Wait for detail page close animation, then open modal
+    setTimeout(() => {
+      const page = document.getElementById('studentDetailPage');
+      if (page) { page.style.display = 'none'; } // force hide immediately
+      openPayModal(id);
+    }, 80);
+  }
 }
 
 function sdpEdit() {
+  const id = activeDetailId; // save BEFORE closing
   closeStudentDetail();
-  if (activeDetailId !== null) openEditModal(activeDetailId);
+  if (id !== null) setTimeout(() => openEditModal(id), 50);
 }
 
 function renderStudentDetail(s) {
@@ -6078,42 +6099,32 @@ window.addEventListener('DOMContentLoaded', () => {
 <script>
 (function() {
 
-  // ── What is open right now? (highest priority first) ──
+  function isOpen(id) {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    return el.classList.contains('open') || el.classList.contains('show');
+  }
+
+  // ── What is currently open? Returns the top-level overlay id ──
   function getTopOpen() {
-    // 1. Dynamic overlays created in JS (exist only when open)
+    // Dynamic modals (created on-the-fly)
     if (document.getElementById('downloadPermModal'))  return 'downloadPermModal';
     if (document.getElementById('shareInstructModal')) return 'shareInstructModal';
-    if (document.getElementById('installGuideModal'))  return 'installGuideModal';
 
-    // 2. Fixed overlays — check .open class
-    const checks = [
-      ['changelogModal',     () => document.getElementById('changelogModal')?.classList.contains('open')],
-      ['importModal',        () => document.getElementById('importModal')?.classList.contains('open')],
-      ['confirmOverlay',     () => document.getElementById('confirmOverlay')?.classList.contains('open')],
-      ['payModal',           () => document.getElementById('payModal')?.classList.contains('open')],
-      ['histModal',          () => document.getElementById('histModal')?.classList.contains('open')],
-      ['editModal',          () => document.getElementById('editModal')?.classList.contains('open')],
-      ['backupModal',        () => document.getElementById('backupModal')?.classList.contains('open')],
-      ['batchModal',         () => document.getElementById('batchModal')?.classList.contains('open')],
-      ['driveSetupModal',    () => document.getElementById('driveSetupModal')?.classList.contains('open')],
-      // 3. Full-screen pages
-      ['notifPageOverlay',   () => document.getElementById('notifPageOverlay')?.classList.contains('open')],
-      ['trashPageOverlay',   () => document.getElementById('trashPageOverlay')?.classList.contains('open')],
-      ['studentDetailPage',  () => document.getElementById('studentDetailPage')?.classList.contains('open')],
-      // 4. Update banner
-      ['updateBanner',       () => document.getElementById('updateBanner')?.classList.contains('show')],
-      // 5. User dropdown
-      ['userDropdown',       () => document.getElementById('userDropdown')?.classList.contains('open')],
-      // 6. Add student expanded form
-      ['addStudentExpanded',  () => {
-        const el = document.getElementById('addStudentExpanded');
-        return el && el.style.display !== 'none' && el.style.display !== '';
-      }],
+    // Modals and full-screen pages (priority order — topmost first)
+    const ids = [
+      'confirmOverlay','changelogModal','importModal',
+      'payModal','histModal','editModal','backupModal','batchModal','driveSetupModal',
+      'notifPageOverlay','trashPageOverlay','studentDetailPage',
+      'installGuideModal','updateBanner','userDropdown',
     ];
-
-    for (const [id, check] of checks) {
-      try { if (check()) return id; } catch(e) {}
+    for (const id of ids) {
+      if (isOpen(id)) return id;
     }
+    // Add student form
+    const asf = document.getElementById('addStudentExpanded');
+    if (asf && asf.style.display && asf.style.display !== 'none') return 'addStudentExpanded';
+
     return null;
   }
 
@@ -6186,32 +6197,68 @@ window.addEventListener('DOMContentLoaded', () => {
     history.pushState({ mtcBack: true }, '', location.href);
   }
 
-  // ── On popstate: Android back was pressed ──
-  window.addEventListener('popstate', function(e) {
+  // ── Exit confirmation ──
+  let exitReady = false;
+  let exitTimer = null;
+
+  function showExitToast() {
+    let t = document.getElementById('_exitToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_exitToast';
+      t.style.cssText = 'position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:11px 24px;border-radius:22px;font-size:14px;font-family:inherit;z-index:99999;pointer-events:none;white-space:nowrap;transition:opacity 0.3s';
+      t.textContent = 'Press back again to exit';
+      document.body.appendChild(t);
+    }
+    t.style.opacity = '1';
+    clearTimeout(exitTimer);
+    exitTimer = setTimeout(() => {
+      t.style.opacity = '0';
+      exitReady = false;
+    }, 2000);
+  }
+
+  // ── Push a guard state ──
+  function pushBack() {
+    history.pushState({ mtc: 1 }, '');
+  }
+
+  // ── Seed on load ──
+  window.addEventListener('load', function() {
+    history.replaceState({ mtc: 0 }, '');
+    pushBack();
+  });
+
+  // ── Main back handler ──
+  window.addEventListener('popstate', function() {
     const open = getTopOpen();
     if (open) {
       closeTop(open);
-      // Push ONE new state so next back is also intercepted
-      pushBack();
+      pushBack();           // re-arm for next back
+      exitReady = false;
+    } else {
+      if (exitReady) {
+        // 2nd press — exit
+        exitReady = false;
+        clearTimeout(exitTimer);
+        const t = document.getElementById('_exitToast');
+        if (t) t.remove();
+        history.go(-1);     // actually go back (exit PWA)
+      } else {
+        // 1st press — show toast, stay
+        exitReady = true;
+        showExitToast();
+        pushBack();         // re-arm
+      }
     }
-    // If nothing open: do NOT push — let the browser handle naturally
-    // (this prevents the double-tap issue)
   });
 
-  // ── On load: seed exactly ONE history state ──
-  window.addEventListener('DOMContentLoaded', function() {
-    // replaceState so we own the current entry, then push ONE guard state
-    history.replaceState({ mtcBack: false }, '', location.href);
-    history.pushState({ mtcBack: true }, '', location.href);
-  });
-
-  // ── Auto-push state when any modal/overlay opens ──
-  const _origAdd = DOMTokenList.prototype.add;
-  DOMTokenList.prototype.add = function(...tokens) {
+  // ── Auto-push when a modal/page opens ──
+  const _origClassAdd = DOMTokenList.prototype.add;
+  DOMTokenList.prototype.add = function(...args) {
     const hadOpen = this.contains('open') || this.contains('show');
-    _origAdd.apply(this, tokens);
-    const hasOpen = tokens.includes('open') || tokens.includes('show');
-    if (!hadOpen && hasOpen) {
+    _origClassAdd.apply(this, args);
+    if (!hadOpen && (args.includes('open') || args.includes('show'))) {
       pushBack();
     }
   };
