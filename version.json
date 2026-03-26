@@ -1,17 +1,18 @@
 {
-  "version": "2.4.0",
-  "date": "2026-03-25",
-  "description": "Android back button now works inside app",
+  "version": "2.5.0",
+  "date": "2026-03-26",
+  "description": "Android back button fixed — works inside app",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📱 Android back button no longer closes the app",
-    "✅ Back button closes open modal/panel instead",
-    "✅ Back button closes payment, edit, history modals",
-    "✅ Back button closes backup, batch, import dialogs",
-    "✅ Back button closes notifications panel",
-    "✅ Back button closes user dropdown menu",
-    "✅ Back button collapses add student form"
+    "📱 Android phone back button no longer closes the app",
+    "✅ Back button closes Student Detail page (Yasmin screen)",
+    "✅ Back button closes Payment, Edit, History modals",
+    "✅ Back button closes Backup, Batch, Import dialogs",
+    "✅ Back button closes Notifications panel",
+    "✅ Back button closes User dropdown menu",
+    "✅ Back button collapses Add Student form",
+    "✅ Back button dismisses Update banner"
   ],
   "mandatory": false,
   "min_supported": "1.0.0"

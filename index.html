@@ -6074,74 +6074,54 @@ window.addEventListener('DOMContentLoaded', () => {
     <button class="btn" style="flex:1;font-size:14px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="sdpEdit()">✏️ Edit</button>
   </div>
 </div>
-<
 <!-- ══════════════ ANDROID BACK BUTTON HANDLER ══════════════ -->
 <script>
 (function() {
 
-  // ── Push a dummy state so we can intercept popstate ──
-  // Every time something opens, push a state. On back, pop it and close.
-  function pushState(name) {
-    history.pushState({ panel: name }, '', window.location.href);
-  }
+  // ── What is open right now? (highest priority first) ──
+  function getTopOpen() {
+    // 1. Dynamic overlays created in JS (exist only when open)
+    if (document.getElementById('downloadPermModal'))  return 'downloadPermModal';
+    if (document.getElementById('shareInstructModal')) return 'shareInstructModal';
+    if (document.getElementById('installGuideModal'))  return 'installGuideModal';
 
-  // ── Check what is currently open ──
-  function getOpenPanel() {
-    // Check modals (highest priority first)
-    const modals = [
-      'downloadPermModal',    // dynamic - check by existence
-      'shareInstructModal',
-      'installGuideModal',
+    // 2. Fixed overlays — check .open class
+    const checks = [
+      ['changelogModal',     () => document.getElementById('changelogModal')?.classList.contains('open')],
+      ['importModal',        () => document.getElementById('importModal')?.classList.contains('open')],
+      ['confirmOverlay',     () => document.getElementById('confirmOverlay')?.classList.contains('open')],
+      ['payModal',           () => document.getElementById('payModal')?.classList.contains('open')],
+      ['histModal',          () => document.getElementById('histModal')?.classList.contains('open')],
+      ['editModal',          () => document.getElementById('editModal')?.classList.contains('open')],
+      ['backupModal',        () => document.getElementById('backupModal')?.classList.contains('open')],
+      ['batchModal',         () => document.getElementById('batchModal')?.classList.contains('open')],
+      ['driveSetupModal',    () => document.getElementById('driveSetupModal')?.classList.contains('open')],
+      // 3. Student detail page (full-screen slide-in)
+      ['studentDetailPage',  () => document.getElementById('studentDetailPage')?.classList.contains('open')],
+      // 4. Update banner
+      ['updateBanner',       () => document.getElementById('updateBanner')?.classList.contains('show')],
+      // 5. User dropdown
+      ['userDropdown',       () => document.getElementById('userDropdown')?.classList.contains('open')],
+      // 6. Notification panel
+      ['notifPanel',         () => {
+        const el = document.getElementById('notifPanel');
+        return el && el.style.display !== 'none' && el.style.display !== '';
+      }],
+      // 7. Add student expanded form
+      ['addStudentExpanded',  () => {
+        const el = document.getElementById('addStudentExpanded');
+        return el && el.style.display !== 'none' && el.style.display !== '';
+      }],
     ];
-    for (const id of modals) {
-      if (document.getElementById(id)) return id;
+
+    for (const [id, check] of checks) {
+      try { if (check()) return id; } catch(e) {}
     }
-
-    // Check overlay modals with .open class
-    const overlayIds = [
-      'changelogModal',
-      'importModal',
-      'confirmOverlay',
-      'payModal',
-      'histModal',
-      'editModal',
-      'backupModal',
-      'batchModal',
-    ];
-    for (const id of overlayIds) {
-      const el = document.getElementById(id);
-      if (el && (el.classList.contains('open') || el.style.display === 'flex')) return id;
-    }
-
-    // Check user dropdown
-    const dd = document.getElementById('userDropdown');
-    if (dd && dd.classList.contains('open')) return 'userDropdown';
-
-    // Check notification panel
-    const notif = document.getElementById('notifPanel');
-    if (notif && notif.style.display !== 'none' && notif.style.display !== '') return 'notifPanel';
-
-    // Check student detail panel (SDP)
-    const sdp = document.getElementById('sdpOverlay');
-    if (sdp && sdp.classList.contains('open')) return 'sdpOverlay';
-
-    // Check update banner
-    const banner = document.getElementById('updateBanner');
-    if (banner && banner.classList.contains('show')) return 'updateBanner';
-
-    // Check add student form expanded
-    const addExp = document.getElementById('addStudentExpanded');
-    if (addExp && addExp.style.display !== 'none' && addExp.style.display !== '') return 'addStudentExpanded';
-
-    // Check revenue chart panel expanded (not collapsed)
-    const chartBody = document.getElementById('revenueChartBody');
-    if (chartBody && chartBody.style.display !== 'none') return null; // don't close chart on back
-
     return null;
   }
 
-  // ── Close the given panel ──
-  function closePanel(id) {
+  // ── Close whatever is open ──
+  function closeTop(id) {
     switch (id) {
       case 'downloadPermModal':
       case 'shareInstructModal':
@@ -6151,76 +6131,90 @@ window.addEventListener('DOMContentLoaded', () => {
         break;
       }
       case 'changelogModal': {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('open');
+        document.getElementById('changelogModal')?.classList.remove('open');
         break;
       }
-      case 'importModal':      if (typeof closeImportModal==='function')  closeImportModal();  break;
-      case 'confirmOverlay':   {
-        const el = document.getElementById('confirmOverlay');
-        if (el) el.classList.remove('open');
+      case 'importModal':
+        if (typeof closeImportModal === 'function') closeImportModal();
         break;
-      }
-      case 'payModal':         if (typeof closeModal==='function')        closeModal();        break;
-      case 'histModal':        if (typeof closeHist==='function')         closeHist();         break;
-      case 'editModal':        if (typeof closeEditModal==='function')    closeEditModal();    break;
-      case 'backupModal':      if (typeof closeBackupModal==='function')  closeBackupModal();  break;
-      case 'batchModal':       if (typeof closeBatchModal==='function')   closeBatchModal();   break;
-      case 'userDropdown':     if (typeof closeUserDropdown==='function') closeUserDropdown(); break;
+      case 'confirmOverlay':
+        document.getElementById('confirmOverlay')?.classList.remove('open');
+        break;
+      case 'payModal':
+        if (typeof closeModal === 'function') closeModal();
+        break;
+      case 'histModal':
+        if (typeof closeHist === 'function') closeHist();
+        break;
+      case 'editModal':
+        if (typeof closeEditModal === 'function') closeEditModal();
+        break;
+      case 'backupModal':
+        if (typeof closeBackupModal === 'function') closeBackupModal();
+        break;
+      case 'batchModal':
+        if (typeof closeBatchModal === 'function') closeBatchModal();
+        break;
+      case 'driveSetupModal':
+        document.getElementById('driveSetupModal')?.classList.remove('open');
+        break;
+      case 'studentDetailPage':
+        if (typeof closeStudentDetail === 'function') closeStudentDetail();
+        break;
+      case 'updateBanner':
+        if (typeof dismissUpdate === 'function') dismissUpdate();
+        break;
+      case 'userDropdown':
+        if (typeof closeUserDropdown === 'function') closeUserDropdown();
+        break;
       case 'notifPanel': {
         const el = document.getElementById('notifPanel');
         if (el) el.style.display = 'none';
         break;
       }
-      case 'sdpOverlay': {
-        const el = document.getElementById('sdpOverlay');
-        if (el) el.classList.remove('open');
-        break;
-      }
-      case 'updateBanner':     if (typeof dismissUpdate==='function') dismissUpdate(); break;
       case 'addStudentExpanded':
-        if (typeof closeAddStudentForm==='function') closeAddStudentForm();
+        if (typeof closeAddStudentForm === 'function') closeAddStudentForm();
         break;
-      default: break;
     }
   }
 
-  // ── Intercept popstate (fired when Android back is pressed) ──
+  // ── Push a history state ──
+  function pushBack() {
+    history.pushState({ mtcBack: true }, '', location.href);
+  }
+
+  // ── On popstate: Android back was pressed ──
   window.addEventListener('popstate', function(e) {
-    const open = getOpenPanel();
+    const open = getTopOpen();
     if (open) {
-      // Something is open — close it, push state again to stay in app
-      closePanel(open);
-      pushState('app');
+      // Close it and push state so the next back is also caught
+      closeTop(open);
+      pushBack();
     } else {
-      // Nothing open — push state again so next back press can be caught
-      // This prevents the app from closing on first back press
-      history.pushState({ panel: 'app' }, '', window.location.href);
+      // Nothing open — keep in app, push so next back is caught too
+      pushBack();
     }
   });
 
-  // ── Push initial state when app loads ──
-  // This ensures the first back press is caught by popstate
-  window.addEventListener('load', function() {
-    // Replace current state (not push, so we don't add to history)
-    history.replaceState({ panel: 'app' }, '', window.location.href);
-    // Push one extra state so back press pops to replaceState above
-    history.pushState({ panel: 'app' }, '', window.location.href);
+  // ── On load: seed the history stack ──
+  // replaceState + pushState = two states, so first back never exits
+  window.addEventListener('DOMContentLoaded', function() {
+    history.replaceState({ mtcBack: true }, '', location.href);
+    pushBack();
   });
 
-  // ── Auto-push state whenever a modal/panel opens ──
-  // Monkey-patch classList.add to detect .open being added
+  // ── Auto-push state when any modal/overlay opens ──
   const _origAdd = DOMTokenList.prototype.add;
-  DOMTokenList.prototype.add = function(...classes) {
-    _origAdd.apply(this, classes);
-    if (classes.includes('open') || classes.includes('active')) {
-      // A panel/modal just opened — push history state
-      pushState('modal');
+  DOMTokenList.prototype.add = function(...tokens) {
+    const hadOpen = this.contains('open') || this.contains('show');
+    _origAdd.apply(this, tokens);
+    const hasOpen = tokens.includes('open') || tokens.includes('show');
+    if (!hadOpen && hasOpen) {
+      pushBack();
     }
   };
 
 })();
 </script>
-
 </body>
 </html>
