@@ -1,19 +1,19 @@
 {
-  "version": "2.5.0",
+  "version": "2.5.1",
   "date": "2026-03-26",
-  "description": "Android back button fixed — works inside app",
+  "description": "Android back button fixed — single tap works correctly",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "📱 Android phone back button no longer closes the app",
-    "✅ Back button closes Student Detail page (Yasmin screen)",
-    "✅ Back button closes Payment, Edit, History modals",
-    "✅ Back button closes Backup, Batch, Import dialogs",
-    "✅ Back button closes Notifications panel",
-    "✅ Back button closes User dropdown menu",
+    "🔧 Fixed double-tap back button bug — one tap now closes correctly",
+    "✅ Back button closes Student Detail page (single tap)",
+    "✅ Back button closes Notification full-page overlay",
+    "✅ Back button closes Deleted Students full-page overlay",
+    "✅ Back button closes all modals (Pay, Edit, History, Backup, Batch)",
+    "✅ Back button closes User dropdown",
     "✅ Back button collapses Add Student form",
-    "✅ Back button dismisses Update banner"
+    "🔧 History stack seeded with exactly one guard state (no duplicate)"
   ],
-  "mandatory": false,
+  "mandatory": true,
   "min_supported": "1.0.0"
 }

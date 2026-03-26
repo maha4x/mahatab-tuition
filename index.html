@@ -6096,18 +6096,15 @@ window.addEventListener('DOMContentLoaded', () => {
       ['backupModal',        () => document.getElementById('backupModal')?.classList.contains('open')],
       ['batchModal',         () => document.getElementById('batchModal')?.classList.contains('open')],
       ['driveSetupModal',    () => document.getElementById('driveSetupModal')?.classList.contains('open')],
-      // 3. Student detail page (full-screen slide-in)
+      // 3. Full-screen pages
+      ['notifPageOverlay',   () => document.getElementById('notifPageOverlay')?.classList.contains('open')],
+      ['trashPageOverlay',   () => document.getElementById('trashPageOverlay')?.classList.contains('open')],
       ['studentDetailPage',  () => document.getElementById('studentDetailPage')?.classList.contains('open')],
       // 4. Update banner
       ['updateBanner',       () => document.getElementById('updateBanner')?.classList.contains('show')],
       // 5. User dropdown
       ['userDropdown',       () => document.getElementById('userDropdown')?.classList.contains('open')],
-      // 6. Notification panel
-      ['notifPanel',         () => {
-        const el = document.getElementById('notifPanel');
-        return el && el.style.display !== 'none' && el.style.display !== '';
-      }],
-      // 7. Add student expanded form
+      // 6. Add student expanded form
       ['addStudentExpanded',  () => {
         const el = document.getElementById('addStudentExpanded');
         return el && el.style.display !== 'none' && el.style.display !== '';
@@ -6158,6 +6155,12 @@ window.addEventListener('DOMContentLoaded', () => {
       case 'driveSetupModal':
         document.getElementById('driveSetupModal')?.classList.remove('open');
         break;
+      case 'notifPageOverlay':
+        if (typeof closeNotifPage === 'function') closeNotifPage();
+        break;
+      case 'trashPageOverlay':
+        if (typeof closeTrashPage === 'function') closeTrashPage();
+        break;
       case 'studentDetailPage':
         if (typeof closeStudentDetail === 'function') closeStudentDetail();
         break;
@@ -6187,20 +6190,19 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('popstate', function(e) {
     const open = getTopOpen();
     if (open) {
-      // Close it and push state so the next back is also caught
       closeTop(open);
-      pushBack();
-    } else {
-      // Nothing open — keep in app, push so next back is caught too
+      // Push ONE new state so next back is also intercepted
       pushBack();
     }
+    // If nothing open: do NOT push — let the browser handle naturally
+    // (this prevents the double-tap issue)
   });
 
-  // ── On load: seed the history stack ──
-  // replaceState + pushState = two states, so first back never exits
+  // ── On load: seed exactly ONE history state ──
   window.addEventListener('DOMContentLoaded', function() {
-    history.replaceState({ mtcBack: true }, '', location.href);
-    pushBack();
+    // replaceState so we own the current entry, then push ONE guard state
+    history.replaceState({ mtcBack: false }, '', location.href);
+    history.pushState({ mtcBack: true }, '', location.href);
   });
 
   // ── Auto-push state when any modal/overlay opens ──
