@@ -2180,7 +2180,7 @@ function deleteStudent(id) {
       try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
       if (!backupId) backupId = genBackupId();
       const snapshot = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
-      localStorage.setItem('mtc_local_backup', payload||snapshot);
+      localStorage.setItem('mtc_local_backup', snapshot);
       await window.storage.set(userKey('tfm_cloud_id'), backupId);
     } catch(e) {}
 
@@ -2770,6 +2770,12 @@ function sdpEdit() {
   const id = activeDetailId; // save BEFORE closing
   closeStudentDetail();
   if (id !== null) setTimeout(() => openEditModal(id), 50);
+}
+
+function sdpDelete() {
+  const id = activeDetailId;
+  closeStudentDetail();
+  if (id !== null) setTimeout(() => deleteStudent(id), 80);
 }
 
 function renderStudentDetail(s) {
@@ -4573,7 +4579,8 @@ function runImport() {
   document.getElementById('importRunBtn').textContent = '✅ Done — Import More';
   document.getElementById('importRunBtn').onclick = () => {
     closeImportModal();
-    document.getElementById('importFileInput').click();
+    const lbl = document.querySelector('label:has(#importFileInput)');
+    if (lbl) lbl.click(); else document.getElementById('importFileInput').click();
   };
 
   showToast(`Imported ${imported} student(s)!`, imported > 0);
@@ -5893,6 +5900,7 @@ window.addEventListener('DOMContentLoaded', () => {
   <div class="sdp-action-bar">
     <button class="btn btn-success" style="flex:1;font-size:14px" onclick="sdpPay()">💳 Pay Now</button>
     <button class="btn" style="flex:1;font-size:14px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="sdpEdit()">✏️ Edit</button>
+    <button class="btn btn-danger" style="font-size:14px;padding:0 14px" onclick="sdpDelete()" title="Delete student">🗑</button>
   </div>
 </div>
 <!-- ══════════════ ANDROID BACK BUTTON HANDLER ══════════════ -->

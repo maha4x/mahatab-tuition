@@ -1,16 +1,14 @@
 {
-  "version": "2.6.1",
-  "date": "2026-04-07",
-  "description": "Payment modal fixed — full details visible, Record Payment button always shown",
+  "version": "2.6.2",
+  "date": "2026-04-08",
+  "description": "Import/Export/Delete fixes",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "🐛 Payment modal now slides up from bottom on mobile (sheet style)",
-    "🐛 Record Payment button always visible — sticky at bottom",
-    "🐛 All 4 fee details shown in 2×2 grid (Monthly Fee, Active Months, Paid, Balance)",
-    "🐛 Modal content scrollable, action buttons never hidden",
-    "🐛 Edit Student modal same fix — Save Changes button always visible",
-    "📱 All modals use bottom-sheet style on mobile for better UX"
+    "\ud83d\udc1b Delete student: fixed undefined payload crash during pre-delete backup",
+    "\ud83d\udc1b Student detail page: added missing Delete button (\ud83d\uddd1)",
+    "\ud83d\udc1b Import More: fixed file picker not reopening on mobile after import",
+    "\ud83d\udc1b All previously duplicate modal IDs removed (from v2.6.1 fix)"
   ],
   "mandatory": true,
   "min_supported": "1.0.0"
