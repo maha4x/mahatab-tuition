@@ -12,7 +12,7 @@
 <meta name="description" content="Mahatab Tuition Centre — Student Fee Management System">
 <link rel="manifest" id="pwaManifest">
 <link rel="apple-touch-icon" id="appleTouchIcon">
-<meta name="app-version" content="2.6.1">
+<meta name="app-version" content="1.7.0">
 <title>Mahatab Tuition Centre</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -453,50 +453,21 @@
   /* MODAL */
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-    z-index: 500; align-items: flex-end; justify-content: center;
-  }
-  @media (min-width: 600px) {
-    .modal-overlay { align-items: center; }
+    z-index: 200; align-items: center; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: var(--surface);
-    border-radius: 20px 20px 0 0;
-    padding: 1.25rem 1.25rem 0;
-    width: 100%; max-width: 480px;
-    max-height: 92vh;
-    display: flex; flex-direction: column;
-    box-shadow: 0 -4px 32px rgba(0,0,0,0.18);
-    animation: slideUp 0.28s cubic-bezier(0.32,0.72,0,1);
+    background: var(--surface); border-radius: var(--radius);
+    padding: 2rem; width: 460px; max-width: 94vw;
+    box-shadow: var(--shadow-lg); animation: slideIn 0.22s ease;
   }
-  @media (min-width: 600px) {
-    .modal {
-      border-radius: var(--radius);
-      animation: slideIn 0.22s ease;
-      max-height: 90vh;
-      padding: 2rem 2rem 0;
-    }
-  }
-  .modal-scroll-body {
-    overflow-y: auto;
-    flex: 1;
-    padding-bottom: 0.5rem;
-  }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   @keyframes slideIn { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 1.25rem; }
-  .modal-actions {
-    display: flex; gap: 10px; justify-content: flex-end;
-    padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom, 0px));
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    position: sticky; bottom: 0;
-    flex-shrink: 0;
-  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
 
   /* NOTIFICATION PAGE MODAL */
   .notif-page-overlay {
-    display: none; position: fixed; inset: 0; z-index: 450;
+    display: none; position: fixed; inset: 0; z-index: 300;
     background: var(--bg); flex-direction: column;
     animation: slideInUp 0.25s ease;
   }
@@ -1035,22 +1006,23 @@
 
   <!-- STUDENTS TABLE -->
   <div class="panel">
-    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span class="panel-title"><span class="panel-icon">📋</span> Student Records</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button class="btn btn-sm" id="trashToggleBtn" style="border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:6px" onclick="toggleTrash()">🗑️ Deleted <span id="trashBadge" style="display:none;background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></button>
-        <label class="btn btn-sm" style="background:#0F4C81;color:white;border:none;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer">
+    <div class="panel-header">
+      <span class="panel-title"><span class="panel-icon">📋</span> Student Records</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" id="trashToggleBtn" style="border:1px solid var(--border)" onclick="toggleTrash()">🗑️ Deleted <span id="trashBadge" style="display:none;background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;margin-left:4px">0</span></button>
+        <!-- Import: arrow DOWN = file coming into app -->
+        <label class="btn btn-sm" style="background:#0F4C81;color:white;border:none;display:flex;align-items:center;gap:5px;cursor:pointer">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Import
           <input type="file" accept=".xlsx,.xls,.csv" onchange="openImportModal(event)" style="display:none" id="importFileInput"/>
         </label>
-        <button class="btn btn-sm" style="background:#1D6F42;color:white;border:none;display:flex;align-items:center;justify-content:center;gap:6px" onclick="exportExcel()">
+        <!-- Excel Export: arrow UP = file going out of app -->
+        <button class="btn btn-sm" style="background:#1D6F42;color:white;border:none;display:flex;align-items:center;gap:5px" onclick="exportExcel()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
           Excel
         </button>
-        <button class="btn btn-sm" style="background:#C0392B;color:white;border:none;display:flex;align-items:center;justify-content:center;gap:6px" onclick="exportPDF()">
+        <!-- PDF Export: arrow UP = file going out -->
+        <button class="btn btn-sm" style="background:#C0392B;color:white;border:none;display:flex;align-items:center;gap:5px" onclick="exportPDF()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
           PDF
         </button>
@@ -1097,9 +1069,281 @@
 
 <!-- EDIT STUDENT MODAL -->
 <div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <div class="modal-title" style="flex-shrink:0">✏️ Edit Student Details</div>
-    <div class="modal-scroll-body">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">✏️ Edit Student Details</div>
+    <div class="form-grid">
+      <div class="form-group form-full">
+        <label>Student Name *</label>
+        <input id="editName" type="text" placeholder="Student name" />
+      </div>
+      <div class="form-group">
+        <label>Joining Date *</label>
+        <input id="editJoin" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Class *</label>
+        <select id="editClass" onchange="onEditClassChange()">
+          <option value="">— Select Class —</option>
+          <option value="0">Class 0 (KG)</option>
+          <option value="1">Class 1</option>
+          <option value="2">Class 2</option>
+          <option value="3">Class 3</option>
+          <option value="4">Class 4</option>
+          <option value="5">Class 5</option>
+          <option value="6">Class 6</option>
+          <option value="7">Class 7</option>
+          <option value="8">Class 8</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Monthly Fees (₹) *</label>
+        <input id="editFee" type="number" min="0" placeholder="Auto-set by class" />
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input id="editPhone" type="text" placeholder="Enter phone number" />
+      </div>
+      <div class="form-group">
+        <label>Batch *</label>
+        <select id="editBatch"></select>
+      </div>
+    </div>
+    <div style="margin-top:1rem;padding:10px 14px;background:var(--warn-light);border:1px solid #E8C76A;border-radius:var(--radius-sm);font-size:12px;color:var(--warn)">
+      ⚠️ Editing the monthly fee or joining date will recalculate the total due amount.
+    </div>
+
+    <!-- Leave Periods Section -->
+    <div style="margin-top:1rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
+      <div style="background:var(--surface2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:13px;color:var(--text)">🏖️ Leave Periods</span>
+        <button class="btn btn-sm" onclick="addLeaveRow()" style="background:var(--accent);color:white;border:none">＋ Add Leave</button>
+      </div>
+      <div id="leaveList" style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto">
+        <div id="leaveEmpty" style="font-size:12px;color:var(--text3);text-align:center;padding:8px">No leave periods — fee counts all months</div>
+      </div>
+
+      <!-- Save leave button row — shown when rows exist -->
+      <div id="leaveSaveRow" style="display:none;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div id="editLeaveSummary" style="font-size:12px;color:var(--accent);font-weight:600;flex:1"></div>
+        <button class="btn btn-sm btn-success" onclick="saveLeaveOnly()" style="white-space:nowrap">✅ Save Leave</button>
+      </div>
+
+      <div style="padding:8px 14px;background:var(--bg);font-size:11px;color:var(--text3);border-top:1px solid var(--border)">
+        💡 Fee is paused during leave. Months on leave are not counted as due.
+      </div>
+    </div>
+
+    <!-- Leave saved confirmation toast -->
+    <div id="leaveSavedMsg" style="display:none;margin-top:8px;padding:8px 14px;background:var(--paid-light);border:1px solid var(--accent-mid);border-radius:8px;font-size:12px;color:var(--paid);font-weight:600">
+      ✅ Leave saved — fee recalculated
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- BATCH MODAL -->
+<div class="modal-overlay" id="batchModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">📚 Manage Batches</div>
+    <div class="form-grid" style="margin-bottom:1rem">
+      <div class="form-group form-full">
+        <label>New Batch Name *</label>
+        <input id="inBatchName" type="text" placeholder="e.g. Batch 3, Morning Batch" />
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:1.25rem" onclick="createBatch()">＋ Create Batch</button>
+    <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Existing Batches</div>
+    <div id="batchList" style="max-height:240px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeBatchModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">💳 Record Payment</div>
+
+    <!-- Student & Fee Summary -->
+    <div id="payStudentInfo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1rem;border:1px solid var(--border)">
+      <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
+      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--text3)">Monthly Fee: <b id="payFeeAmt" style="color:var(--text)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Active Months: <b id="payMonths" style="color:var(--info)"></b></div>
+        <div style="font-size:12px;color:var(--text3)" id="payLeaveInfo" style="display:none"></div>
+        <div style="font-size:12px;color:var(--text3)">Already Paid: <b id="payAlreadyPaid" style="color:var(--paid)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Current Balance: <b id="payCurrentBal" style="color:var(--danger)"></b></div>
+      </div>
+    </div>
+
+    <!-- Payment Type Toggle -->
+    <div style="display:flex;gap:6px;margin-bottom:1rem">
+      <button id="payTypeDue" onclick="setPayType('due')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--accent);color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        📋 Pay Due Amount
+      </button>
+      <button id="payTypeAdv" onclick="setPayType('advance')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        ⏩ Pay in Advance
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <!-- Advance months selector (hidden by default) -->
+      <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
+        <label>Pay for how many months ahead?</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="changeAdvMonths(-1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">−</button>
+          <div style="flex:1;text-align:center">
+            <span id="advMonthsNum" style="font-size:22px;font-weight:700;color:var(--accent)">1</span>
+            <span style="font-size:13px;color:var(--text3);margin-left:4px">month(s) in advance</span>
+          </div>
+          <button onclick="changeAdvMonths(1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">+</button>
+        </div>
+        <div id="advMonthsCovered" style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Amount Paid (₹) *</label>
+        <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
+      </div>
+      <div class="form-group">
+        <label>Discount (₹) <span style="font-size:11px;color:var(--text3);font-weight:400">optional</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="payDiscount" type="number" placeholder="0" min="0" oninput="updatePayPreview()" style="flex:1" />
+          <select id="payDiscountType" onchange="updatePayPreview()" style="width:90px;font-size:12px">
+            <option value="flat">₹ Flat</option>
+            <option value="percent">% Off</option>
+          </select>
+        </div>
+        <div id="discountHint" style="font-size:11px;color:var(--warn);margin-top:4px;display:none"></div>
+      </div>
+      <div class="form-group">
+        <label>Payment Date *</label>
+        <input id="payDate" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="payMode">
+          <option>Cash</option>
+          <option>UPI</option>
+          <option>Bank Transfer</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input id="payNote" type="text" placeholder="e.g. Advance for April" />
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div id="payPreview" style="display:none;margin-top:0.75rem;padding:10px 14px;border-radius:var(--radius-sm);background:var(--accent-light);border:1px solid var(--accent-mid);font-size:13px;color:var(--accent)"></div>
+
+    <div class="modal-actions">
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPayment()">✅ Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="histModal">
+  <div class="modal" style="width:520px">
+    <div class="modal-title">📜 Payment History — <span id="histName"></span></div>
+    <div id="histBody" style="max-height:340px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeHist()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal-overlay" id="backupModal">
+  <div class="modal" style="width:440px;max-height:92vh;overflow-y:auto">
+    <div class="modal-title">🔒 Backup &amp; Restore</div>
+
+    <!-- Google Drive -->
+    <div style="background:linear-gradient(135deg,#E8F5E9,#E3F2FD);border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid #B2DFDB">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <svg width="26" height="26" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>
+        <div>
+          <div style="font-weight:700;font-size:14px;color:#1A237E">Google Drive</div>
+          <div style="font-size:12px;color:#5C6BC0" id="driveConnectStatus">Not connected</div>
+        </div>
+        <button id="driveSignInBtn" onclick="driveSignIn()" style="margin-left:auto;padding:8px 14px;background:#1A73E8;color:white;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Connect Drive</button>
+        <button id="driveSignOutBtn" onclick="driveSignOut()" style="display:none;margin-left:auto;padding:6px 10px;background:none;border:1px solid #ccc;border-radius:8px;font-family:inherit;font-size:12px;color:#666;cursor:pointer">Disconnect</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="driveSaveBtn" onclick="driveBackup()" disabled style="flex:1;padding:10px;background:#1A73E8;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Save to Drive
+        </button>
+        <button id="driveLoadBtn" onclick="driveRestore()" disabled style="flex:1;padding:10px;background:#34A853;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>Load from Drive
+        </button>
+      </div>
+      <div id="driveFileInfo" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:8px;font-size:12px;color:#1A237E"></div>
+      <div id="driveSetupHint" style="display:none;margin-top:10px;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:10px 12px;font-size:12px;color:#6D4C41;line-height:1.7">
+        <b>&#9881;&#65039; Setup needed for Drive:</b><br>
+        1. Go to <b>console.cloud.google.com</b><br>
+        2. Enable <b>Google Drive API</b> &rarr; Create OAuth Client ID<br>
+        3. Add your Netlify URL to Authorized Origins<br>
+        4. Replace placeholder Client ID in the app code<br>
+        <span style="color:#9E9892;font-size:11px">Drive works on Netlify/GitHub Pages &mdash; not in preview mode</span>
+      </div>
+    </div>
+
+    <!-- Share Backup -->
+    <div style="background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">&#128228; Share Backup</div>
+      <!-- Primary: Android Share Sheet - attaches actual file -->
+      <button onclick="shareBackupFile('native')" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share Backup File (with attachment)
+      </button>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:10px">&#x1F4F1; Opens share sheet — pick WhatsApp, Telegram, Gmail &amp; attach file</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="shareBackupWhatsApp()" style="flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#25D366;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button onclick="shareBackupTelegram()" style="flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#0088CC;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Telegram
+        </button>
+        <button onclick="shareBackupEmail()" style="flex:1;min-width:90px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#EA4335;color:white;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email
+        </button>
+      </div>
+    </div>
+
+    <!-- Local Backup -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <button onclick="backupDownload()" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:22px">&#128229;</span>
+        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Download Backup File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Save .json file to phone/PC</div></div>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="backupFileSize"></span>
+      </button>
+      <label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);cursor:pointer;font-family:inherit;text-align:left;width:100%">
+        <span style="font-size:22px">&#9851;&#65039;</span>
+        <div><div style="font-weight:600;font-size:13px;color:var(--text)">Restore from File</div><div style="font-size:12px;color:var(--text3);margin-top:1px">Select a .json backup file</div></div>
+        <input type="file" accept=".json" onchange="restoreData(event)" style="display:none" id="restoreInput"/>
+      </label>
+    </div>
+
+    <div id="driveStatus" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:10px"></div>
+    <p id="lastBackupTime" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:14px"></p>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeBackupModal()">Done</button></div>
+  </div>
+</div>
+<!-- EDIT STUDENT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">✏️ Edit Student Details</div>
     <div class="form-grid">
       <div class="form-group form-full">
         <label>Student Name *</label>
@@ -1153,85 +1397,85 @@
 
 <!-- PAYMENT MODAL -->
 <div class="modal-overlay" id="payModal">
-  <div class="modal">
-    <div class="modal-title" style="flex-shrink:0">💳 Record Payment</div>
-    <div class="modal-scroll-body">
-      <!-- Student & Fee Summary -->
-      <div id="payStudentInfo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1rem;border:1px solid var(--border)">
-        <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
-          <div style="font-size:12px;color:var(--text3)">Monthly Fee<br><b id="payFeeAmt" style="color:var(--text);font-size:14px"></b></div>
-          <div style="font-size:12px;color:var(--text3)">Active Months<br><b id="payMonths" style="color:var(--info);font-size:14px"></b></div>
-          <div style="font-size:12px;color:var(--text3)">Already Paid<br><b id="payAlreadyPaid" style="color:var(--paid);font-size:14px"></b></div>
-          <div style="font-size:12px;color:var(--text3)">Balance Due<br><b id="payCurrentBal" style="color:var(--danger);font-size:14px"></b></div>
-        </div>
+  <div class="modal" style="width:480px">
+    <div class="modal-title">💳 Record Payment</div>
+
+    <!-- Student & Fee Summary -->
+    <div id="payStudentInfo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1rem;border:1px solid var(--border)">
+      <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
+      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--text3)">Monthly Fee: <b id="payFeeAmt" style="color:var(--text)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Completed Months: <b id="payMonths" style="color:var(--info)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Already Paid: <b id="payAlreadyPaid" style="color:var(--paid)"></b></div>
+        <div style="font-size:12px;color:var(--text3)">Current Balance: <b id="payCurrentBal" style="color:var(--danger)"></b></div>
       </div>
-
-      <!-- Payment Type Toggle -->
-      <div style="display:flex;gap:6px;margin-bottom:1rem">
-        <button id="payTypeDue" onclick="setPayType('due')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--accent);color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-          📋 Pay Due Amount
-        </button>
-        <button id="payTypeAdv" onclick="setPayType('advance')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-          ⏩ Pay in Advance
-        </button>
-      </div>
-
-      <div class="form-grid">
-        <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
-          <label>Pay for how many months ahead?</label>
-          <div style="display:flex;align-items:center;gap:10px">
-            <button onclick="changeAdvMonths(-1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">−</button>
-            <div style="flex:1;text-align:center">
-              <span id="advMonthsNum" style="font-size:22px;font-weight:700;color:var(--accent)">1</span>
-              <span style="font-size:13px;color:var(--text3);margin-left:4px">month(s) in advance</span>
-            </div>
-            <button onclick="changeAdvMonths(1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">+</button>
-          </div>
-          <div id="advMonthsCovered" style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center"></div>
-        </div>
-
-        <div class="form-group">
-          <label>Amount Paid (₹) *</label>
-          <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
-        </div>
-        <div class="form-group">
-          <label>Discount (₹) <span style="font-size:11px;color:var(--text3);font-weight:400">optional</span></label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input id="payDiscount" type="number" placeholder="0" min="0" oninput="updatePayPreview()" style="flex:1" />
-            <select id="payDiscountType" onchange="updatePayPreview()" style="width:90px;font-size:12px">
-              <option value="flat">₹ Flat</option>
-              <option value="percent">% Off</option>
-            </select>
-          </div>
-          <div id="discountHint" style="font-size:11px;color:var(--warn);margin-top:4px;display:none"></div>
-        </div>
-        <div class="form-group">
-          <label>Payment Date *</label>
-          <input id="payDate" type="date" />
-        </div>
-        <div class="form-group">
-          <label>Payment Mode</label>
-          <select id="payMode">
-            <option>Cash</option>
-            <option>UPI</option>
-            <option>Bank Transfer</option>
-            <option>Cheque</option>
-          </select>
-        </div>
-        <div class="form-group form-full">
-          <label>Note (optional)</label>
-          <input id="payNote" type="text" placeholder="e.g. Advance for April" />
-        </div>
-      </div>
-
-      <!-- Live Preview -->
-      <div id="payPreview" style="display:none;margin-top:0.75rem;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px"></div>
     </div>
 
+    <!-- Payment Type Toggle -->
+    <div style="display:flex;gap:6px;margin-bottom:1rem">
+      <button id="payTypeDue" onclick="setPayType('due')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--accent);color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        📋 Pay Due Amount
+      </button>
+      <button id="payTypeAdv" onclick="setPayType('advance')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+        ⏩ Pay in Advance
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <!-- Advance months selector (hidden by default) -->
+      <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
+        <label>Pay for how many months ahead?</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="changeAdvMonths(-1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">−</button>
+          <div style="flex:1;text-align:center">
+            <span id="advMonthsNum" style="font-size:22px;font-weight:700;color:var(--accent)">1</span>
+            <span style="font-size:13px;color:var(--text3);margin-left:4px">month(s) in advance</span>
+          </div>
+          <button onclick="changeAdvMonths(1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">+</button>
+        </div>
+        <div id="advMonthsCovered" style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Amount Paid (₹) *</label>
+        <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
+      </div>
+      <div class="form-group">
+        <label>Discount (₹) <span style="font-size:11px;color:var(--text3);font-weight:400">optional</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="payDiscount" type="number" placeholder="0" min="0" oninput="updatePayPreview()" style="flex:1" />
+          <select id="payDiscountType" onchange="updatePayPreview()" style="width:90px;font-size:12px">
+            <option value="flat">₹ Flat</option>
+            <option value="percent">% Off</option>
+          </select>
+        </div>
+        <div id="discountHint" style="font-size:11px;color:var(--warn);margin-top:4px;display:none"></div>
+      </div>
+      <div class="form-group">
+        <label>Payment Date *</label>
+        <input id="payDate" type="date" />
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="payMode">
+          <option>Cash</option>
+          <option>UPI</option>
+          <option>Bank Transfer</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input id="payNote" type="text" placeholder="e.g. Advance for April" />
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div id="payPreview" style="display:none;margin-top:0.75rem;padding:10px 14px;border-radius:var(--radius-sm);background:var(--accent-light);border:1px solid var(--accent-mid);font-size:13px;color:var(--accent)"></div>
+
     <div class="modal-actions">
-      <button class="btn" style="border:1px solid var(--border);flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" style="flex:2" onclick="submitPayment()">✅ Record Payment</button>
+      <button class="btn" style="border:1px solid var(--border)" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPayment()">✅ Record Payment</button>
     </div>
   </div>
 </div>
@@ -1361,49 +1605,6 @@
         <button onclick="closeBackupModal();openInstallGuide()" style="background:white;color:#1B4332;border:none;padding:8px 14px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
           How to →
         </button>
-      </div>
-    </div>
-
-    <!-- ── Firebase Cloud Sync ── -->
-    <div style="background:linear-gradient(135deg,#FFF8E1,#FFF3E0);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #FFE082">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <svg width="28" height="28" viewBox="0 0 48 48"><path fill="#FF6F00" d="M6 42L12.9 8.2l11 19.8L12.9 42z"/><path fill="#FFA000" d="M30 42l-17.1-14L23.9 8.2 30 42z"/><path fill="#FF6F00" d="M30 42L42 6 23.9 28l6.1 14z"/><path fill="#FFC107" d="M6 42l6.9-14L23.9 28 6 42z"/></svg>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:14px;color:#E65100">Firebase Cloud Sync</div>
-          <div style="font-size:11px;color:#BF360C;margin-top:2px" id="fbStatusText">Not connected</div>
-        </div>
-        <div id="fbStatusDot" style="width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0"></div>
-      </div>
-
-      <!-- Setup inputs (shown when not configured) -->
-      <div id="fbSetupSection">
-        <div style="font-size:12px;color:#6D4C41;line-height:1.6;margin-bottom:10px">
-          Connect Firebase to sync all student data to the cloud — accessible from any device. <a href="#" onclick="openFirebaseGuide();return false" style="color:#E65100;font-weight:600">How to set up →</a>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <input id="fbApiKey"     type="text" placeholder="API Key"          style="padding:9px 12px;border:1.5px solid #FFE082;border-radius:8px;font-family:inherit;font-size:12px;background:white" />
-          <input id="fbProjectId"  type="text" placeholder="Project ID"       style="padding:9px 12px;border:1.5px solid #FFE082;border-radius:8px;font-family:inherit;font-size:12px;background:white" />
-          <input id="fbCollection" type="text" placeholder="Collection name (e.g. mstfees)" style="padding:9px 12px;border:1.5px solid #FFE082;border-radius:8px;font-family:inherit;font-size:12px;background:white" />
-          <button onclick="connectFirebase()" style="padding:10px;background:#FF6F00;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">
-            🔥 Connect Firebase
-          </button>
-        </div>
-      </div>
-
-      <!-- Connected state -->
-      <div id="fbConnectedSection" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <button onclick="fbPushToCloud()" style="padding:10px;background:#FF6F00;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-            ☁️ Push to Cloud
-          </button>
-          <button onclick="fbPullFromCloud()" style="padding:10px;background:#E65100;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-            📥 Pull from Cloud
-          </button>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:11px;color:#6D4C41" id="fbLastSync">Never synced</div>
-          <button onclick="disconnectFirebase()" style="font-size:11px;color:#999;background:none;border:none;cursor:pointer;text-decoration:underline">Disconnect</button>
-        </div>
       </div>
     </div>
 
@@ -2179,7 +2380,7 @@ function deleteStudent(id) {
       try { const r = await window.storage.get(userKey('tfm_cloud_id')); if (r&&r.value) backupId = r.value; } catch(e){}
       if (!backupId) backupId = genBackupId();
       const snapshot = JSON.stringify({ students, trash, batches, exportedAt: new Date().toISOString(), app: 'Mahatab Tuition Centre' });
-      localStorage.setItem('mtc_local_backup', snapshot);
+      localStorage.setItem('mtc_local_backup', payload||snapshot);
       await window.storage.set(userKey('tfm_cloud_id'), backupId);
     } catch(e) {}
 
@@ -2730,51 +2931,24 @@ function openStudentDetail(id) {
   const s = students.find(s => s.id === id);
   if (!s) return;
   document.body.style.overflow = 'hidden';
-  const page = document.getElementById('studentDetailPage');
-  page.style.display = 'flex'; // ensure visible before animation
-  page.classList.add('open');
+  document.getElementById('studentDetailPage').classList.add('open');
   renderStudentDetail(s);
 }
 
 function closeStudentDetail() {
-  const page = document.getElementById('studentDetailPage');
-  if (page) {
-    page.classList.remove('open');
-    // Force hide immediately so modals can appear on top
-    setTimeout(() => { if (!page.classList.contains('open')) page.style.display = 'none'; }, 300);
-  }
+  document.getElementById('studentDetailPage').classList.remove('open');
   document.body.style.overflow = '';
   activeDetailId = null;
 }
 
-function forceShowStudentDetail() {
-  const page = document.getElementById('studentDetailPage');
-  if (page) page.style.display = 'flex';
-}
-
 function sdpPay() {
-  const id = activeDetailId; // save BEFORE closing (closeStudentDetail sets it to null)
   closeStudentDetail();
-  if (id !== null) {
-    // Wait for detail page close animation, then open modal
-    setTimeout(() => {
-      const page = document.getElementById('studentDetailPage');
-      if (page) { page.style.display = 'none'; } // force hide immediately
-      openPayModal(id);
-    }, 80);
-  }
+  if (activeDetailId !== null) openPayModal(activeDetailId);
 }
 
 function sdpEdit() {
-  const id = activeDetailId; // save BEFORE closing
   closeStudentDetail();
-  if (id !== null) setTimeout(() => openEditModal(id), 50);
-}
-
-function sdpDelete() {
-  const id = activeDetailId;
-  closeStudentDetail();
-  if (id !== null) setTimeout(() => deleteStudent(id), 80);
+  if (activeDetailId !== null) openEditModal(activeDetailId);
 }
 
 function renderStudentDetail(s) {
@@ -4578,8 +4752,7 @@ function runImport() {
   document.getElementById('importRunBtn').textContent = '✅ Done — Import More';
   document.getElementById('importRunBtn').onclick = () => {
     closeImportModal();
-    const lbl = document.querySelector('label:has(#importFileInput)');
-    if (lbl) lbl.click(); else document.getElementById('importFileInput').click();
+    document.getElementById('importFileInput').click();
   };
 
   showToast(`Imported ${imported} student(s)!`, imported > 0);
@@ -5899,39 +6072,48 @@ window.addEventListener('DOMContentLoaded', () => {
   <div class="sdp-action-bar">
     <button class="btn btn-success" style="flex:1;font-size:14px" onclick="sdpPay()">💳 Pay Now</button>
     <button class="btn" style="flex:1;font-size:14px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="sdpEdit()">✏️ Edit</button>
-    <button class="btn btn-danger" style="font-size:14px;padding:0 14px" onclick="sdpDelete()" title="Delete student">🗑</button>
   </div>
 </div>
 <!-- ══════════════ ANDROID BACK BUTTON HANDLER ══════════════ -->
 <script>
 (function() {
 
-  function isOpen(id) {
-    const el = document.getElementById(id);
-    if (!el) return false;
-    return el.classList.contains('open') || el.classList.contains('show');
-  }
-
-  // ── What is currently open? Returns the top-level overlay id ──
+  // ── What is open right now? (highest priority first) ──
   function getTopOpen() {
-    // Dynamic modals (created on-the-fly)
+    // 1. Dynamic overlays created in JS (exist only when open)
     if (document.getElementById('downloadPermModal'))  return 'downloadPermModal';
     if (document.getElementById('shareInstructModal')) return 'shareInstructModal';
+    if (document.getElementById('installGuideModal'))  return 'installGuideModal';
 
-    // Modals and full-screen pages (priority order — topmost first)
-    const ids = [
-      'confirmOverlay','changelogModal','importModal',
-      'payModal','histModal','editModal','backupModal','batchModal','driveSetupModal',
-      'notifPageOverlay','trashPageOverlay','studentDetailPage',
-      'installGuideModal','updateBanner','userDropdown',
+    // 2. Fixed overlays — check .open class
+    const checks = [
+      ['changelogModal',     () => document.getElementById('changelogModal')?.classList.contains('open')],
+      ['importModal',        () => document.getElementById('importModal')?.classList.contains('open')],
+      ['confirmOverlay',     () => document.getElementById('confirmOverlay')?.classList.contains('open')],
+      ['payModal',           () => document.getElementById('payModal')?.classList.contains('open')],
+      ['histModal',          () => document.getElementById('histModal')?.classList.contains('open')],
+      ['editModal',          () => document.getElementById('editModal')?.classList.contains('open')],
+      ['backupModal',        () => document.getElementById('backupModal')?.classList.contains('open')],
+      ['batchModal',         () => document.getElementById('batchModal')?.classList.contains('open')],
+      ['driveSetupModal',    () => document.getElementById('driveSetupModal')?.classList.contains('open')],
+      // 3. Full-screen pages
+      ['notifPageOverlay',   () => document.getElementById('notifPageOverlay')?.classList.contains('open')],
+      ['trashPageOverlay',   () => document.getElementById('trashPageOverlay')?.classList.contains('open')],
+      ['studentDetailPage',  () => document.getElementById('studentDetailPage')?.classList.contains('open')],
+      // 4. Update banner
+      ['updateBanner',       () => document.getElementById('updateBanner')?.classList.contains('show')],
+      // 5. User dropdown
+      ['userDropdown',       () => document.getElementById('userDropdown')?.classList.contains('open')],
+      // 6. Add student expanded form
+      ['addStudentExpanded',  () => {
+        const el = document.getElementById('addStudentExpanded');
+        return el && el.style.display !== 'none' && el.style.display !== '';
+      }],
     ];
-    for (const id of ids) {
-      if (isOpen(id)) return id;
-    }
-    // Add student form
-    const asf = document.getElementById('addStudentExpanded');
-    if (asf && asf.style.display && asf.style.display !== 'none') return 'addStudentExpanded';
 
+    for (const [id, check] of checks) {
+      try { if (check()) return id; } catch(e) {}
+    }
     return null;
   }
 
@@ -6004,401 +6186,35 @@ window.addEventListener('DOMContentLoaded', () => {
     history.pushState({ mtcBack: true }, '', location.href);
   }
 
-  // ── Exit confirmation ──
-  let exitReady = false;
-  let exitTimer = null;
-
-  function showExitToast() {
-    let t = document.getElementById('_exitToast');
-    if (!t) {
-      t = document.createElement('div');
-      t.id = '_exitToast';
-      t.style.cssText = 'position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:11px 24px;border-radius:22px;font-size:14px;font-family:inherit;z-index:99999;pointer-events:none;white-space:nowrap;transition:opacity 0.3s';
-      t.textContent = 'Press back again to exit';
-      document.body.appendChild(t);
-    }
-    t.style.opacity = '1';
-    clearTimeout(exitTimer);
-    exitTimer = setTimeout(() => {
-      t.style.opacity = '0';
-      exitReady = false;
-    }, 2000);
-  }
-
-  // ── Push a guard state ──
-  function pushBack() {
-    history.pushState({ mtc: 1 }, '');
-  }
-
-  // ── Seed on load ──
-  window.addEventListener('load', function() {
-    history.replaceState({ mtc: 0 }, '');
-    pushBack();
-  });
-
-  // ── Main back handler ──
-  window.addEventListener('popstate', function() {
+  // ── On popstate: Android back was pressed ──
+  window.addEventListener('popstate', function(e) {
     const open = getTopOpen();
     if (open) {
       closeTop(open);
-      pushBack();           // re-arm for next back
-      exitReady = false;
-    } else {
-      if (exitReady) {
-        // 2nd press — exit
-        exitReady = false;
-        clearTimeout(exitTimer);
-        const t = document.getElementById('_exitToast');
-        if (t) t.remove();
-        history.go(-1);     // actually go back (exit PWA)
-      } else {
-        // 1st press — show toast, stay
-        exitReady = true;
-        showExitToast();
-        pushBack();         // re-arm
-      }
+      // Push ONE new state so next back is also intercepted
+      pushBack();
     }
+    // If nothing open: do NOT push — let the browser handle naturally
+    // (this prevents the double-tap issue)
   });
 
-  // ── Auto-push when a modal/page opens ──
-  const _origClassAdd = DOMTokenList.prototype.add;
-  DOMTokenList.prototype.add = function(...args) {
+  // ── On load: seed exactly ONE history state ──
+  window.addEventListener('DOMContentLoaded', function() {
+    // replaceState so we own the current entry, then push ONE guard state
+    history.replaceState({ mtcBack: false }, '', location.href);
+    history.pushState({ mtcBack: true }, '', location.href);
+  });
+
+  // ── Auto-push state when any modal/overlay opens ──
+  const _origAdd = DOMTokenList.prototype.add;
+  DOMTokenList.prototype.add = function(...tokens) {
     const hadOpen = this.contains('open') || this.contains('show');
-    _origClassAdd.apply(this, args);
-    if (!hadOpen && (args.includes('open') || args.includes('show'))) {
+    _origAdd.apply(this, tokens);
+    const hasOpen = tokens.includes('open') || tokens.includes('show');
+    if (!hadOpen && hasOpen) {
       pushBack();
     }
   };
-
-})();
-</script>
-
-<!-- FIREBASE SETUP GUIDE MODAL -->
-<div class="modal-overlay" id="firebaseGuideModal">
-  <div class="modal" style="width:480px;max-height:90vh;overflow-y:auto;padding:0;border-radius:18px">
-    <div style="background:linear-gradient(135deg,#FF6F00,#E65100);color:white;padding:1.25rem 1.5rem;border-radius:18px 18px 0 0">
-      <div style="display:flex;align-items:center;gap:10px">
-        <svg width="28" height="28" viewBox="0 0 48 48"><path fill="#FFF" d="M6 42L12.9 8.2l11 19.8L12.9 42z"/><path fill="rgba(255,255,255,0.7)" d="M30 42l-17.1-14L23.9 8.2 30 42z"/><path fill="#FFF" d="M30 42L42 6 23.9 28l6.1 14z"/><path fill="rgba(255,255,255,0.7)" d="M6 42l6.9-14L23.9 28 6 42z"/></svg>
-        <div>
-          <div style="font-family:'DM Serif Display',serif;font-size:20px">Firebase Setup Guide</div>
-          <div style="font-size:12px;opacity:0.8">5 minutes • Free forever</div>
-        </div>
-        <button onclick="document.getElementById('firebaseGuideModal').classList.remove('open')" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px">✕</button>
-      </div>
-    </div>
-    <div style="padding:1.25rem 1.5rem">
-
-      <div style="background:#FFF8E1;border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:#6D4C41">
-        💡 Firebase Firestore free tier: <b>50,000 reads + 20,000 writes per day</b> — more than enough for a tuition centre.
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:14px">
-
-        <div style="display:flex;gap:12px">
-          <div style="width:28px;height:28px;background:#FF6F00;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
-          <div style="font-size:13px;padding-top:4px">
-            Go to <a href="https://console.firebase.google.com" target="_blank" style="color:#E65100;font-weight:600">console.firebase.google.com</a> and sign in with your Google account
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px">
-          <div style="width:28px;height:28px;background:#FF6F00;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
-          <div style="font-size:13px;padding-top:4px">Click <b>"Create a project"</b> → name it <b>ms-tfees</b> → Continue → Disable Google Analytics → <b>Create Project</b></div>
-        </div>
-
-        <div style="display:flex;gap:12px">
-          <div style="width:28px;height:28px;background:#FF6F00;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
-          <div style="font-size:13px;padding-top:4px">In your project, click <b>Build → Firestore Database</b> → <b>Create database</b> → choose <b>Start in test mode</b> → select a location → <b>Enable</b></div>
-        </div>
-
-        <div style="display:flex;gap:12px">
-          <div style="width:28px;height:28px;background:#FF6F00;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">4</div>
-          <div style="font-size:13px;padding-top:4px">Click the <b>⚙️ gear icon</b> → <b>Project settings</b> → scroll to <b>"Your apps"</b> → click <b>&lt;/&gt; Web</b> → register app as <b>mstfees</b> → <b>Register app</b></div>
-        </div>
-
-        <div style="display:flex;gap:12px">
-          <div style="width:28px;height:28px;background:#FF6F00;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">5</div>
-          <div style="font-size:13px;padding-top:4px">
-            You'll see a config block. Copy these two values:
-            <div style="background:#F5F5F5;border-radius:8px;padding:10px 12px;margin-top:8px;font-family:monospace;font-size:12px;color:#333">
-              apiKey: <span style="color:#E65100">"YOUR_API_KEY"</span><br>
-              projectId: <span style="color:#E65100">"YOUR_PROJECT_ID"</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px">
-          <div style="width:28px;height:28px;background:#FF6F00;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">6</div>
-          <div style="font-size:13px;padding-top:4px">Paste those values into the Firebase section in <b>Backup → Firebase Cloud Sync</b> and tap <b>Connect Firebase</b></div>
-        </div>
-
-      </div>
-
-      <div style="background:#E8F5E9;border-radius:10px;padding:10px 14px;margin-top:1rem;font-size:12px;color:#2D6A4F">
-        ✅ Once connected, use <b>☁️ Push to Cloud</b> to save data and <b>📥 Pull from Cloud</b> to restore on any device.
-      </div>
-
-      <button onclick="document.getElementById('firebaseGuideModal').classList.remove('open')" style="width:100%;margin-top:1rem;padding:12px;background:#FF6F00;color:white;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">
-        Got it — go connect!
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ FIREBASE CLOUD SYNC ══════════════ -->
-<script>
-(function() {
-
-// ── Firebase config storage keys ──
-const FB_KEY_API      = 'mtc_fb_apiKey';
-const FB_KEY_PROJECT  = 'mtc_fb_projectId';
-const FB_KEY_COLL     = 'mtc_fb_collection';
-const FB_KEY_LASTSYNC = 'mtc_fb_lastSync';
-
-let fbConfig = null;
-
-// ── Load saved config ──
-function loadFbConfig() {
-  const apiKey    = localStorage.getItem(FB_KEY_API);
-  const projectId = localStorage.getItem(FB_KEY_PROJECT);
-  const collection= localStorage.getItem(FB_KEY_COLL) || 'mstfees';
-  if (apiKey && projectId) {
-    fbConfig = { apiKey, projectId, collection };
-    return true;
-  }
-  return false;
-}
-
-// ── Firebase REST API base URL ──
-function fbUrl(path) {
-  return `https://firestore.googleapis.com/v1/projects/${fbConfig.projectId}/databases/(default)/documents/${fbConfig.collection}/${path}?key=${fbConfig.apiKey}`;
-}
-
-// ── Convert data to Firestore document format ──
-function toFirestoreDoc(data) {
-  const json = JSON.stringify(data);
-  return { fields: { data: { stringValue: json } } };
-}
-
-// ── Extract data from Firestore document ──
-function fromFirestoreDoc(doc) {
-  if (!doc || !doc.fields || !doc.fields.data) return null;
-  return JSON.parse(doc.fields.data.stringValue);
-}
-
-// ── Test connection by reading a doc ──
-async function testFbConnection() {
-  try {
-    const url = fbUrl('_ping');
-    const r = await fetch(url, { method: 'GET' });
-    // 200 = doc exists, 404 = doesn't exist but project is valid
-    return r.status === 200 || r.status === 404;
-  } catch(e) {
-    return false;
-  }
-}
-
-// ── Connect Firebase ──
-window.connectFirebase = async function() {
-  const apiKey     = document.getElementById('fbApiKey')?.value.trim();
-  const projectId  = document.getElementById('fbProjectId')?.value.trim();
-  const collection = document.getElementById('fbCollection')?.value.trim() || 'mstfees';
-
-  if (!apiKey || !projectId) {
-    showToast('Please enter API Key and Project ID.', false);
-    return;
-  }
-
-  // Save config and test
-  fbConfig = { apiKey, projectId, collection };
-  updateFbStatus('testing');
-
-  const ok = await testFbConnection();
-  if (!ok) {
-    fbConfig = null;
-    updateFbStatus('error');
-    showToast('❌ Could not connect. Check your API Key and Project ID.', false);
-    return;
-  }
-
-  // Save to localStorage
-  localStorage.setItem(FB_KEY_API,     apiKey);
-  localStorage.setItem(FB_KEY_PROJECT, projectId);
-  localStorage.setItem(FB_KEY_COLL,    collection);
-
-  updateFbStatus('connected');
-  showToast('✅ Firebase connected!');
-};
-
-// ── Disconnect Firebase ──
-window.disconnectFirebase = function() {
-  localStorage.removeItem(FB_KEY_API);
-  localStorage.removeItem(FB_KEY_PROJECT);
-  localStorage.removeItem(FB_KEY_COLL);
-  localStorage.removeItem(FB_KEY_LASTSYNC);
-  fbConfig = null;
-  updateFbStatus('disconnected');
-  showToast('Firebase disconnected.');
-};
-
-// ── Push data to Firebase ──
-window.fbPushToCloud = async function() {
-  if (!fbConfig) { showToast('Firebase not connected.', false); return; }
-
-  updateFbStatus('syncing');
-  try {
-    const uid = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : 'guest';
-    const payload = {
-      students: typeof students !== 'undefined' ? students : [],
-      trash:    typeof trash    !== 'undefined' ? trash    : [],
-      batches:  typeof batches  !== 'undefined' ? batches  : [],
-      timestamp: new Date().toISOString(),
-      uid
-    };
-
-    const url = fbUrl(uid + '_data');
-    const r = await fetch(url, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(toFirestoreDoc(payload))
-    });
-
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-
-    const now = new Date().toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-    localStorage.setItem(FB_KEY_LASTSYNC, now);
-    updateFbStatus('connected');
-    showToast('☁️ Data pushed to Firebase!');
-
-  } catch(e) {
-    updateFbStatus('error');
-    showToast('❌ Push failed: ' + e.message, false);
-  }
-};
-
-// ── Pull data from Firebase ──
-window.fbPullFromCloud = async function() {
-  if (!fbConfig) { showToast('Firebase not connected.', false); return; }
-
-  if (!confirm('Pull from Firebase? This will replace your current data with cloud data.')) return;
-
-  updateFbStatus('syncing');
-  try {
-    const uid = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : 'guest';
-    const url = fbUrl(uid + '_data');
-    const r = await fetch(url);
-
-    if (r.status === 404) {
-      updateFbStatus('connected');
-      showToast('No cloud data found. Push first to create a backup.', false);
-      return;
-    }
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-
-    const doc  = await r.json();
-    const data = fromFirestoreDoc(doc);
-    if (!data) throw new Error('Invalid data format');
-
-    // Restore data
-    if (Array.isArray(data.students)) { window.students = data.students; }
-    if (Array.isArray(data.trash))    { window.trash    = data.trash;    }
-    if (Array.isArray(data.batches))  { window.batches  = data.batches;  }
-
-    // Save locally too
-    if (typeof save === 'function') await save(true);
-    if (typeof renderAll === 'function') renderAll();
-
-    const now = new Date().toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-    localStorage.setItem(FB_KEY_LASTSYNC, now);
-    updateFbStatus('connected');
-    showToast('✅ Data restored from Firebase!');
-
-  } catch(e) {
-    updateFbStatus('error');
-    showToast('❌ Pull failed: ' + e.message, false);
-  }
-};
-
-// ── Auto-push after every save (debounced 5 seconds) ──
-let fbAutoTimer = null;
-const _origSave = window.save;
-if (typeof window.save === 'function') {
-  window.save = async function(skipBackup) {
-    const result = await _origSave(skipBackup);
-    if (fbConfig) {
-      clearTimeout(fbAutoTimer);
-      fbAutoTimer = setTimeout(() => fbPushToCloud(), 5000);
-    }
-    return result;
-  };
-}
-
-// ── Update UI status ──
-function updateFbStatus(status) {
-  const dot  = document.getElementById('fbStatusDot');
-  const text = document.getElementById('fbStatusText');
-  const setup= document.getElementById('fbSetupSection');
-  const conn = document.getElementById('fbConnectedSection');
-  const lastSync = document.getElementById('fbLastSync');
-
-  if (!dot) return;
-
-  const states = {
-    'disconnected': { color: '#ccc',     txt: 'Not connected',  showSetup: true  },
-    'testing':      { color: '#FFB300',  txt: 'Testing...',     showSetup: true  },
-    'connected':    { color: '#2D6A4F',  txt: '🟢 Connected',   showSetup: false },
-    'syncing':      { color: '#1A73E8',  txt: '🔄 Syncing...',  showSetup: false },
-    'error':        { color: '#C0392B',  txt: '❌ Error',        showSetup: true  },
-  };
-
-  const s = states[status] || states['disconnected'];
-  dot.style.background  = s.color;
-  if (text)  text.textContent  = s.txt;
-  if (setup) setup.style.display = s.showSetup ? 'block' : 'none';
-  if (conn)  conn.style.display  = s.showSetup ? 'none'  : 'block';
-
-  // Update last sync time
-  const t = localStorage.getItem(FB_KEY_LASTSYNC);
-  if (lastSync) lastSync.textContent = t ? 'Last sync: ' + t : 'Never synced';
-}
-
-// ── Open guide ──
-window.openFirebaseGuide = function() {
-  document.getElementById('firebaseGuideModal')?.classList.add('open');
-};
-
-// ── Init on backup modal open ──
-const _origOpenBackup = window.openBackupModal;
-if (typeof window.openBackupModal === 'function') {
-  window.openBackupModal = async function() {
-    await _origOpenBackup();
-    // Restore saved Firebase config into input fields
-    const apiKey    = localStorage.getItem(FB_KEY_API)    || '';
-    const projectId = localStorage.getItem(FB_KEY_PROJECT)|| '';
-    const collection= localStorage.getItem(FB_KEY_COLL)   || 'mstfees';
-
-    const apiEl  = document.getElementById('fbApiKey');
-    const projEl = document.getElementById('fbProjectId');
-    const collEl = document.getElementById('fbCollection');
-    if (apiEl)  apiEl.value  = apiKey;
-    if (projEl) projEl.value = projectId;
-    if (collEl) collEl.value = collection;
-
-    if (loadFbConfig()) {
-      updateFbStatus('connected');
-    } else {
-      updateFbStatus('disconnected');
-    }
-  };
-}
-
-// ── Init on page load ──
-window.addEventListener('load', function() {
-  if (loadFbConfig()) {
-    // Show connected status in header or anywhere needed
-    console.log('[Firebase] Auto-connected to project:', fbConfig.projectId);
-  }
-});
 
 })();
 </script>
