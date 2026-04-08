@@ -454,12 +454,16 @@
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
     z-index: 200; align-items: center; justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
   }
   .modal-overlay.open { display: flex; }
   .modal {
     background: var(--surface); border-radius: var(--radius);
     padding: 2rem; width: 460px; max-width: 94vw;
+    max-height: 90vh; overflow-y: auto;
     box-shadow: var(--shadow-lg); animation: slideIn 0.22s ease;
+    margin: auto;
   }
   @keyframes slideIn { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 1.25rem; }
@@ -1395,91 +1399,6 @@
   </div>
 </div>
 
-<!-- PAYMENT MODAL -->
-<div class="modal-overlay" id="payModal">
-  <div class="modal" style="width:480px">
-    <div class="modal-title">💳 Record Payment</div>
-
-    <!-- Student & Fee Summary -->
-    <div id="payStudentInfo" style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:1rem;border:1px solid var(--border)">
-      <div style="font-weight:600;font-size:15px" id="payStudentName2"></div>
-      <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
-        <div style="font-size:12px;color:var(--text3)">Monthly Fee: <b id="payFeeAmt" style="color:var(--text)"></b></div>
-        <div style="font-size:12px;color:var(--text3)">Completed Months: <b id="payMonths" style="color:var(--info)"></b></div>
-        <div style="font-size:12px;color:var(--text3)">Already Paid: <b id="payAlreadyPaid" style="color:var(--paid)"></b></div>
-        <div style="font-size:12px;color:var(--text3)">Current Balance: <b id="payCurrentBal" style="color:var(--danger)"></b></div>
-      </div>
-    </div>
-
-    <!-- Payment Type Toggle -->
-    <div style="display:flex;gap:6px;margin-bottom:1rem">
-      <button id="payTypeDue" onclick="setPayType('due')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--accent);background:var(--accent);color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-        📋 Pay Due Amount
-      </button>
-      <button id="payTypeAdv" onclick="setPayType('advance')" style="flex:1;padding:9px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-        ⏩ Pay in Advance
-      </button>
-    </div>
-
-    <div class="form-grid">
-      <!-- Advance months selector (hidden by default) -->
-      <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
-        <label>Pay for how many months ahead?</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <button onclick="changeAdvMonths(-1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">−</button>
-          <div style="flex:1;text-align:center">
-            <span id="advMonthsNum" style="font-size:22px;font-weight:700;color:var(--accent)">1</span>
-            <span style="font-size:13px;color:var(--text3);margin-left:4px">month(s) in advance</span>
-          </div>
-          <button onclick="changeAdvMonths(1)" style="width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit">+</button>
-        </div>
-        <div id="advMonthsCovered" style="font-size:12px;color:var(--text3);margin-top:6px;text-align:center"></div>
-      </div>
-
-      <div class="form-group">
-        <label>Amount Paid (₹) *</label>
-        <input id="payAmount" type="number" placeholder="Enter amount" min="1" oninput="updatePayPreview()" />
-      </div>
-      <div class="form-group">
-        <label>Discount (₹) <span style="font-size:11px;color:var(--text3);font-weight:400">optional</span></label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="payDiscount" type="number" placeholder="0" min="0" oninput="updatePayPreview()" style="flex:1" />
-          <select id="payDiscountType" onchange="updatePayPreview()" style="width:90px;font-size:12px">
-            <option value="flat">₹ Flat</option>
-            <option value="percent">% Off</option>
-          </select>
-        </div>
-        <div id="discountHint" style="font-size:11px;color:var(--warn);margin-top:4px;display:none"></div>
-      </div>
-      <div class="form-group">
-        <label>Payment Date *</label>
-        <input id="payDate" type="date" />
-      </div>
-      <div class="form-group">
-        <label>Payment Mode</label>
-        <select id="payMode">
-          <option>Cash</option>
-          <option>UPI</option>
-          <option>Bank Transfer</option>
-          <option>Cheque</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Note (optional)</label>
-        <input id="payNote" type="text" placeholder="e.g. Advance for April" />
-      </div>
-    </div>
-
-    <!-- Live Preview -->
-    <div id="payPreview" style="display:none;margin-top:0.75rem;padding:10px 14px;border-radius:var(--radius-sm);background:var(--accent-light);border:1px solid var(--accent-mid);font-size:13px;color:var(--accent)"></div>
-
-    <div class="modal-actions">
-      <button class="btn" style="border:1px solid var(--border)" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitPayment()">✅ Record Payment</button>
-    </div>
-  </div>
-</div>
-
 <!-- HISTORY MODAL -->
 <div class="modal-overlay" id="histModal">
   <div class="modal" style="width:520px">
@@ -1778,6 +1697,7 @@ let trash = [];
 let batches = [];
 let activeBatch = 'all';
 let activePayId = null;
+let payOpenedFromDetail = false;
 let pendingDeleteId = null;
 let trashVisible = false;
 
@@ -2856,7 +2776,10 @@ function updatePayPreview() {
   }
 }
 
-function closeModal() { document.getElementById('payModal').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('payModal').classList.remove('open');
+  payOpenedFromDetail = false;
+}
 
 function submitPayment() {
   const amt = parseFloat(document.getElementById('payAmount').value);
@@ -2888,6 +2811,12 @@ function submitPayment() {
 
   s.status = calcStatus(s);
   save(); renderAll(); closeModal();
+
+  // If pay was opened from the student detail page, go back to it with updated data
+  if (payOpenedFromDetail) {
+    payOpenedFromDetail = false;
+    openStudentDetail(s.id);
+  }
 
   // Notify if fees are now fully paid for this month
   if (calcStatus(s) === 'paid') {
@@ -2942,13 +2871,18 @@ function closeStudentDetail() {
 }
 
 function sdpPay() {
-  closeStudentDetail();
-  if (activeDetailId !== null) openPayModal(activeDetailId);
+  const id = activeDetailId;
+  if (id !== null) {
+    payOpenedFromDetail = true;
+    closeStudentDetail();
+    openPayModal(id);
+  }
 }
 
 function sdpEdit() {
+  const id = activeDetailId;
   closeStudentDetail();
-  if (activeDetailId !== null) openEditModal(activeDetailId);
+  if (id !== null) openEditModal(id);
 }
 
 function renderStudentDetail(s) {
