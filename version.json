@@ -1,14 +1,13 @@
 {
-  "version": "2.6.2",
+  "version": "2.6.3",
   "date": "2026-04-08",
-  "description": "Import/Export/Delete fixes",
+  "description": "Mobile toolbar layout fix",
   "url": "/index.html",
   "patch_url": "/patch.json",
   "changes": [
-    "\ud83d\udc1b Delete student: fixed undefined payload crash during pre-delete backup",
-    "\ud83d\udc1b Student detail page: added missing Delete button (\ud83d\uddd1)",
-    "\ud83d\udc1b Import More: fixed file picker not reopening on mobile after import",
-    "\ud83d\udc1b All previously duplicate modal IDs removed (from v2.6.1 fix)"
+    "\ud83d\udc1b Student Records toolbar: Deleted/Import/Excel/PDF buttons now in proper 2\u00d72 grid \u2014 no more overlap on mobile",
+    "\ud83d\udc1b All buttons now have full tap targets (equal width, centered)",
+    "\ud83d\udc1b Carry-forward: delete crash fix, sdpDelete button, import-more fix (v2.6.2)"
   ],
   "mandatory": true,
   "min_supported": "1.0.0"

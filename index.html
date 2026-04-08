@@ -1035,23 +1035,22 @@
 
   <!-- STUDENTS TABLE -->
   <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title"><span class="panel-icon">📋</span> Student Records</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-sm" id="trashToggleBtn" style="border:1px solid var(--border)" onclick="toggleTrash()">🗑️ Deleted <span id="trashBadge" style="display:none;background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;margin-left:4px">0</span></button>
-        <!-- Import: arrow DOWN = file coming into app -->
-        <label class="btn btn-sm" style="background:#0F4C81;color:white;border:none;display:flex;align-items:center;gap:5px;cursor:pointer">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span class="panel-title"><span class="panel-icon">📋</span> Student Records</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-sm" id="trashToggleBtn" style="border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:6px" onclick="toggleTrash()">🗑️ Deleted <span id="trashBadge" style="display:none;background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></button>
+        <label class="btn btn-sm" style="background:#0F4C81;color:white;border:none;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Import
           <input type="file" accept=".xlsx,.xls,.csv" onchange="openImportModal(event)" style="display:none" id="importFileInput"/>
         </label>
-        <!-- Excel Export: arrow UP = file going out of app -->
-        <button class="btn btn-sm" style="background:#1D6F42;color:white;border:none;display:flex;align-items:center;gap:5px" onclick="exportExcel()">
+        <button class="btn btn-sm" style="background:#1D6F42;color:white;border:none;display:flex;align-items:center;justify-content:center;gap:6px" onclick="exportExcel()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
           Excel
         </button>
-        <!-- PDF Export: arrow UP = file going out -->
-        <button class="btn btn-sm" style="background:#C0392B;color:white;border:none;display:flex;align-items:center;gap:5px" onclick="exportPDF()">
+        <button class="btn btn-sm" style="background:#C0392B;color:white;border:none;display:flex;align-items:center;justify-content:center;gap:6px" onclick="exportPDF()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 8 12 3 17 8"/></svg>
           PDF
         </button>
