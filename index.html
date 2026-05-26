@@ -1195,6 +1195,13 @@
       </button>
     </div>
 
+    <!-- Month Selector (shown for both due & advance) -->
+    <div id="monthSelectorRow" style="margin-bottom:1rem">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px">📅 Select Month(s) to Pay</label>
+      <div id="monthChips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div id="monthSelSummary" style="font-size:11px;color:var(--text3);margin-top:6px"></div>
+    </div>
+
     <div class="form-grid">
       <!-- Advance months selector (hidden by default) -->
       <div class="form-group form-full" id="advanceMonthsRow" style="display:none">
@@ -2627,10 +2634,99 @@ function closeConfirm() {
 let payType = 'due'; // 'due' or 'advance'
 let advMonths = 1;
 
+let selectedPayMonths = []; // array of 'YYYY-MM' strings
+
+function buildMonthChips(s, mode) {
+  const chips = document.getElementById('monthChips');
+  const summary = document.getElementById('monthSelSummary');
+  chips.innerHTML = '';
+  selectedPayMonths = [];
+
+  const now = new Date();
+  const joinDate = new Date(s.join + 'T00:00:00');
+  const monthList = []; // {label, key, isPast, isPaid}
+
+  if (mode === 'due') {
+    // Show all months from join up to current month that are unpaid/partial
+    let cur = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    while (cur <= thisMonth) {
+      const key = cur.getFullYear() + '-' + String(cur.getMonth()+1).padStart(2,'0');
+      const label = cur.toLocaleDateString('en-IN', {month:'short', year:'2-digit'});
+      monthList.push({label, key});
+      cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+    }
+  } else {
+    // Advance: show next 12 future months
+    let cur = new Date(now.getFullYear(), now.getMonth()+1, 1);
+    for (let i = 0; i < 12; i++) {
+      const key = cur.getFullYear() + '-' + String(cur.getMonth()+1).padStart(2,'0');
+      const label = cur.toLocaleDateString('en-IN', {month:'short', year:'2-digit'});
+      monthList.push({label, key});
+      cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+    }
+  }
+
+  // Figure out already-paid months from payment history
+  const paidMonths = new Set();
+  (s.payments || []).forEach(p => {
+    if (p.month) paidMonths.add(p.month);
+    if (p.months && Array.isArray(p.months)) p.months.forEach(m => paidMonths.add(m));
+  });
+
+  monthList.forEach(({label, key}) => {
+    const isPaid = paidMonths.has(key);
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.dataset.key = key;
+    btn.onclick = () => toggleMonthChip(btn, key, s);
+    btn.style.cssText = `padding:6px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:${isPaid?'default':'pointer'};font-family:inherit;border:2px solid ${isPaid?'var(--paid)':'var(--border)'};background:${isPaid?'var(--paid-light)':'var(--bg)'};color:${isPaid?'var(--paid)':'var(--text2)'};transition:all .15s;`;
+    if (isPaid) {
+      btn.title = 'Already paid';
+      btn.disabled = true;
+      btn.textContent = '✓ ' + label;
+    }
+    chips.appendChild(btn);
+  });
+
+  updateMonthSummary(s);
+}
+
+function toggleMonthChip(btn, key, s) {
+  const idx = selectedPayMonths.indexOf(key);
+  if (idx > -1) {
+    selectedPayMonths.splice(idx, 1);
+    btn.style.background = 'var(--bg)';
+    btn.style.color = 'var(--text2)';
+    btn.style.borderColor = 'var(--border)';
+  } else {
+    selectedPayMonths.push(key);
+    btn.style.background = 'var(--accent)';
+    btn.style.color = 'white';
+    btn.style.borderColor = 'var(--accent)';
+  }
+  updateMonthSummary(s);
+}
+
+function updateMonthSummary(s) {
+  const summary = document.getElementById('monthSelSummary');
+  if (!s) return;
+  if (selectedPayMonths.length === 0) {
+    summary.textContent = 'Tap months above to select';
+    document.getElementById('payAmount').value = '';
+  } else {
+    const total = s.fee * selectedPayMonths.length;
+    summary.textContent = `${selectedPayMonths.length} month(s) selected — Auto amount: ₹${total}`;
+    document.getElementById('payAmount').value = total;
+    updatePayPreview();
+  }
+}
+
 function openPayModal(id) {
   activePayId = id;
   payType = 'due';
   advMonths = 1;
+  selectedPayMonths = [];
   const s = students.find(s => s.id === id);
   const months = monthsActive(s.join, s.leaves);
   const due = totalDue(s);
@@ -2642,7 +2738,7 @@ function openPayModal(id) {
   document.getElementById('payMonths').textContent = months + ' mo' + (leaveMo > 0 ? ` (${leaveMo}mo leave excluded)` : '');
   document.getElementById('payAlreadyPaid').textContent = fmt(s.paidTotal || 0);
   document.getElementById('payCurrentBal').textContent = fmt(bal);
-  document.getElementById('payAmount').value = bal > 0 ? bal : s.fee;
+  document.getElementById('payAmount').value = '';
   document.getElementById('payDate').value = today();
   document.getElementById('payNote').value = '';
   document.getElementById('payMode').value = 'Cash';
@@ -2650,8 +2746,9 @@ function openPayModal(id) {
   document.getElementById('advanceMonthsRow').style.display = 'none';
   document.getElementById('payPreview').style.display = 'none';
 
+  buildMonthChips(s, 'due');
   setPayType('due');
-  // Reset discount fields
+
   const discEl = document.getElementById('payDiscount');
   if (discEl) discEl.value = '';
   const discTypeEl = document.getElementById('payDiscountType');
@@ -2679,7 +2776,7 @@ function setPayType(type) {
     advBtn.style.color = 'var(--text2)';
     advBtn.style.borderColor = 'var(--border)';
     advRow.style.display = 'none';
-    document.getElementById('payAmount').value = bal > 0 ? bal : s.fee;
+    buildMonthChips(s, 'due');
     document.getElementById('payNote').value = '';
   } else {
     advBtn.style.background = 'var(--info)';
@@ -2688,8 +2785,9 @@ function setPayType(type) {
     dueBtn.style.background = 'var(--bg)';
     dueBtn.style.color = 'var(--text2)';
     dueBtn.style.borderColor = 'var(--border)';
-    advRow.style.display = 'block';
+    advRow.style.display = 'none'; // hidden, month chips replace it
     advMonths = 1;
+    buildMonthChips(s, 'advance');
     updateAdvanceInfo();
   }
   updatePayPreview();
@@ -2806,6 +2904,7 @@ function submitPayment() {
     mode: document.getElementById('payMode').value,
     type: payType,
     advanceMonths: payType === 'advance' ? advMonths : 0,
+    months: selectedPayMonths.length > 0 ? [...selectedPayMonths] : [],
     note: note + (discountAmt > 0 ? ` [Discount: ${fmt(discountAmt)}]` : '')
   });
 
@@ -2823,7 +2922,8 @@ function submitPayment() {
     checkPaymentCompletedNotif(s.name, fmt(amt));
     showToast(`✅ ${fmt(amt)} recorded — ${s.name}'s fees are cleared! 🎉`);
   } else {
-    showToast(`${fmt(amt)} recorded for ${s.name}${payType === 'advance' ? ' (Advance ×' + advMonths + ')' : ''}`);
+    const monthInfo = selectedPayMonths.length > 0 ? ` for ${selectedPayMonths.length} month(s)` : (payType === 'advance' ? ' (Advance ×' + advMonths + ')' : '');
+    showToast(`${fmt(amt)} recorded for ${s.name}${monthInfo}`);
   }
 }
 
@@ -3358,10 +3458,20 @@ function setQuickFilter(status) {
 
 function renderStats() {
   const scope = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
+
   const paidStudents    = scope.filter(s => calcStatus(s) === 'paid');
-  const dueStudents     = scope.filter(s => calcStatus(s) === 'due');
-  const partialStudents = scope.filter(s => { const st = calcStatus(s); return st && st.startsWith('due:'); });
-  const newStudents     = scope.filter(s => calcStatus(s) === 'new');
+  const partialStudents = scope.filter(s => {
+    const st = calcStatus(s);
+    if (!st || !st.startsWith('due:')) return false;
+    return (s.paidTotal || 0) > 0; // paid something but not all
+  });
+  const dueStudents = scope.filter(s => {
+    const st = calcStatus(s);
+    if (st === 'due') return true;
+    if (st && st.startsWith('due:')) return (s.paidTotal || 0) <= 0; // paid nothing
+    return false;
+  });
+
   const totalFees    = scope.reduce((a,s) => a + totalDue(s), 0);
   const collected    = scope.reduce((a,s) => a + (s.paidTotal||0), 0);
   const outstanding  = scope.reduce((a,s) => a + calcBalance(s), 0);
@@ -4769,18 +4879,27 @@ function getMonthlyRevenueData(monthCount) {
   for (let i = monthCount-1; i >= 0; i--) {
     const d  = new Date(now.getFullYear(), now.getMonth()-i, 1);
     const yr = d.getFullYear(), mo = d.getMonth();
+    const key = yr + '-' + String(mo+1).padStart(2,'0');
     labels.push(d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'}));
     let col = 0, exp = 0;
     students.forEach(s => {
       (s.payments||[]).forEach(p => {
         if (!p.date) return;
-        const pd = new Date(p.date+'T00:00:00');
-        if (pd.getFullYear()===yr && pd.getMonth()===mo) col += p.amount||0;
+        // If payment has selected months[], credit amount split across those months
+        if (p.months && p.months.length > 0) {
+          if (p.months.includes(key)) {
+            col += (p.amount || 0) / p.months.length;
+          }
+        } else {
+          // Fallback: use payment recorded date
+          const pd = new Date(p.date+'T00:00:00');
+          if (pd.getFullYear()===yr && pd.getMonth()===mo) col += p.amount||0;
+        }
       });
       const j = new Date(s.join+'T00:00:00');
       if (j.getFullYear()<yr||(j.getFullYear()===yr&&j.getMonth()<=mo)) exp += s.fee||0;
     });
-    collected.push(col); expected.push(exp);
+    collected.push(Math.round(col)); expected.push(exp);
     rates.push(exp>0 ? Math.round((col/exp)*100) : 0);
   }
   return { labels, collected, expected, rates };
@@ -4883,19 +5002,48 @@ function renderStatusDonut() {
   const ctx = document.getElementById('statusChart').getContext('2d');
 
   const scope = activeBatch==='all' ? students : students.filter(s=>s.batchId===activeBatch);
-  const paid    = scope.filter(s=>calcStatus(s)==='paid').length;
-  const due     = scope.filter(s=>calcStatus(s)==='due').length;
-  const partial = scope.filter(s=>calcStatus(s)==='partial').length;
-  const newAdm  = scope.filter(s=>calcStatus(s)==='new'||calcStatus(s)==='dueSoon').length;
-  const total   = scope.length || 1;
+
+  let paid = 0, due = 0, partial = 0, newOrSoon = 0;
+  scope.forEach(s => {
+    const st = calcStatus(s);
+    if (st === 'paid') {
+      paid++;
+    } else if (st === 'new' || st === 'dueSoon') {
+      newOrSoon++;
+    } else if (st && st.startsWith('due:')) {
+      const monthsDue = parseInt(st.split(':')[1]) || 1;
+      const totalMonths = monthsActive(s.join, s.leaves);
+      // Partial = paid something but not all; due = paid nothing
+      if ((s.paidTotal || 0) > 0 && monthsDue < totalMonths) {
+        partial++;
+      } else {
+        due++;
+      }
+    } else if (st === 'due') {
+      due++;
+    } else if (st === 'partial') {
+      partial++;
+    }
+  });
+
+  const total = scope.length || 1;
+
+  // Filter out zero-value segments so legend stays clean
+  const allLabels = ['Paid', 'Due', 'Partial', 'New/Soon'];
+  const allData   = [paid, due, partial, newOrSoon];
+  const allColors = ['#34D399', '#FF6B6B', '#F59E0B', '#60A5FA'];
+  const activeIdx = allData.map((v,i) => v > 0 ? i : -1).filter(i => i >= 0);
+  const labels = activeIdx.map(i => allLabels[i]);
+  const data   = activeIdx.map(i => allData[i]);
+  const colors = activeIdx.map(i => allColors[i]);
 
   statusChartInstance = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Paid','Due','Partial','New/Soon'],
+      labels,
       datasets:[{
-        data: [paid, due, partial, newAdm],
-        backgroundColor: ['#34D399','#FF6B6B','#F59E0B','#60A5FA'],
+        data,
+        backgroundColor: colors,
         borderColor: '#fff', borderWidth: 3,
         hoverOffset: 8,
       }]
