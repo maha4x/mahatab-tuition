@@ -517,6 +517,30 @@
     animation: slideInUp 0.25s ease;
   }
   .student-detail-page.open { display: flex; }
+
+  /* STATUS FILTER PAGE */
+  .status-filter-page {
+    display: none; position: fixed; inset: 0; z-index: 390;
+    background: var(--bg); flex-direction: column;
+    animation: slideInUp 0.25s ease;
+  }
+  .status-filter-page.open { display: flex; }
+  .sfp-search {
+    padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; background: var(--bg); color: var(--text);
+    outline: none; width: 100%; box-sizing: border-box;
+  }
+  .sfp-search:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px rgba(82,183,136,0.15); }
+  .sfp-student-card {
+    background: var(--surface); border-radius: 14px; padding: 14px 16px;
+    border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    cursor: pointer; transition: box-shadow 0.18s, transform 0.15s;
+  }
+  .sfp-student-card:active { transform: scale(0.985); }
+  .sfp-progress-bar {
+    height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 8px;
+  }
+  .sfp-progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
   .sdp-header {
     background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1B4332 100%);
     color: white; padding: 1rem 1.25rem;
@@ -854,17 +878,17 @@
       <div class="stat-label">Total Students</div>
       <div class="stat-value blue" id="statStudents">0</div>
     </div>
-    <div class="stat-card" onclick="setQuickFilter('paid')" style="cursor:pointer" id="statCardPaid">
+    <div class="stat-card" onclick="openStatusFilterPage('paid')" style="cursor:pointer" id="statCardPaid">
       <div class="stat-label">✅ Paid</div>
       <div class="stat-value green" id="statPaidCount">0</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statCollected">₹0 collected</div>
     </div>
-    <div class="stat-card" onclick="setQuickFilter('due')" style="cursor:pointer" id="statCardDue">
+    <div class="stat-card" onclick="openStatusFilterPage('due')" style="cursor:pointer" id="statCardDue">
       <div class="stat-label">🔴 Due</div>
       <div class="stat-value red" id="statDueCount">0</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statDue">₹0 outstanding</div>
     </div>
-    <div class="stat-card" onclick="setQuickFilter('partial')" style="cursor:pointer" id="statCardPartial">
+    <div class="stat-card" onclick="openStatusFilterPage('partial')" style="cursor:pointer" id="statCardPartial">
       <div class="stat-label">🟡 Partial</div>
       <div class="stat-value amber" id="statPartialCount">0</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px" id="statTotal">₹0 total</div>
@@ -2911,6 +2935,11 @@ function submitPayment() {
   s.status = calcStatus(s);
   save(); renderAll(); closeModal();
 
+  // If statusFilterPage is open, re-render it with updated data
+  if (document.getElementById('statusFilterPage')?.classList.contains('open')) {
+    renderSFP();
+  }
+
   // If pay was opened from the student detail page, go back to it with updated data
   if (payOpenedFromDetail) {
     payOpenedFromDetail = false;
@@ -3454,6 +3483,108 @@ function setQuickFilter(status) {
 
   renderTable();
   renderStats();
+}
+
+// ── Status Filter Page ──
+let sfpFilter = '';
+
+function openStatusFilterPage(filter) {
+  sfpFilter = filter;
+  document.getElementById('sfpSearch').value = '';
+
+  const configs = {
+    paid:    { title: '✅ Paid Students',    headerBg: 'linear-gradient(135deg,#1B4332 0%,#2D6A4F 100%)' },
+    due:     { title: '🔴 Due Students',     headerBg: 'linear-gradient(135deg,#7B1E1E 0%,#C0392B 100%)' },
+    partial: { title: '🟡 Partial Students', headerBg: 'linear-gradient(135deg,#7D5200 0%,#D4860A 100%)' },
+  };
+  const cfg = configs[filter] || { title: 'Students', headerBg: 'linear-gradient(135deg,#1B4332,#2D6A4F)' };
+  document.getElementById('sfpTitle').textContent = cfg.title;
+  document.getElementById('sfpHeader').style.background = cfg.headerBg;
+
+  renderSFP();
+  document.getElementById('statusFilterPage').classList.add('open');
+}
+
+function closeStatusFilterPage() {
+  document.getElementById('statusFilterPage').classList.remove('open');
+  sfpFilter = '';
+}
+
+function renderSFP() {
+  const search = document.getElementById('sfpSearch').value.toLowerCase();
+  const scope  = activeBatch === 'all' ? students : students.filter(s => s.batchId === activeBatch);
+
+  const filtered = scope.filter(s => {
+    const st = calcStatus(s);
+    let match = false;
+    if (sfpFilter === 'paid')    match = st === 'paid';
+    else if (sfpFilter === 'due')     match = st === 'due' || (st && st.startsWith('due:') && (s.paidTotal||0) <= 0);
+    else if (sfpFilter === 'partial') match = st && st.startsWith('due:') && (s.paidTotal||0) > 0;
+    return match && s.name.toLowerCase().includes(search);
+  });
+
+  document.getElementById('sfpSub').textContent = `${filtered.length} student${filtered.length !== 1 ? 's' : ''}`;
+  document.getElementById('sfpBadge').textContent = filtered.length;
+
+  const body = document.getElementById('sfpBody');
+  if (!filtered.length) {
+    const emptyMsg = search ? 'No results found' : sfpFilter === 'paid' ? 'No paid students yet' : sfpFilter === 'due' ? 'No due students! 🎊' : 'No partial students';
+    const emptyEmoji = sfpFilter === 'paid' ? '🎉' : sfpFilter === 'due' ? '👍' : '📋';
+    body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3)">
+      <div style="font-size:52px;margin-bottom:14px">${emptyEmoji}</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text2)">${emptyMsg}</div>
+      ${sfpFilter === 'due' && !search ? '<div style="font-size:13px;margin-top:6px">All fees are up to date</div>' : ''}
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = filtered.map(s => {
+    const due   = totalDue(s);
+    const paid  = s.paidTotal || 0;
+    const bal   = calcBalance(s);
+    const pct   = due > 0 ? Math.min(100, Math.round((paid / due) * 100)) : 100;
+    const bName = getBatchName(s.batchId);
+    const lastPay = s.payments && s.payments.length ? formatDate(s.payments[s.payments.length-1].date) : null;
+    const classLbl = s.studentClass !== undefined && s.studentClass !== '' ? (s.studentClass == '0' ? 'KG' : 'Class ' + s.studentClass) : '';
+    const months = monthsActive(s.join, s.leaves);
+    const barColor = sfpFilter === 'paid' ? 'var(--paid)' : sfpFilter === 'due' ? 'var(--danger)' : 'var(--warn)';
+    const amtColor = sfpFilter === 'paid' ? 'var(--paid)' : sfpFilter === 'due' ? 'var(--danger)' : 'var(--warn)';
+    const amtVal  = sfpFilter === 'paid' ? fmt(paid) : fmt(bal);
+    const amtLbl  = sfpFilter === 'paid' ? 'paid' : 'balance';
+
+    return `<div class="sfp-student-card" style="margin-bottom:10px" onclick="openStudentDetail(${s.id})">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="avatar ${s.color}" style="width:44px;height:44px;font-size:15px;flex-shrink:0">${getInitials(s.name)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span style="background:var(--accent-light);color:var(--accent);padding:1px 7px;border-radius:6px;font-weight:600">${bName}</span>
+            ${classLbl ? `<span>${classLbl}</span>` : ''}
+            <span>📅 ${months} mo</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:17px;font-weight:800;color:${amtColor}">${amtVal}</div>
+          <div style="font-size:11px;color:var(--text3)">${amtLbl}</div>
+        </div>
+      </div>
+
+      <div class="sfp-progress-bar">
+        <div class="sfp-progress-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px">
+        <div style="font-size:11px;color:var(--text3)">
+          ${lastPay ? `Last paid: ${lastPay}` : 'No payments yet'}
+          ${sfpFilter !== 'paid' ? ` &nbsp;·&nbsp; ₹${s.fee}/mo` : ''}
+        </div>
+        <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+          ${sfpFilter !== 'paid' ? `<button class="btn btn-sm btn-success" style="padding:5px 12px;font-size:12px" onclick="openPayModal(${s.id})">💳 Pay</button>` : ''}
+          <button class="btn btn-sm" style="padding:5px 10px;font-size:12px;background:var(--info-light);color:var(--info);border:1px solid #B3D0E8" onclick="openStudentDetail(${s.id})">👁 View</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderStats() {
@@ -6139,6 +6270,22 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- STUDENT DETAIL PAGE -->
+<!-- STATUS FILTER PAGE -->
+<div class="status-filter-page" id="statusFilterPage">
+  <div class="sdp-header" id="sfpHeader">
+    <button class="sdp-back" onclick="closeStatusFilterPage()">&#8592;</button>
+    <div class="sdp-header-info">
+      <div class="sdp-header-name" id="sfpTitle">Students</div>
+      <div class="sdp-header-sub" id="sfpSub"></div>
+    </div>
+    <div id="sfpBadge" style="font-size:22px;font-weight:800;background:rgba(255,255,255,0.18);padding:6px 16px;border-radius:20px;min-width:44px;text-align:center"></div>
+  </div>
+  <div style="padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
+    <input class="sfp-search" id="sfpSearch" placeholder="🔍  Search student…" oninput="renderSFP()" />
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:14px 14px 80px" id="sfpBody"></div>
+</div>
+
 <div class="student-detail-page" id="studentDetailPage">
   <div class="sdp-header">
     <button class="sdp-back" onclick="closeStudentDetail()">&#8592;</button>
@@ -6181,6 +6328,7 @@ window.addEventListener('DOMContentLoaded', () => {
       // 3. Full-screen pages
       ['notifPageOverlay',   () => document.getElementById('notifPageOverlay')?.classList.contains('open')],
       ['trashPageOverlay',   () => document.getElementById('trashPageOverlay')?.classList.contains('open')],
+      ['statusFilterPage',   () => document.getElementById('statusFilterPage')?.classList.contains('open')],
       ['studentDetailPage',  () => document.getElementById('studentDetailPage')?.classList.contains('open')],
       // 4. Update banner
       ['updateBanner',       () => document.getElementById('updateBanner')?.classList.contains('show')],
@@ -6245,6 +6393,9 @@ window.addEventListener('DOMContentLoaded', () => {
         break;
       case 'studentDetailPage':
         if (typeof closeStudentDetail === 'function') closeStudentDetail();
+        break;
+      case 'statusFilterPage':
+        if (typeof closeStatusFilterPage === 'function') closeStatusFilterPage();
         break;
       case 'updateBanner':
         if (typeof dismissUpdate === 'function') dismissUpdate();
